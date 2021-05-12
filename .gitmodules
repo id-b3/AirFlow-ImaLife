@@ -1,0 +1,4 @@
+[submodule "bronchinet"]
+	path = bronchinet
+	url = https://github.com/id-b3/bronchinet.git
+	branch = imalife
