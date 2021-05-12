@@ -109,7 +109,8 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
-COPY ["./run_machine.sh", "./"]
+COPY ["./run_machine.sh", "./scripts"]
+COPY ["./airway_measures_COPDgene/", "./scripts"]
 
 # Test the container set up correctly and try a help file.
 # ENTRYPOINT ["./predict.sh"]
