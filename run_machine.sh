@@ -12,6 +12,8 @@ DESTLUNG=${DATADIR}/Lungs
 DESTIMG=${DATADIR}/RAW/DICOM
 NIFTIIMG=${DATADIR}/Images
 
+MODELFILE=/bronchinet/model/model_imalife.pt
+
 # RESULTS DIRS
 RESDIR=/temp_work/results
 POSWRKDIR=${RESDIR}/PosteriorsWorkData
@@ -53,7 +55,7 @@ python Code/scripts_experiments/distribute_data.py --basedir=/temp_work --type_d
 echo '-------------------------'
 echo 'Predict Segmentation.....'
 echo '-------------------------'
-python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=True --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} /bronchinet/model/model_imalife.pt
+python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=True --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
 
 echo '-------------------------'
 echo 'Post-process Segmentation'
@@ -68,7 +70,14 @@ rm -r ${POSDIR}
 rm -r ${POSWRKDIR}
 rm ${KEYFILE}
 
+#echo '-------------------------'
+#echo 'PROVIDE RESULTS..........'
+#echo '-------------------------'
+# cp -r ${RESDIR} /input
+
+
 echo '-------------------------'
-echo 'PROVIDE RESULTS..........'
+echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
-cp -r ${RESDIR} /input
+
+/bronchinet/scripts/scripts_launch/opfront_individual.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz $RESDIR/opfront "-i 48 -o 23 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 21 -e 0.7 -K 0 -F -0.41 -G -0.57"
