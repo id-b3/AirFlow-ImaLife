@@ -38,7 +38,7 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/smooth_brh && \
     make -C /lungseg/playground/src/brh_translator && \
     make -C /lungseg/playground/src/imgconv
-RUN make -C /lungseg/playground/src/brh2vol
+# RUN make -C /lungseg/playground/src/tcgc_phantom_trainer && \
 
 # Copy the tools
 RUN mkdir /lungseg/bins && \
@@ -51,53 +51,6 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/smooth_brh/smooth_brh /lungseg/bins && \
     cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins
-RUN cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
+# RUN cp /lungseg/playground/src/tcgc_phantom_trainer/tcgc_phantom_trainer /lungseg/bins && \
 
-# Use the nvidia cuda image as the base
-FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
-
-# This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="0.7"
-LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
-
-# Update apt and install RUNTIME dependencies (lower size etc.)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        python3.8 python3-pip python-is-python3 \
-        dcm2niix dcmtk \
-        libnifti2 libx11-6 libglib2.0-0 \
-        && apt-get clean
-
-# Copy python requirements document.
-WORKDIR /bronchinet
-COPY ["./bronchinet/requirements.txt", "./bronchinet/test_environment.py", "./"]
-
-#Update the python install based on requirements and run a test file.
-RUN pip3 install -r requirements.txt && python3 test_environment.py
-
-# Copy binaries and libraries for the opfront and pre/post-processing tools.
-COPY --from=builder /lungseg/bins /usr/local/bin
-COPY --from=builder /usr/local/bin /usr/local/bin
-COPY ["./airflow_libs", "/usr/local/lib"]
-RUN ldconfig
-
-# Set up the file structure for CT scan processing.
-ENV PYTHONPATH "/bronchinet/src"
-RUN mkdir ./files && \
-        ln -s ./src Code && \
-        mkdir -p ./temp_work/files && \
-        ln -s ./files ./temp_work/BaseData && \
-        ln -s ./temp_work/files BaseData
-
-# Copy the source code to the working directory
-COPY ["./bronchinet/src/", "./src/"]
-COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
-COPY ["./run_machine.sh", "./scripts/"]
-COPY ["./airway_measures_COPDgene/", "./scripts/"]
-
-# RUN apt install -y vim
-RUN rm -rf /var/lib/apt/lists/*
-# Open bash when running container.
-# ENTRYPOINT ["/bin/bash"]
-ENTRYPOINT ["/bronchinet/scripts/run_machine.sh", "/eureka/input/*.dcm"]
+ENTRYPOINT ["/bin/bash"]

@@ -2,9 +2,11 @@
 
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
-INPUTFILE=$1
+INPUTFILE=${1:-/eureka/input/test_series/*.dcm}
+OUTPUTFOLDER=${2:-/eureka/output/test_series}
 
-echo "Input File: $1"
+echo "Input File: ${1}"
+echo "Output Folder: ${2}"
 
 DATADIR=/temp_work/processing
 DESTAIR=${DATADIR}/CoarseAirways
@@ -80,4 +82,4 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/scripts_launch/opfront_individual.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz $RESDIR/opfront "-i 48 -o 23 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 21 -e 0.7 -K 0 -F -0.41 -G -0.57"
+/bronchinet/scripts/scripts_launch/opfront_individual.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz $RESDIR/opfront "-i 48 -o 23 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57"
