@@ -2,10 +2,12 @@
 
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
-INPUT=${1:-/eureka/input/dicom-series-in/*}
+INPUT=${1:-/eureka/input/dicom-series-in/*.dcm}
 OUTPUTFOLDER=${2:-/eureka/output/nifti-series-out/}
-INPUTFILE=/test_scan/input/test-scan.dcm
+INPUTFILE=/eureka/input/dicom-series-in/proc_scan.dcm
 
+CALL="python /bronchinet/scripts/fix_transfer_syntax.py ${INPUT} ${INPUTFILE}"
+eval $CALL
 # eval "mv ${1} ${INPUTFILE}"
 
 echo "Input File: ${INPUTFILE}"
@@ -16,6 +18,7 @@ DESTAIR=${DATADIR}/CoarseAirways
 DESTLUNG=${DATADIR}/Lungs
 DESTIMG=${DATADIR}/RAW/DICOM
 NIFTIIMG=${DATADIR}/Images
+
 
 MODELFILE=/bronchinet/model/model_imalife.pt
 
@@ -33,17 +36,14 @@ mkdir -p $DESTLUNG
 mkdir -p $DESTIMG
 mkdir -p /temp_work/processing/Airways
 
+cp $INPUTFILE $DESTIMG/
 cd /temp_work/
-
 ln -s /bronchinet/src Code
 ln -s /temp_work/processing BaseData
-
-ls -l -R /eureka
 
 lung_segmentation --verbose true --source $INPUTFILE --savepath $DESTLUNG
 rm $DESTLUNG/*.bmp
 mv $DESTLUNG/*-airways.dcm $DESTAIR/
-cp $INPUTFILE $DESTIMG/
 
 echo 'CONVERTING DICOM TO NIFTY'
 echo '-------------------------'
@@ -87,4 +87,6 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/scripts_launch/opfront_individual.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz $RESDIR/opfront "-i 48 -o 23 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57"
+/bronchinet/scripts/scripts_launch/opfront_individual.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz ${RESDIR}/opfront "-i 48 -o 23 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57"
+
+ll -R ${RESDIR}

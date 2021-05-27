@@ -93,7 +93,7 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
-COPY ["./run_machine.sh", "./scripts/"]
+COPY ["./run_machine.sh", "./fix_transfer_syntax.py", "./scripts/"]
 COPY ["./airway_measures_COPDgene/", "./scripts/"]
 
 # RUN apt install -y vim
@@ -102,4 +102,4 @@ RUN rm -rf /var/lib/apt/lists/*
 # ENTRYPOINT ["/bin/bash"]
 
 ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
-CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
+# CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
