@@ -2,10 +2,13 @@
 
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
-INPUTFILE=${1:-/eureka/input/test_series/*.dcm}
-OUTPUTFOLDER=${2:-/eureka/output/test_series}
+INPUT=${1:-/eureka/input/dicom-series-in/*}
+OUTPUTFOLDER=${2:-/eureka/output/nifti-series-out/}
+INPUTFILE=/test_scan/input/test-scan.dcm
 
-echo "Input File: ${1}"
+# eval "mv ${1} ${INPUTFILE}"
+
+echo "Input File: ${INPUTFILE}"
 echo "Output Folder: ${2}"
 
 DATADIR=/temp_work/processing
@@ -35,7 +38,9 @@ cd /temp_work/
 ln -s /bronchinet/src Code
 ln -s /temp_work/processing BaseData
 
-lung_segmentation --source $INPUTFILE --savepath $DESTLUNG
+ls -l -R /eureka
+
+lung_segmentation --verbose true --source $INPUTFILE --savepath $DESTLUNG
 rm $DESTLUNG/*.bmp
 mv $DESTLUNG/*-airways.dcm $DESTAIR/
 cp $INPUTFILE $DESTIMG/

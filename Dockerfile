@@ -59,7 +59,7 @@ RUN cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
 FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 
 # This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="0.7"
+LABEL version="0.9.1"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
 
 # Update apt and install RUNTIME dependencies (lower size etc.)
@@ -71,15 +71,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy python requirements document.
 WORKDIR /bronchinet
-COPY ["./bronchinet/requirements.txt", "./bronchinet/test_environment.py", "./"]
+COPY ["./bronchinet/requirements.txt", "./"]
 
-#Update the python install based on requirements and run a test file.
-RUN pip3 install -r requirements.txt && python3 test_environment.py
+#Update the python install based on requirements and run a test file.Hi
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
 COPY --from=builder /lungseg/bins /usr/local/bin
 COPY --from=builder /usr/local/bin /usr/local/bin
-COPY ["./airflow_libs", "/usr/local/lib"]
+COPY ["./airflow_libs", "/usr/lib"]
 RUN ldconfig
 
 # Set up the file structure for CT scan processing.
@@ -100,4 +100,6 @@ COPY ["./airway_measures_COPDgene/", "./scripts/"]
 RUN rm -rf /var/lib/apt/lists/*
 # Open bash when running container.
 # ENTRYPOINT ["/bin/bash"]
-ENTRYPOINT ["/bronchinet/scripts/run_machine.sh", "/eureka/input/*.dcm"]
+
+ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
