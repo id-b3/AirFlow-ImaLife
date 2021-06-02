@@ -132,3 +132,4 @@ dmypy.json
 legacy/
 playground/
 test_scan/
+.idea/
