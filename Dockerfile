@@ -36,9 +36,9 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/gts_ray_measure && \
     make -C /lungseg/playground/src/connected_brh && \
     make -C /lungseg/playground/src/smooth_brh && \
-    make -C /lungseg/playground/src/brh_translator && \
-    make -C /lungseg/playground/src/imgconv
-RUN make -C /lungseg/playground/src/brh2vol
+    make -C /lungseg/playground/src/imgconv && \
+    make -C /lungseg/playground/src/brh2vol
+RUN make -C /lungseg/playground/src/brh_translator
 
 # Copy the tools
 RUN mkdir /lungseg/bins && \
@@ -50,8 +50,8 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/connected_brh/connected_brh /lungseg/bins && \
     cp /lungseg/playground/src/smooth_brh/smooth_brh /lungseg/bins && \
     cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
-    cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins
-RUN cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
+    cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
+    cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
 
@@ -93,14 +93,11 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
-COPY ["./run_machine.sh", "./util/fix_transfer_syntax.py", "./scripts/"]
+COPY ["./run_machine.sh", "./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./airway_measures_COPDgene/", "./scripts/"]
 
-# RUN apt install -y vim
 RUN rm -rf /var/lib/apt/lists/*
 # Open bash when running container.
 # ENTRYPOINT ["/bin/bash"]
-
-ENTRYPOINT ["/bin/bash"]
-#ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
-# CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
+ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+#  CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
