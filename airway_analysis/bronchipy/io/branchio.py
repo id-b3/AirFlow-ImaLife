@@ -1,14 +1,23 @@
 import pandas as pd
-import os
+from pathlib import Path
 
 
-def load_brh_csv(in_file: str) -> pd.Dataframe:
+def load_brh_csv(in_file: str) -> pd.DataFrame:
+    """
+
+    @rtype: object
+    """
     df = pd.read_csv(in_file, converters={'children': eval, 'point': eval}, delimiter=";")
     return df
 
 
 def save_as_csv(dataframe: 'input dataframe', out_path: 'output path') -> None:
-    abs_dir = os.path.split(out_path)[0]
-    if os.path.exists(abs_dir):
-        os.mkdir(abs_dir)
-        dataframe.save_csv(os.pathout_path)
+    parent_dir = Path(Path.cwd(), out_path).resolve()
+    try:
+        print(f"Saving {Path(out_path).stem} to {parent_dir}")
+        dataframe.to_csv(parent_dir)
+    except OSError as e:
+        print(f"Creating folder {parent_dir}")
+        print(f"Saving {Path(out_path).stem} to {parent_dir}")
+        Path.mkdir(parent_dir.parent)
+        dataframe.to_csv(parent_dir)
