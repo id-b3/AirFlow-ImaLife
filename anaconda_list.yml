@@ -1,0 +1,47 @@
+name: air
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ca-certificates=2021.5.30=h5b45459_0
+  - cached-property=1.5.2=hd8ed1ab_1
+  - cached_property=1.5.2=pyha770c72_1
+  - certifi=2021.5.30=py39hcbf5309_0
+  - h5py=3.2.1=nompi_py39hf27771d_100
+  - hdf5=1.10.6=nompi_h5268f04_1114
+  - intel-openmp=2021.2.0=h57928b3_616
+  - krb5=1.19.1=hbae68bd_0
+  - libblas=3.9.0=9_mkl
+  - libcblas=3.9.0=9_mkl
+  - libcurl=7.77.0=h789b8ee_0
+  - liblapack=3.9.0=9_mkl
+  - libssh2=1.9.0=h680486a_6
+  - m2w64-gcc-libgfortran=5.3.0=6
+  - m2w64-gcc-libs=5.3.0=7
+  - m2w64-gcc-libs-core=5.3.0=7
+  - m2w64-gmp=6.1.0=2
+  - m2w64-libwinpthread-git=5.0.0.4634.697f757=2
+  - mkl=2021.2.0=hb70f87d_389
+  - msys2-conda-epoch=20160418=1
+  - nibabel=3.2.1=pyhd8ed1ab_0
+  - numpy=1.20.3=py39h6635163_1
+  - openssl=1.1.1k=h8ffe710_0
+  - packaging=20.9=pyh44b312d_0
+  - pip=21.1.2=pyhd8ed1ab_0
+  - pydicom=2.1.2=pyhd3deb0d_0
+  - pyparsing=2.4.7=pyh9f0ad1d_0
+  - pyreadline=2.1=py39hcbf5309_1003
+  - python=3.9.4=h7840368_0_cpython
+  - python_abi=3.9=1_cp39
+  - scipy=1.6.3=py39hc0c34ad_0
+  - setuptools=49.6.0=py39hcbf5309_3
+  - sqlite=3.35.5=h8ffe710_0
+  - tbb=2021.2.0=h2d74725_0
+  - tk=8.6.10=h8ffe710_1
+  - tzdata=2021a=he74cb21_0
+  - vc=14.2=hb210afc_4
+  - vs2015_runtime=14.28.29325=h5e1d092_4
+  - wheel=0.36.2=pyhd3deb0d_0
+  - wincertstore=0.2=py39hcbf5309_1006
+  - zlib=1.2.11=h62dcd97_1010
+prefix: C:\Users\Ivan\miniconda3\envs\air

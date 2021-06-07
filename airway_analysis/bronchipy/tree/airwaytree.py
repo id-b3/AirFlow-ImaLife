@@ -1,18 +1,13 @@
 import nibabel
 import nibabel as nib
-import pandas
+import pandas as pd
 
 from ..io import branchio as brio
 
 
 class Branch:
-    def __init__(self, : list):
-        """
+    def __init__(self, info_list: list):
 
-        Parameters
-        ----------
-
-        """
         self.index = info_list[0]
         self.parent = info_list[1]
         self.children = info_list[2]
@@ -20,20 +15,50 @@ class Branch:
         self.generation = info_list[4]
 
 
+def organise_tree(branches: str, inner_file: str, inner_radius_file: str, outer_file: str, outer_radius_file: str,
+                  voxel_dims: list, config_file: dict) -> pd.DataFrame:
+    """
+    This function combines the outputs of various opfront results files into one data-frame, organised by the airway id.
+
+    Parameters
+    ----------
+    branches: str
+        file containing the branch info from brh_translate (.csv obtained with -pandas option)
+    inner_file: str
+        file _inner.csv
+    inner_radius_file: str
+        file _inner_local_radius.csv
+    outer_file: str
+        file _outer.csv
+    outer_radius_file: str
+        file _outer_local_radius.csv
+    voxel_dims: list
+        a list of voxel dimensions of the volume [x,y,z,t]
+    config_file: dict
+        dictionary containing the configuration parameters
+
+    Returns
+    -------
+    organisedTree: pandas.DataFrame()
+        organised and concatenated dataframe containing all the branches and their relevant information
+    """
+    organisedtree = pd.DataFrame()
+    branch_df = brio.load_brh_csv(branches)
+
+    return organisedtree
+
+
 class AirwayTree:
 
-    def __init__(self, branches: pandas.DataFrame, volume: nibabel.Nifti1Image):
-
-        self.branches = brio.load_brh_csv(branches)
+    def __init__(self, branch_file: str, inner_file: str, inner_radius_file: str, outer_file: str,
+                 outer_radius_file: str, config_file: str, volume: str):
         vol_header = nib.load(volume).header
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()
 
-    def get_branch(self, branch_index: int) -> Branch:
-
-        info_list = self.branches[branch_index]
-        return Branch(info_list)
+        self.tree = organise_tree(branches=branch_file, inner_file=inner_file, inner_radius_file=inner_radius_file,
+                                  outer_file=outer_file, outer_radius_file=outer_radius_file,
+                                  voxel_dims=self.vol_vox_dims, config_file=config_file)
 
     def get_airway_count(self) -> int:
-
-        return self.branches.shape[0]
+        return self.tree.shape[0]
