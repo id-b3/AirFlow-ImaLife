@@ -2,9 +2,6 @@
 	path = bronchinet
 	url = https://github.com/id-b3/bronchinet.git
 	branch = imalife
-[submodule "airway_measures_COPDgene"]
-	path = airway_measures_COPDgene
-	url = https://github.com/id-b3/airway_measures_COPDgene
 [submodule "opfront"]
 	path = opfront
 	url = https://bitbucket.org/id-b3/opfront.git
