@@ -130,7 +130,6 @@ dmypy.json
 
 # My own ignore
 legacy/
-playground/
 test_scan/
 .idea/
 temp_test_files/

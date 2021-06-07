@@ -8,3 +8,6 @@
 [submodule "opfront"]
 	path = opfront
 	url = https://bitbucket.org/id-b3/opfront.git
+[submodule "playground"]
+	path = playground
+	url = https://id-b3@bitbucket.org/id-b3/playground.git

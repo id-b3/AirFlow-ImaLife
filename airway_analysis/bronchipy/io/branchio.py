@@ -4,14 +4,65 @@ from pathlib import Path
 
 def load_brh_csv(in_file: str) -> pd.DataFrame:
     """
+    Load the brh_translator csv file and return the DataFrame
 
-    @rtype: object
+    Parameters
+    ----------
+    in_file: str
+        The output csv file from brh_translator using -pandas argument.
+
+    Returns
+    -------
+    Branches dataframe sorted by branch id.
     """
     df = pd.read_csv(in_file, converters={'children': eval, 'point': eval}, delimiter=";")
     return df
 
 
-def save_as_csv(dataframe: 'input dataframe', out_path: 'output path') -> None:
+def load_csv(in_file: str) -> pd.DataFrame:
+    """
+    Load the inner/outer csv file and return the DataFrame
+
+    Parameters
+    ----------
+    in_file: str
+        The output csv file from gts_ray_measure.
+
+    Returns
+    -------
+    Inner/outer dataframe sorted by branch ID
+    """
+    df = pd.read_csv(in_file)
+    return df
+
+
+def load_local_radius_csv(in_file: str) -> pd.DataFrame:
+    """
+    Load the inner/outer_local_radius csv file and return the DataFrame
+
+    Parameters
+    ----------
+    in_file: str
+        The output csv file from gts_ray_measure -l "local radius file"
+
+    Returns
+    -------
+    Inner/Outer_local_radius dataframe sorted by branch ID
+    """
+    df = pd.read_csv(in_file, header=0)
+    return df
+
+
+def save_as_csv(dataframe: 'input dataframe', out_path: 'output path' = "./airway_tree.csv") -> None:
+    """
+    Save the current airway tree dataframe as csv using pandas. Allows quicker loading and processing in the future.
+    Parameters
+    ----------
+    dataframe: pandas.DataFrame
+        The organised airways dataframe containing information from brh_translator and gts_ray_measure
+    out_path: str
+        The output file path.
+    """
     parent_dir = Path(Path.cwd(), out_path).resolve()
     try:
         print(f"Saving {Path(out_path).stem} to {parent_dir}")

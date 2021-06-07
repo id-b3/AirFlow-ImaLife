@@ -45,6 +45,12 @@ def organise_tree(branches: str, inner_file: str, inner_radius_file: str, outer_
     organisedtree = pd.DataFrame()
     branch_df = brio.load_brh_csv(branches)
 
+    inner_df = brio.load_csv(inner_file)
+    inner_radius_df = brio.load_local_radius_csv(inner_radius_file)
+
+    outer_df = brio.load_csv(outer_file)
+    outer_radius_df = brio.load_local_radius_csv(outer_radius_file)
+
     return organisedtree
 
 
