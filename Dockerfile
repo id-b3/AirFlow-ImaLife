@@ -20,27 +20,27 @@ COPY ./playground/thirdparty/InsightToolkit-3.20.1 ./InsightToolkit-3.20.1
 RUN mkdir itkbin && cd itkbin && cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && make -j install
 
 # -----------------------------------------
-# SOURCECODE
+# COPY SOURCECODE
 COPY ["./legacy/", "./legacy/"]
 COPY ["./playground/", "./playground/"]
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
-# Compile the tools
+# Compile the playground tools
 RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/libmy_functions && \
     make -C /lungseg/playground/src/lung_segmentation && \
     make -C /lungseg/playground/src/6con && \
     make -C /lungseg/playground/src/be && \
     make -C /lungseg/playground/src/scale_branch && \
-    make -C /lungseg/playground/src/gts_ray_measure && \
+    make -C /lungseg/playground/src/brh_translator && \
     make -C /lungseg/playground/src/connected_brh && \
     make -C /lungseg/playground/src/smooth_brh && \
     make -C /lungseg/playground/src/imgconv && \
-    make -C /lungseg/playground/src/brh2vol
-RUN make -C /lungseg/playground/src/brh_translator
+    make -C /lungseg/playground/src/brh2vol && \
+    make -C /lungseg/playground/src/gts_ray_measure
 
-# Copy the tools
+# Copy the tool binaries
 RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/lung_segmentation/lung_segmentation /lungseg/bins && \
     cp /lungseg/playground/src/6con/6con /lungseg/bins && \
@@ -69,11 +69,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libnifti2 libx11-6 libglib2.0-0 \
         && apt-get clean
 
-# Copy python requirements document.
+# Copy python requirements.
 WORKDIR /bronchinet
 COPY ["./bronchinet/requirements.txt", "./"]
 
-#Update the python install based on requirements and run a test file.Hi
+#Update the python install based on requirement.
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
@@ -93,8 +93,8 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
-COPY ["./run_machine.sh", "./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
-COPY ["./airway_measures_COPDgene/", "./scripts/"]
+COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
+COPY ["./run_scripts/", "./scripts/"]
 
 RUN rm -rf /var/lib/apt/lists/*
 # Open bash when running container.
