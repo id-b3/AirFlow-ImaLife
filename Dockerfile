@@ -37,7 +37,7 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/connected_brh && \
     make -C /lungseg/playground/src/smooth_brh && \
     make -C /lungseg/playground/src/imgconv && \
-    make -C /lungseg/playground/src/brh2vol && \
+    make -C /lungseg/playground/src/brh2vol && \     
     make -C /lungseg/playground/src/gts_ray_measure
 
 # Copy the tool binaries
