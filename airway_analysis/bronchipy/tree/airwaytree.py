@@ -42,7 +42,7 @@ def organise_tree(branches: str, inner_file: str, inner_radius_file: str, outer_
     organisedTree: pandas.DataFrame()
         organised and concatenated dataframe containing all the branches and their relevant information
     """
-    organisedtree = pd.DataFrame()
+
     branch_df = brio.load_brh_csv(branches)
 
     inner_df = brio.load_csv(inner_file)
@@ -51,13 +51,37 @@ def organise_tree(branches: str, inner_file: str, inner_radius_file: str, outer_
     outer_df = brio.load_csv(outer_file)
     outer_radius_df = brio.load_local_radius_csv(outer_radius_file)
 
-    return organisedtree
+    print("Merging inner and inner local radius...")
+    organisedtreeinner = pd.merge(inner_df, inner_radius_df, how='outer', on='branch')
+    print("Merging outer and outer local radius...")
+    organisedtreeouter = pd.merge(inner_df, inner_radius_df, how='outer', on='branch')
+    print("Merging branches...")
+    organisedtreetotal = pd.merge(organisedtreeinner, organisedtreeouter, how='outer', on='branch')
+    organisedtreetotal = pd.merge(organisedtreetotal, branch_df, how='outer', on='branch')
+
+    return organisedtreetotal
 
 
 class AirwayTree:
 
     def __init__(self, branch_file: str, inner_file: str, inner_radius_file: str, outer_file: str,
-                 outer_radius_file: str, config_file: str, volume: str):
+                 outer_radius_file: str, config_file: str, volume: str) -> object:
+        """
+
+        Parameters
+        ----------
+        branch_file: str
+        inner_file: str
+        inner_radius_file: str
+        outer_file: str
+        outer_radius_file: str
+        config_file: str
+        volume: str
+
+        Returns
+        ----------
+        AirwayTree Object containing volume information and the airway tree data.
+        """
         vol_header = nib.load(volume).header
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()

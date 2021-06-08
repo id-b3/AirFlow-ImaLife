@@ -8,12 +8,14 @@ from bronchipy.io import branchio as brio
 
 def main(arguments) -> int:
     try:
-        inner_df = brio.load_csv(arguments.norm_csv)
-        inner_locrad_df = brio.load_local_radius_csv(arguments.local_rad_csv)
-        print(inner_df.branch.head())
+        inner_df = brio.load_csv(arguments.norm_csv, inner=True)
+        inner_locrad_df = brio.load_local_radius_csv(arguments.local_rad_csv, inner=True)
+        print(inner_df.head())
+        print(inner_locrad_df.head())
+        airway_tree = AirwayTree()
         return 0
-    except (OSError, TypeError):
-        print("Error")
+    except (OSError, TypeError) as e:
+        print(f"Error: {e}")
         return 1
 
 

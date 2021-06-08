@@ -19,12 +19,14 @@ def load_brh_csv(in_file: str) -> pd.DataFrame:
     return df
 
 
-def load_csv(in_file: str) -> pd.DataFrame:
+def load_csv(in_file: str, inner: bool) -> pd.DataFrame:
     """
     Load the inner/outer csv file and return the DataFrame
 
     Parameters
     ----------
+    inner: bool
+        Whether the loaded file is for the inner surface. False if for outer.
     in_file: str
         The output csv file from gts_ray_measure.
 
@@ -32,16 +34,24 @@ def load_csv(in_file: str) -> pd.DataFrame:
     -------
     Inner/outer dataframe sorted by branch ID
     """
-    df = pd.read_csv(in_file)
+
+    if inner:
+        headers = ['branch', 'generation', 'inner_radius', 'inner_intensity', 'inner_samples']
+    else:
+        headers = ['branch', 'generation', 'outer_radius', 'outer_intensity', 'outer_samples']
+
+    df = pd.read_csv(in_file, header=0, names=headers)
     return df
 
 
-def load_local_radius_csv(in_file: str) -> pd.DataFrame:
+def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
     """
     Load the inner/outer_local_radius csv file and return the DataFrame
 
     Parameters
     ----------
+    inner: bool
+        Whether the input file is the inner local radius file. False if outer.
     in_file: str
         The output csv file from gts_ray_measure -l "local radius file"
 
@@ -49,7 +59,13 @@ def load_local_radius_csv(in_file: str) -> pd.DataFrame:
     -------
     Inner/Outer_local_radius dataframe sorted by branch ID
     """
-    df = pd.read_csv(in_file, header=0)
+    if inner:
+        headers = ['branch', 'inner_radii']
+    else:
+        headers = ['branch', 'outer_radii']
+
+    df = pd.read_csv(in_file, converters={'inner_radii': eval, 'outer_radii': eval}, header=0, names=headers, delimiter=";")
+
     return df
 
 
