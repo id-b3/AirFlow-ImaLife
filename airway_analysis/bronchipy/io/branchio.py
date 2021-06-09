@@ -65,7 +65,8 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
     else:
         headers = ['branch', 'outer_radii']
 
-    df = pd.read_csv(in_file, converters={'inner_radii': eval, 'outer_radii': eval}, header=0, names=headers, delimiter=";")
+    df = pd.read_csv(in_file, converters={'inner_radii': eval, 'outer_radii': eval}, header=0, names=headers,
+                     delimiter=";")
 
     return df
 
@@ -83,9 +84,30 @@ def save_as_csv(dataframe: 'input dataframe', out_path: 'output path' = "./airwa
     parent_dir = Path(Path.cwd(), out_path).resolve()
     try:
         print(f"Saving {Path(out_path).stem} to {parent_dir}")
-        dataframe.to_csv(parent_dir)
+        dataframe.to_csv(parent_dir, sep=';')
     except OSError as e:
         print(f"Creating folder {parent_dir}")
         print(f"Saving {Path(out_path).stem} to {parent_dir}")
         Path.mkdir(parent_dir.parent)
         dataframe.to_csv(parent_dir)
+
+
+def load_tree_csv(tree_csv: str) -> pd.DataFrame:
+    """
+    Loads and evaluates cells in the airway data csv.
+    Parameters
+    ----------
+    tree_csv: str
+        File path to the airway tree csv
+
+    Returns
+    -------
+    Airway Tree Dataframe
+    """
+
+    try:
+        df = pd.read_csv(tree_csv, delimiter=';', converters={'children': eval, 'points': eval, 'centreline': eval,
+                                                              'inner_radii': eval, 'outer_radii': eval})
+        return df
+    except IOError:
+        print("Error loading the airway tree csv.")

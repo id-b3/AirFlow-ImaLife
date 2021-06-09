@@ -26,7 +26,7 @@ class AirwayTree:
 
         # Load inner measurements csvs into dataframes
         inner_df = brio.load_csv(self.files['inner'], True)
-        inner_df.drop('generation', axis=1, inplace=True) # Redundant as branch_df already has generations
+        inner_df.drop('generation', axis=1, inplace=True)  # Redundant as branch_df already has generations
         # Calculate the area from the radius and insert as new column. Using pi*r^2
         inner_df['inner_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 2) * pi, axis=1)
         inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
@@ -45,8 +45,7 @@ class AirwayTree:
 
         return organised_tree
 
-    def __init__(self, branch_file: str, inner_file: str, inner_radius_file: str, outer_file: str,
-                 outer_radius_file: str, volume: str):
+    def __init__(self, **kwargs):
         """
 
         Parameters
@@ -57,20 +56,26 @@ class AirwayTree:
         outer_file: str
         outer_radius_file: str
         volume: str
+            The volume file in NIFTI format. REQUIRED
+        tree_csv: str
+            If loading from airway_tree csv, use this.
 
         Returns
         ----------
         AirwayTree Object containing volume information and the airway tree data.
 
         """
-        self.files = {'branch': branch_file, 'inner': inner_file, 'inner_rad': inner_radius_file, 'outer': outer_file,
-                      'outer_rad': outer_radius_file, 'vol': volume}
-
-        vol_header = nib.load(volume).header
+        vol_header = nib.load(kwargs['volume']).header
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()
 
-        self.tree = self.organise_tree()  #: Please see above for list of columns in airway tree dataframe.
+        if 'tree_csv' in kwargs:
+            self.tree = brio.load_tree_csv(kwargs['tree_csv'])
+        else:
+            self.files = {'branch': kwargs.get('branch_file', None), 'inner': kwargs.get('inner_file', None),
+                          'inner_rad': kwargs.get('inner_radius_file', None), 'outer': kwargs.get('outer_file', None),
+                          'outer_rad': kwargs.get('outer_radius_file', None), 'vol': kwargs.get('volume', None)}
+            self.tree = self.organise_tree()  #: Please see above for list of columns in airway tree dataframe.
 
     def get_airway_count(self) -> int:
         """
