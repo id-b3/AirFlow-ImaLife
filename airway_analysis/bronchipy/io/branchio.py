@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 
 
-def load_brh_csv(in_file: str) -> pd.DataFrame:
+def load_branch_csv(in_file: str) -> pd.DataFrame:
     """
     Load the brh_translator csv file and return the DataFrame
 
@@ -15,7 +15,8 @@ def load_brh_csv(in_file: str) -> pd.DataFrame:
     -------
     Branches dataframe sorted by branch id.
     """
-    df = pd.read_csv(in_file, converters={'children': eval, 'point': eval}, delimiter=";")
+    headers = ['branch', 'generation', 'parent', 'children', 'points']
+    df = pd.read_csv(in_file, header=0, names=headers, converters={'children': eval, 'points': eval}, delimiter=";")
     return df
 
 
