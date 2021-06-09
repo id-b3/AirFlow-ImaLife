@@ -10,7 +10,7 @@ def main(file_list) -> int:
         airway_tree = AirwayTree(branch_file=file_list.branch_csv, inner_file=file_list.inner_csv,
                                  inner_radius_file=file_list.inner_rad_csv, outer_file=file_list.outer_csv,
                                  outer_radius_file=file_list.outer_rad_csv, volume=file_list.volume_nii)
-        airway_tree.tree.to_csv('..\\temp_test_files\\Analysis\\airway_tree_new.csv')
+        airway_tree.tree.to_csv('..\\temp_test_files\\Analysis\\airway_tree_area.csv')
         return 0
     except (OSError, TypeError) as e:
         print(f"Error: {e}")
