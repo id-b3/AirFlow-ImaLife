@@ -17,24 +17,29 @@ class AirwayTree:
         -------
         A dataframe that is the merged combination of all csvs.
         """
+        # Load branches csv into dataframe
         branch_df = brio.load_branch_csv(self.files['branch'])
+        # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
+        branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(points) for points in row.points], axis=1)
 
+        # Load inner measurements csvs into dataframes
         inner_df = brio.load_csv(self.files['inner'], True)
-        inner_df.drop('generation', axis=1, inplace=True)
-        # Calculate the area from the radius and insert as new row.
+        inner_df.drop('generation', axis=1, inplace=True) # Redundant as branch_df already has generations
+        # Calculate the area from the radius and insert as new column. Using pi*r^2
         inner_df['inner_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 2) * pi, axis=1)
         inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
 
+        # Load outer measurements csvr into dataframes
         outer_df = brio.load_csv(self.files['outer'], False)
         outer_df.drop('generation', axis=1, inplace=True)
-        # Calculate the area from the radius and insert as new row.
+        # Calculate the area from the radius and insert as new column.
         outer_df['outer_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
         outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
 
+        # Combine all the loaded data frames based on branches ID.
         all_dfs = [branch_df, inner_df, inner_radius_df, outer_df, outer_radius_df]
         organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
         organised_tree.set_index('branch', inplace=True)
-        # organised_tree = organised_tree.loc[:, ~organised_tree.columns.duplicated()]
 
         return organised_tree
 
@@ -73,7 +78,9 @@ class AirwayTree:
         children: list[int]
             A list of branch IDs of the Children branches
         points: list[(Tuple)]
-            A list of (x, y, z) tuples of branch points along centreline
+            A list of (x, y, z) tuples of branch points along centreline in voxels (not in mm)
+        centreline: list [(Tuple)]
+            A list of (x, y, z) tuples of branch points along centreline in millimeters
         inner_radius: float
             The branch lumen global (summary) radius in mm
         inner_intensity: float
@@ -98,4 +105,25 @@ class AirwayTree:
         self.tree = self.organise_tree()  #: Please see above for list of columns in airway tree dataframe.
 
     def get_airway_count(self) -> int:
+        """
+        Method to return the number of branches in the airway tree.
+        Returns
+        -------
+        Number of branches in airway tree.
+        """
         return self.tree.shape[0]
+
+    def vox_to_mm(self, point: tuple) -> tuple:
+        """
+        Takes a tuple x, y, z coordinate and applies the voxel dimensions to it.
+        Parameters
+        ----------
+        point: tuple
+            x, y, z co-ordinates
+
+        Returns
+        -------
+        tuple
+            x, y, z coordinates in millimeters
+        """
+        return point[0] * self.vol_vox_dims[0], point[1] * self.vol_vox_dims[1], point[2] * self.vol_vox_dims[2]
