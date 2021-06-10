@@ -1,10 +1,11 @@
+# Choose the base image in for the compilation environment
 FROM ubuntu:trusty AS builder
 
 # Prepare building tools and libraries
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
 RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
-# OPFRONT
+# OPFRONT Installation
 # -----------------------------------------
 WORKDIR /opfront
 COPY ./opfront .
@@ -19,7 +20,6 @@ WORKDIR /lungseg
 COPY ./playground/thirdparty/InsightToolkit-3.20.1 ./InsightToolkit-3.20.1
 RUN mkdir itkbin && cd itkbin && cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && make -j install
 
-# -----------------------------------------
 # COPY SOURCECODE
 COPY ["./legacy/", "./legacy/"]
 COPY ["./playground/", "./playground/"]
@@ -52,6 +52,7 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
     cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
 
@@ -59,7 +60,7 @@ RUN mkdir /lungseg/bins && \
 FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 
 # This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="0.9.1"
+LABEL version="0.9.2"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
 
 # Update apt and install RUNTIME dependencies (lower size etc.)
@@ -73,7 +74,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /bronchinet
 COPY ["./bronchinet/requirements.txt", "./"]
 
-#Update the python install based on requirement.
+#Update the python install based on requirement. No cache to lower image size..
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
@@ -96,8 +97,13 @@ COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/", "./scripts/"]
 
+# Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
+
 # Open bash when running container.
 # ENTRYPOINT ["/bin/bash"]
+
+# Run Launch script when container starts.
 ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
-#  CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
+# Arguments to pass to launch script.
+CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]

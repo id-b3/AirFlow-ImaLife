@@ -2,48 +2,11 @@ import nibabel as nib
 import pandas as pd
 from functools import reduce
 from math import pi, pow
-
 from ..io import branchio as brio
+from ..calc.measureAirways import calc_branch_length
 
 
 class AirwayTree:
-
-    def organise_tree(self) -> pd.DataFrame:
-        """
-        Takes the input files and combines them into a single merged dataframe.
-        Calculates and inserts columns containing branch area data too.
-
-        Returns
-        -------
-        A dataframe that is the merged combination of all csvs.
-        """
-        # Load branches csv into dataframe
-        branch_df = brio.load_branch_csv(self.files['branch'])
-        # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
-        branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(points) for points in row.points], axis=1)
-        # Add entry describing the number of points in the airway measurement.
-        branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
-
-        # Load inner measurements csvs into dataframes
-        inner_df = brio.load_csv(self.files['inner'], True)
-        inner_df.drop('generation', axis=1, inplace=True)  # Redundant as branch_df already has generations
-        # Calculate the area from the radius and insert as new column. Using pi*r^2
-        inner_df['inner_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 2) * pi, axis=1)
-        inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
-
-        # Load outer measurements csvr into dataframes
-        outer_df = brio.load_csv(self.files['outer'], False)
-        outer_df.drop('generation', axis=1, inplace=True)
-        # Calculate the area from the radius and insert as new column.
-        outer_df['outer_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
-        outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
-
-        # Combine all the loaded data frames based on branches ID.
-        all_dfs = [branch_df, inner_df, inner_radius_df, outer_df, outer_radius_df]
-        organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
-        organised_tree.set_index('branch', inplace=True)
-
-        return organised_tree
 
     def __init__(self, **kwargs):
         """
@@ -75,7 +38,46 @@ class AirwayTree:
             self.files = {'branch': kwargs.get('branch_file', None), 'inner': kwargs.get('inner_file', None),
                           'inner_rad': kwargs.get('inner_radius_file', None), 'outer': kwargs.get('outer_file', None),
                           'outer_rad': kwargs.get('outer_radius_file', None), 'vol': kwargs.get('volume', None)}
-            self.tree = self.organise_tree()  #: Please see above for list of columns in airway tree dataframe.
+            self.tree = self.organise_tree()  #: only necessary if the tree_csv has not been previously made.
+
+    def organise_tree(self) -> pd.DataFrame:
+        """
+        Takes the input files and combines them into a single merged dataframe.
+        Calculates and inserts columns containing branch area data too.
+
+        Returns
+        -------
+        A dataframe that is the merged combination of all csvs.
+        """
+        # Load branches csv into dataframe
+        branch_df = brio.load_branch_csv(self.files['branch'])
+        # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
+        branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(point) for point in row.points], axis=1)
+        print(branch_df.columns)
+        # Add entry describing the number of points in the airway measurement.
+        branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
+        branch_df['length'] = branch_df.apply(lambda row: calc_branch_length(row.points), axis=0)
+
+        # Load inner measurements csvs into dataframes
+        inner_df = brio.load_csv(self.files['inner'], True)
+        inner_df.drop('generation', axis=1, inplace=True)  # Redundant as branch_df already has generations
+        # Calculate the area from the radius and insert as new column. Using pi*r^1
+        inner_df['inner_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 1) * pi, axis=1)
+        inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
+
+        # Load outer measurements csvr into dataframes
+        outer_df = brio.load_csv(self.files['outer'], False)
+        outer_df.drop('generation', axis=1, inplace=True)
+        # Calculate the area from the radius and insert as new column.
+        outer_df['outer_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 1) * pi, axis=1)
+        outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
+
+        # Combine all the loaded data frames based on branches ID.
+        all_dfs = [branch_df, inner_df, inner_radius_df, outer_df, outer_radius_df]
+        organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
+        organised_tree.set_index('branch', inplace=True)
+
+        return organised_tree
 
     def get_airway_count(self) -> int:
         """

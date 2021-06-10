@@ -2,6 +2,7 @@ import argparse
 import sys
 
 from bronchipy.tree.airwaytree import AirwayTree
+from bronchipy.calc import measureAirways
 from bronchipy.io import branchio as brio
 
 
@@ -10,10 +11,13 @@ def main(file_list) -> int:
         # airway_tree = AirwayTree(branch_file=file_list.branch_csv, inner_file=file_list.inner_csv,
         #                          inner_radius_file=file_list.inner_rad_csv, outer_file=file_list.outer_csv,
         #                          outer_radius_file=file_list.outer_rad_csv, volume=file_list.volume_nii)
-        # # airway_tree.tree.to_csv('..\\temp_test_files\\Analysis\\airway_tree_area.csv')
         airway_tree = AirwayTree(tree_csv=file_list.tree_csv,
                                  volume=file_list.volume_nii)
-        print(airway_tree.get_branch(4))
+        # brio.save_as_csv(airway_tree.tree, "..\\temp_test_files\\Analysis\\airway_tree.csv")
+        branch_id = 3
+        branch_length = measureAirways.calc_branch_length(airway_tree.get_branch(branch_id).points)
+        # print(airway_tree.get_branch(4))
+        print(f"Airway branch {branch_id} csv_length: {airway_tree.get_branch(branch_id).length}")
         return 0
     except (OSError, TypeError) as e:
         print(f"Error: {e}")

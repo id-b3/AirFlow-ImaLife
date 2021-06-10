@@ -15,8 +15,10 @@ def load_branch_csv(in_file: str) -> pd.DataFrame:
     -------
     Branches dataframe sorted by branch id.
     """
+    # print(f"Loading branch csv {in_file}...")
     headers = ['branch', 'generation', 'parent', 'children', 'points']
     df = pd.read_csv(in_file, header=0, names=headers, converters={'children': eval, 'points': eval}, delimiter=";")
+    print("Success!")
     return df
 
 
@@ -36,12 +38,14 @@ def load_csv(in_file: str, inner: bool) -> pd.DataFrame:
     Inner/outer dataframe sorted by branch ID
     """
 
+    print(f"Loading global csv {in_file}...")
     if inner:
         headers = ['branch', 'generation', 'inner_radius', 'inner_intensity', 'inner_samples']
     else:
         headers = ['branch', 'generation', 'outer_radius', 'outer_intensity', 'outer_samples']
 
     df = pd.read_csv(in_file, header=0, names=headers)
+    print("Success!")
     return df
 
 
@@ -60,6 +64,8 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
     -------
     Inner/Outer_local_radius dataframe sorted by branch ID
     """
+
+    print(f"Loading local csv {in_file}...")
     if inner:
         headers = ['branch', 'inner_radii']
     else:
@@ -67,7 +73,7 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
 
     df = pd.read_csv(in_file, converters={'inner_radii': eval, 'outer_radii': eval}, header=0, names=headers,
                      delimiter=";")
-
+    print("Success!")
     return df
 
 
