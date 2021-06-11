@@ -129,7 +129,6 @@ dmypy.json
 .pyre/
 
 # My own ignore
-legacy/
 test_scan/
 .idea/
 temp_test_files/

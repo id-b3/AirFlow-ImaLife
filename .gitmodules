@@ -8,3 +8,6 @@
 [submodule "playground"]
 	path = playground
 	url = https://id-b3@bitbucket.org/id-b3/playground.git
+[submodule "legacy"]
+	path = legacy
+	url = https://id-b3@bitbucket.org/id-b3/legacy.git
