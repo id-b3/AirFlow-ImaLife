@@ -105,10 +105,10 @@ function [airways] = organiseData( airway_cl, lumen_csv, airway_csv, inner_radiu
                                         
     fprintf('Organising all data\n');
     
-    x = -3:3;
-    sigma = 2;
-    kernel = exp(-x .^ 2 / (2 * sigma ^ 2));
-    kernel = kernel / sum (kernel); % normalise
+    x = -3:3; %Done
+    sigma = 2; %Done
+    kernel = exp(-x .^ 2 / (2 * sigma ^ 2)); %Done
+    kernel = kernel / sum (kernel); % normalise Done
 
     fprintf(' + using [%s] gauss window with simga %.2f for smoothing local area cross-section\n', num2str(kernel, '%.3f '), sigma);
     
