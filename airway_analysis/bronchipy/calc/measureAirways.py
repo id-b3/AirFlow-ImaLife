@@ -1,5 +1,6 @@
 from numpy.linalg import norm
-from numpy import subtract, exp, negative, power, divide
+from numpy import subtract, exp, negative, power, divide, convolve, sum, multiply
+import logging
 
 
 def calc_branch_length(points: list) -> float:
@@ -31,12 +32,24 @@ def calc_local_orientation() -> list:
     return localorientation
 
 
-def calc_smoothed_radius(radii: list, smo_filt: dict) -> list:
-    smo_rad_l = 0
-    smo_rad_r = 0
-    smo_rad_m = 0
+def calc_smoothed_radius(radii: list, smo_filt: list) -> list:
 
-    return [smo_rad_l, smo_rad_m, smo_rad_r]
+    if len(radii) < len(smo_filt):
+        logging.info(f"Number of radii {len(radii)} less than filter window {len(smo_filt)}.")
+        return radii
+
+    mid_index = int(len(smo_filt)/2)
+    left = []
+
+    for i in range(0, mid_index-2):
+        tmp_filter = smo_filt[mid_index-i:]
+        tmp_filter = divide(tmp_filter, sum(tmp_filter))
+        left.append(sum(multiply(radii[:mid_index+i], tmp_filter)))
+
+    middle = convolve(radii, smo_filt, 'valid')
+    right
+
+    return [left, middle, right]
 
 
 def calc_tapering() -> list:
@@ -45,11 +58,11 @@ def calc_tapering() -> list:
     return tapering
 
 
-def get_kernel(window_width: list, sigma: int) -> list:
+def get_kernel(window_width: int, sigma: int) -> list:
     """
     Parameters
     -------
-    window_width: list
+    window_width: int
         List of intervals for gaussian window
     sigma: int
         Standard deviation or "width" of gaussian curve

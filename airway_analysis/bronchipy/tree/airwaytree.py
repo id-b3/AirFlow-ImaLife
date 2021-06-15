@@ -56,26 +56,43 @@ class AirwayTree:
         print(branch_df.columns)
         # Add entry describing the number of points in the airway measurement.
         branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
-        branch_df['length'] = branch_df.apply(lambda row: calc_branch_length(row.points), axis=0)
+        # Calculate and add the branch lengths in mm.
+        branch_df['length'] = branch_df.apply(lambda row: calc_branch_length(row.points), axis=1)
 
         # Load inner measurements csvs into dataframes
         inner_df = brio.load_csv(self.files['inner'], True)
         inner_df.drop('generation', axis=1, inplace=True)  # Redundant as branch_df already has generations
         # Calculate the area from the radius and insert as new column. Using pi*r^1
-        inner_df['inner_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 1) * pi, axis=1)
+        inner_df['inner_global_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 2) * pi, axis=1)
         inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
 
         # Load outer measurements csvr into dataframes
         outer_df = brio.load_csv(self.files['outer'], False)
         outer_df.drop('generation', axis=1, inplace=True)
         # Calculate the area from the radius and insert as new column.
-        outer_df['outer_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 1) * pi, axis=1)
+        outer_df['outer_global_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
         outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
 
         # Combine all the loaded data frames based on branches ID.
         all_dfs = [branch_df, inner_df, inner_radius_df, outer_df, outer_radius_df]
         organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
         organised_tree.set_index('branch', inplace=True)
+
+        # Drop branches with 0 for measurements
+        organised_tree = organised_tree[organised_tree.outer_global_area != 0.0]
+        # print(organised_tree.columns)
+
+        # Calculate Global Wall Area and WA%
+        organised_tree['wall_global_area'] = organised_tree.apply(
+            lambda row: row.outer_global_area - row.inner_global_area, axis=1)
+        organised_tree['wall_global_area_perc'] = organised_tree.apply(
+            lambda row: (row.wall_global_area / row.outer_global_area) * 100, axis=1)
+
+        # Calculate Global Wall Thickness and WT%
+        organised_tree['wall_global_thickness'] = organised_tree.apply(
+            lambda row: row.outer_radius - row.inner_radius, axis=1)
+        organised_tree['wall_global_thickness_perc'] = organised_tree.apply(
+            lambda row: (row.wall_global_thickness - row.outer_radius) * 100, axis=1)
 
         return organised_tree
 
@@ -113,7 +130,7 @@ class AirwayTree:
 
         Returns
         -------
-        branch series
+        Series containing branch information
 
         See Also
         -------
@@ -126,16 +143,19 @@ class AirwayTree:
         inner_radius: The branch lumen global (summary) radius in mm
         inner_intensity: The branch lumen global (summary) intensity in HU
         inner_samples: Number of samples used for global measurement
-        inner_area: The global luminal area of the branch in mm^1
+        inner_global_area: The global luminal area of the branch in mm^1
         inner_radii: list[float] A list of non-smoothed measurements of luminal local radii
         outer_radius: The branch total branch thickness global (summary) radius in mm
         outer_intensity: The branch total branch thickness global (summary) intensity in HU
         outer_samples: Number of samples used for global measurement
-        outer_area: The branch global total branch area measurement in mm^1
+        outer_global_area: The branch global total branch area measurement in mm^1
         outer_radii: list[float] A list of non-smoothed measurements of total branch thickness local radii
+        wall_global_area: The global wall area of the branch
+        wall_global_area_perc: Global WA% of the branch
+        wall_global_thickness: Global Wall Thickness of the branch
+        wall_global_thickness_perc: Global WT% of the branch
         """
         try:
             return self.tree.loc[branch_id]
         except KeyError as e:
             print(f"No branch with id {e}.")
-            return None

@@ -77,7 +77,7 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
     return df
 
 
-def save_as_csv(dataframe: 'input dataframe', out_path: 'output path' = "./airway_tree.csv") -> None:
+def save_as_csv(dataframe: pd.DataFrame, out_path: str = "./airway_tree.csv") -> None:
     """
     Save the current airway tree dataframe as csv using pandas. Allows quicker loading and processing in the future.
     Parameters
@@ -117,3 +117,16 @@ def load_tree_csv(tree_csv: str) -> pd.DataFrame:
         return df
     except IOError:
         print("Error loading the airway tree csv.")
+
+
+def save_summary_csv(tree: pd.DataFrame, filename: str = './airway_summary.csv'):
+
+    save_path = Path(filename).resolve()
+    parent_path = save_path.parent
+    print(save_path)
+    if not Path.exists(parent_path):
+        Path.mkdir(parent_path)
+    tree_sum = tree[['generation', 'parent', 'length', 'inner_radius', 'inner_intensity', 'inner_global_area',
+                     'outer_radius', 'outer_intensity', 'wall_global_area', 'wall_global_area_perc',
+                     'wall_global_thickness', 'wall_global_thickness_perc']]
+    tree_sum.to_csv(save_path)

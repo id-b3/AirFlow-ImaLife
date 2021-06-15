@@ -118,27 +118,28 @@ function [airways] = organiseData( airway_cl, lumen_csv, airway_csv, inner_radiu
         if ( airways(aa).id ~= airway_csv.id(aa) || airways(aa).id ~= lumen_csv.id(aa) )
             error('ERROR airways(aa).id is not the same than airway_csv.id(aa) or lumen_csv.id(aa) in organiseData()');
         else
-            airways(aa).original_id                 = airway_csv.id(aa);
-            airways(aa).inner.global_radius         = lumen_csv.radius(aa);
-            airways(aa).inner.global_area           = lumen_csv.area(aa);
-            airways(aa).inner.global_intensity      = lumen_csv.intensity(aa);
-            airways(aa).inner.nSamples              = lumen_csv.nSamples(aa);
+            airways(aa).original_id                 = airway_csv.id(aa); % DONE
+            airways(aa).inner.global_radius         = lumen_csv.radius(aa); % DONE
+            airways(aa).inner.global_area           = lumen_csv.area(aa);% DONE
+            airways(aa).inner.global_intensity      = lumen_csv.intensity(aa); % DONE
+            airways(aa).inner.nSamples              = lumen_csv.nSamples(aa); % DONE
             
-            airways(aa).outer.global_radius         = airway_csv.radius(aa);
-            airways(aa).outer.global_area           = airway_csv.area(aa);
-            airways(aa).outer.global_intensity      = airway_csv.intensity(aa);
-            airways(aa).outer.nSamples              = airway_csv.nSamples(aa);
+            airways(aa).outer.global_radius         = airway_csv.radius(aa); % DONE
+            airways(aa).outer.global_area           = airway_csv.area(aa); % DONE
+            airways(aa).outer.global_intensity      = airway_csv.intensity(aa); % DONE
+            airways(aa).outer.nSamples              = airway_csv.nSamples(aa); % DONE
             
-            airways(aa).inner.nonSmoothed_radius    = [inner_radius_csv{aa}];
-            airways(aa).outer.nonSmoothed_radius    = [outer_radius_csv{aa}];
+            airways(aa).inner.nonSmoothed_radius    = [inner_radius_csv{aa}]; % DONE
+            airways(aa).outer.nonSmoothed_radius    = [outer_radius_csv{aa}]; % DONE
             
             % points is stored in voxel coordinates, centrelines are in normalised real-wrld coordinates (mm)
-            airways(aa).centreline                  = airways(aa).point .* repmat(voxelSize, size(airways(aa).point,1), 1);
-            airways(aa).nPoints                     = size( airways(aa).point, 1);
+            airways(aa).centreline                  = airways(aa).point .* repmat(voxelSize, size(airways(aa).point,1), 1); % DONE
+            airways(aa).nPoints                     = size( airways(aa).point, 1); % DONE
             
             % calculate total centreline length
-            airways(aa).length                      = getCentrelineLength( airways(aa).centreline );
+            airways(aa).length                      = getCentrelineLength( airways(aa).centreline ); % DONE
             
+
             airways(aa).orientation                 = getLocalOrientations( airways(aa).centreline, cfg.orientationWidth );
             
             % compute tapering and interpolated radi measurements
@@ -147,22 +148,23 @@ function [airways] = organiseData( airway_cl, lumen_csv, airway_csv, inner_radiu
 %             [airways(aa).wall.tapering_slope,  airways(aa).wall.radius]  = getTaperingSlope( airways(aa).outer.nonSmoothed_radius - airways(aa).inner.nonSmoothed_radius, airways(aa).centreline );
             
             % OLD version
+            % TODO - PICK UP FROM HERE
             airways(aa).inner.radius                = paddedSmooth( airways(aa).inner.nonSmoothed_radius, kernel );
             airways(aa).outer.radius                = paddedSmooth( airways(aa).outer.nonSmoothed_radius, kernel );
 
             airways(aa).inner.area                  = radiusToArea( airways(aa).inner.radius );
             airways(aa).outer.area                  = radiusToArea( airways(aa).outer.radius );
             
-            airways(aa).wall.global_area            = airways(aa).outer.global_area - airways(aa).inner.global_area;
-            airways(aa).wall.global_areaPer         = airways(aa).wall.global_area / airways(aa).outer.global_area * 100;
+            airways(aa).wall.global_area            = airways(aa).outer.global_area - airways(aa).inner.global_area; % DONE
+            airways(aa).wall.global_areaPer         = airways(aa).wall.global_area / airways(aa).outer.global_area * 100; % DONE
             
-            airways(aa).wall.global_thickness       = airways(aa).outer.global_radius - airways(aa).inner.global_radius;
-            airways(aa).wall.global_thicknessPer    = airways(aa).wall.global_thickness / airways(aa).outer.global_radius * 100;
+            airways(aa).wall.global_thickness       = airways(aa).outer.global_radius - airways(aa).inner.global_radius; %DONE
+            airways(aa).wall.global_thicknessPer    = airways(aa).wall.global_thickness / airways(aa).outer.global_radius * 100; %DONE
             
-            airways(aa).wall.thickness              = airways(aa).outer.radius - airways(aa).inner.radius;
-            airways(aa).wall.area                   = airways(aa).outer.area - airways(aa).inner.area;
+            airways(aa).wall.thickness              = airways(aa).outer.radius - airways(aa).inner.radius; %TODO - Requires smoothing func
+            airways(aa).wall.area                   = airways(aa).outer.area - airways(aa).inner.area; %TODO - Requires smoothing func
             
-            airways(aa).wall.areaPer                = airways(aa).wall.area ./ airways(aa).outer.area .*100;
+            airways(aa).wall.areaPer                = airways(aa).wall.area ./ airways(aa).outer.area .*100; %TODO - Requires smoothing func
             
             airways(aa).case_num = case_num;
 
