@@ -53,6 +53,11 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
     cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
 
+RUN make -C /lungseg/playground/src/histogram/ && \
+    make -C /lungseg/playground/src/measure_volume && \
+    cp /lungseg/playground/src/histogram/histogram /lungseg/bins && \
+    cp /lungseg/playground/src/measure_volume/measure_volume /lungseg/bins
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
 
