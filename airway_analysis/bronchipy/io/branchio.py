@@ -80,6 +80,7 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
 def save_as_csv(dataframe: pd.DataFrame, out_path: str = "./airway_tree.csv") -> None:
     """
     Save the current airway tree dataframe as csv using pandas. Allows quicker loading and processing in the future.
+
     Parameters
     ----------
     dataframe: pandas.DataFrame
@@ -120,7 +121,16 @@ def load_tree_csv(tree_csv: str) -> pd.DataFrame:
 
 
 def save_summary_csv(tree: pd.DataFrame, filename: str = './airway_summary.csv'):
+    """
+    Saves a summary CSV with bronchial parameters per branch.
 
+    Parameters
+    ----------
+    tree: pandas.DataFrame
+        The input airway tree dataframe
+    filename: str
+        The output filepath
+    """
     save_path = Path(filename).resolve()
     parent_path = save_path.parent
     print(save_path)
@@ -128,5 +138,5 @@ def save_summary_csv(tree: pd.DataFrame, filename: str = './airway_summary.csv')
         Path.mkdir(parent_path)
     tree_sum = tree[['generation', 'parent', 'length', 'inner_radius', 'inner_intensity', 'inner_global_area',
                      'outer_radius', 'outer_intensity', 'wall_global_area', 'wall_global_area_perc',
-                     'wall_global_thickness', 'wall_global_thickness_perc']]
+                     'wall_global_thickness', 'wall_global_thickness_perc', 'x', 'y', 'z']]
     tree_sum.to_csv(save_path)

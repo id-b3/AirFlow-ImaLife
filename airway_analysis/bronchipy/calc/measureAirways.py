@@ -60,6 +60,8 @@ def calc_tapering() -> list:
 
 def get_kernel(window_width: int, sigma: int) -> list:
     """
+    Make a normalised Gaussian convolution kernel.
+
     Parameters
     -------
     window_width: int

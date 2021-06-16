@@ -32,6 +32,11 @@ class AirwayTree:
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()
 
+        if 'config' in kwargs:
+            self.config = kwargs.get('config', None)
+        else:
+            self.config = {'min_length': 5}
+
         if 'tree_csv' in kwargs:
             self.tree = brio.load_tree_csv(kwargs['tree_csv'])
         else:
@@ -44,6 +49,7 @@ class AirwayTree:
         """
         Takes the input files and combines them into a single merged dataframe.
         Calculates and inserts columns containing branch area data too.
+        Uses the config to determine minimum length, etc.
 
         Returns
         -------
@@ -80,7 +86,8 @@ class AirwayTree:
 
         # Drop branches with 0 for measurements
         organised_tree = organised_tree[organised_tree.outer_global_area != 0.0]
-        # print(organised_tree.columns)
+        # Drop branches smaller than minimum length
+        organised_tree = organised_tree[organised_tree.length > self.config['min_length']]
 
         # Calculate Global Wall Area and WA%
         organised_tree['wall_global_area'] = organised_tree.apply(
@@ -94,7 +101,23 @@ class AirwayTree:
         organised_tree['wall_global_thickness_perc'] = organised_tree.apply(
             lambda row: (row.wall_global_thickness - row.outer_radius) * 100, axis=1)
 
+        # Get midpoint co-ordinates
+        organised_tree['x'] = organised_tree.apply(lambda row: row.points[int(len(row.points)/2)][0], axis=1)
+        organised_tree['y'] = organised_tree.apply(lambda row: row.points[int(len(row.points)/2)][1], axis=1)
+        organised_tree['z'] = organised_tree.apply(lambda row: row.points[int(len(row.points)/2)][2], axis=1)
+
         return organised_tree
+
+    def set_minimum_length(self, minlen: float = 5):
+        """
+        Set the minimum length of a branch in the airway tree.
+
+        Parameters
+        ----------
+        minlen: float = 5
+            Minimum length of a branch in millimeters.
+        """
+        self.config['min_length'] = minlen
 
     def get_airway_count(self) -> int:
         """
@@ -154,6 +177,9 @@ class AirwayTree:
         wall_global_area_perc: Global WA% of the branch
         wall_global_thickness: Global Wall Thickness of the branch
         wall_global_thickness_perc: Global WT% of the branch
+        x: X voxel at midpoint of branch
+        y: Y voxel at midpoint of branch
+        z: Z voxel at midpoint of branch
         """
         try:
             return self.tree.loc[branch_id]
