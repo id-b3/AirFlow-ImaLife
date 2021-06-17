@@ -4,7 +4,7 @@
 
 if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ]
 then
-    echo Usage: "$0" VOLUME_FILE_NIFTI INITIAL_SEGMENTATION_FILE OUTPUT_FOLDER OPFRONT_PARAMETERS
+    echo Usage: "$0" VOLUME_FILE_NIFTI INITIAL_SEGMENTATION_FILE OUTPUT_FOLDER ADD_LIBRARIES_PATH OPFRONT_PARAMETERS
     exit 1
 fi
 
@@ -23,6 +23,7 @@ BINARY_DIR="/usr/local/bin"
 FILE=$(basename "${VOL}")
 FILE_NO_EXTENSION="${FILE%.*.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
+LOGFILE="${ROOT}.log"
 
 # NAMES for all generated files
 SEG_CON6="${ROOT}-seg-6con.nii.gz" # Initial segmentaiton after 6-connexion
@@ -52,14 +53,18 @@ BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv"
 
 mkdir -p "$FOLDEROUT"
 
+echo -e "\n Starting Phantom Opfront..."
+
+{
 echo -e "\n *** ${FILE_NO_EXTENSION} ***\n"
 echo -e "Volume: $VOL"
 echo -e "Segmentation: $SEG"
 echo -e "Opfront parameters: $OPFRONT_PARAMETERS"
 echo -e "Results folder: $FOLDEROUT\n"
 echo -e "File without extension: $FILE_NO_EXTENSION\n"
+} | tee "$LOGFILE"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
-
+{
 echo -e "\n6-connecting initial surface:"
 CALL="${BINARY_DIR}/6con $SEG $SEG_CON6"
 echo -e "\n$CALL"
@@ -73,8 +78,7 @@ eval "$CALL"
 echo -e "\nRunning opfront:"
 CALL="${BINARY_DIR}/segwall -v $VOL -s $SEG_SURFACE -p $ROOT $OPFRONT_PARAMETERS"
 echo -e "\n$CALL"
-# shellcheck disable=SC2086
-eval $CALL
+eval "$CALL"
 
 echo -e "\nConverting inner surface to binary with the original spacing (with subsampling):"
 CALL="${BINARY_DIR}/gts2img -g $INNER_SURFACE -s $INNER_VOL -v $VOL -u 3"
@@ -90,10 +94,12 @@ echo -e "\nBinarising isotropic inner surface with threshold 1 for branch extrac
 CALL="${BINARY_DIR}/imgconv -i $INNER_VOL -o $INNER_VOL_TH1 -t 0 -x 1"
 echo -e "\n$CALL"
 eval "$CALL"
+} | tee "$LOGFILE"
 
 # -- BRANCHES ----------------------------------
+{
 echo -e "\nComputing branches:" # this creates $BRANCHES_ISO
-CALL="${BINARY_DIR}/be $INNER_VOL_TH1 -o $FOLDEROUT"
+CALL="${BINARY_DIR}/be $INNER_VOL_TH1 -o $FOLDEROUT -vessels"
 echo -e "\n$CALL"
 eval "$CALL"
 
@@ -122,3 +128,4 @@ CALL="${BINARY_DIR}/brh_translator $BRANCHES $BRANCHES_PANDAS -pandas"
 echo -e "\n$CALL"
 echo -e "DONE\n"
 eval "$CALL"
+} | tee "$LOGFILE"

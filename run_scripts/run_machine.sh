@@ -4,7 +4,7 @@
 
 INPUT=${1:-/eureka/input/dicom-series-in/*.dcm}
 OUTPUTFOLDER=${2:-/eureka/output/nifti-series-out/}
-INPUTFILE=/eureka/input/dicom-series-in/proc_scan.dcm
+INPUTFILE=${3:-/eureka/input/dicom-series-in/proc_scan.dcm}
 
 CALL="python /bronchinet/scripts/fix_transfer_syntax.py ${INPUT} ${INPUTFILE}"
 eval $CALL
