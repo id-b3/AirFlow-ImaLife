@@ -1,9 +1,12 @@
-import nibabel as nib
-import pandas as pd
 from functools import reduce
 from math import pi, pow
-from ..io import branchio as brio
+
+import nibabel as nib
+import pandas as pd
+import logging
+
 from ..calc.measureAirways import calc_branch_length
+from ..io import branchio as brio
 
 
 class AirwayTree:
@@ -59,7 +62,7 @@ class AirwayTree:
         branch_df = brio.load_branch_csv(self.files['branch'])
         # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
         branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(point) for point in row.points], axis=1)
-        print(branch_df.columns)
+        logging.info(branch_df.columns)
         # Add entry describing the number of points in the airway measurement.
         branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
         # Calculate and add the branch lengths in mm.
@@ -184,4 +187,4 @@ class AirwayTree:
         try:
             return self.tree.loc[branch_id]
         except KeyError as e:
-            print(f"No branch with id {e}.")
+            logging.error(f"No branch with id {e}.")

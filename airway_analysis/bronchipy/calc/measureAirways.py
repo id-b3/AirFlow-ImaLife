@@ -1,6 +1,7 @@
-from numpy.linalg import norm
-from numpy import subtract, exp, negative, power, divide, convolve, sum, multiply
 import logging
+
+from numpy import subtract, exp, negative, power, divide, convolve, sum, multiply
+from numpy.linalg import norm
 
 
 def calc_branch_length(points: list) -> float:
@@ -18,10 +19,10 @@ def calc_branch_length(points: list) -> float:
     branch_length = 0
 
     for idx, point in enumerate(points[1:]):
-        # print(f"Index {idx}. Distance between {points[idx]} and {point}")
+        # logging.info(f"Index {idx}. Distance between {points[idx]} and {point}")
         local_dist = norm(subtract(points[idx], point))
         branch_length += local_dist
-        # print(f"Distance between points {local_dist: .3f}. Total distance {branch_length: .3f}")
+        # logging.info(f"Distance between points {local_dist: .3f}. Total distance {branch_length: .3f}")
 
     return branch_length
 
@@ -32,19 +33,19 @@ def calc_local_orientation() -> list:
     return localorientation
 
 
+# TODO - port the local radii smoothing code.
 def calc_smoothed_radius(radii: list, smo_filt: list) -> list:
-
     if len(radii) < len(smo_filt):
         logging.info(f"Number of radii {len(radii)} less than filter window {len(smo_filt)}.")
         return radii
 
-    mid_index = int(len(smo_filt)/2)
+    mid_index = int(len(smo_filt) / 2)
     left = []
 
-    for i in range(0, mid_index-2):
-        tmp_filter = smo_filt[mid_index-i:]
+    for i in range(0, mid_index - 2):
+        tmp_filter = smo_filt[mid_index - i:]
         tmp_filter = divide(tmp_filter, sum(tmp_filter))
-        left.append(sum(multiply(radii[:mid_index+i], tmp_filter)))
+        left.append(sum(multiply(radii[:mid_index + i], tmp_filter)))
 
     middle = convolve(radii, smo_filt, 'valid')
     right

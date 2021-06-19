@@ -8,13 +8,17 @@ from bronchipy.io import branchio as brio
 
 def main(file_list) -> int:
     try:
-        airway_tree = AirwayTree(branch_file=file_list.branch_csv, inner_file=file_list.inner_csv,
-                                 inner_radius_file=file_list.inner_rad_csv, outer_file=file_list.outer_csv,
-                                 outer_radius_file=file_list.outer_rad_csv, volume=file_list.volume_nii)
-        # airway_tree = AirwayTree(tree_csv=file_list.tree_csv,
-        #                          volume=file_list.volume_nii)
-        brio.save_as_csv(airway_tree.tree, "..\\temp_test_files\\Analysis\\airway_tree.csv")
-        brio.save_summary_csv(airway_tree.tree, "..\\temp_test_files\\Analysis\\airway_tree_summary.csv")
+        # airway_tree = AirwayTree(branch_file=file_list.branch_csv, inner_file=file_list.inner_csv,
+        #                          inner_radius_file=file_list.inner_rad_csv, outer_file=file_list.outer_csv,
+        #                          outer_radius_file=file_list.outer_rad_csv, volume=file_list.volume_nii)
+        # # airway_tree = AirwayTree(tree_csv=file_list.tree_csv,
+        # #                          volume=file_list.volume_nii)
+        # brio.save_as_csv(airway_tree.tree, "..\\temp_test_files\\Analysis\\airway_tree.csv")
+        # brio.save_summary_csv(airway_tree.tree, "..\\temp_test_files\\Analysis\\airway_tree_summary.csv")
+        # brio.save_pickle_tree(airway_tree.tree, "..\\temp_test_files\\Analysis\\airway_tree.pickle")
+        new_data = brio.load_pickle_tree("..\\temp_test_files\\Analysis\\airway_tree.pickle")
+        print(new_data.columns)
+        print(new_data.dtypes)
         # branch_id = 3
         # branch_length = measureAirways.calc_branch_length(airway_tree.get_branch(branch_id).points)
         # print(airway_tree.get_branch(4))

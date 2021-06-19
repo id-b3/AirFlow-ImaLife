@@ -1,5 +1,8 @@
-import pandas as pd
 from pathlib import Path
+import pandas as pd
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def load_branch_csv(in_file: str) -> pd.DataFrame:
@@ -15,10 +18,10 @@ def load_branch_csv(in_file: str) -> pd.DataFrame:
     -------
     Branches dataframe sorted by branch id.
     """
-    # print(f"Loading branch csv {in_file}...")
+    logging.info(f"Loading branch csv {in_file}...")
     headers = ['branch', 'generation', 'parent', 'children', 'points']
     df = pd.read_csv(in_file, header=0, names=headers, converters={'children': eval, 'points': eval}, delimiter=";")
-    print("Success!")
+    logging.info("Success!")
     return df
 
 
@@ -38,14 +41,14 @@ def load_csv(in_file: str, inner: bool) -> pd.DataFrame:
     Inner/outer dataframe sorted by branch ID
     """
 
-    print(f"Loading global csv {in_file}...")
+    logging.info(f"Loading global csv {in_file}...")
     if inner:
         headers = ['branch', 'generation', 'inner_radius', 'inner_intensity', 'inner_samples']
     else:
         headers = ['branch', 'generation', 'outer_radius', 'outer_intensity', 'outer_samples']
 
     df = pd.read_csv(in_file, header=0, names=headers)
-    print("Success!")
+    logging.info("Success!")
     return df
 
 
@@ -65,7 +68,7 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
     Inner/Outer_local_radius dataframe sorted by branch ID
     """
 
-    print(f"Loading local csv {in_file}...")
+    logging.info(f"Loading local csv {in_file}...")
     if inner:
         headers = ['branch', 'inner_radii']
     else:
@@ -73,7 +76,7 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
 
     df = pd.read_csv(in_file, converters={'inner_radii': eval, 'outer_radii': eval}, header=0, names=headers,
                      delimiter=";")
-    print("Success!")
+    logging.info("Success!")
     return df
 
 
@@ -90,11 +93,11 @@ def save_as_csv(dataframe: pd.DataFrame, out_path: str = "./airway_tree.csv") ->
     """
     parent_dir = Path(Path.cwd(), out_path).resolve()
     try:
-        print(f"Saving {Path(out_path).stem} to {parent_dir}")
+        logging.info(f"Saving {Path(out_path).stem} to {parent_dir}")
         dataframe.to_csv(parent_dir, sep=';')
-    except OSError as e:
-        print(f"Creating folder {parent_dir}")
-        print(f"Saving {Path(out_path).stem} to {parent_dir}")
+    except OSError:
+        logging.info(f"Creating folder {parent_dir}")
+        logging.info(f"Saving {Path(out_path).stem} to {parent_dir}")
         Path.mkdir(parent_dir.parent)
         dataframe.to_csv(parent_dir)
 
@@ -117,7 +120,7 @@ def load_tree_csv(tree_csv: str) -> pd.DataFrame:
                                                               'inner_radii': eval, 'outer_radii': eval})
         return df
     except IOError:
-        print("Error loading the airway tree csv.")
+        logging.error("Error loading the airway tree csv.")
 
 
 def save_summary_csv(tree: pd.DataFrame, filename: str = './airway_summary.csv'):
@@ -133,10 +136,24 @@ def save_summary_csv(tree: pd.DataFrame, filename: str = './airway_summary.csv')
     """
     save_path = Path(filename).resolve()
     parent_path = save_path.parent
-    print(save_path)
+    logging.info(f"Saving summary to {save_path}")
     if not Path.exists(parent_path):
         Path.mkdir(parent_path)
     tree_sum = tree[['generation', 'parent', 'length', 'inner_radius', 'inner_intensity', 'inner_global_area',
                      'outer_radius', 'outer_intensity', 'wall_global_area', 'wall_global_area_perc',
                      'wall_global_thickness', 'wall_global_thickness_perc', 'x', 'y', 'z']]
     tree_sum.to_csv(save_path)
+
+
+def save_pickle_tree(dataframe: pd.DataFrame, savepath: str = './airway_tree.pickle'):
+    try:
+        dataframe.to_pickle(savepath)
+    except IOError as e:
+        logging.error(f"Error saving airway tree to pickle: {e}")
+
+
+def load_pickle_tree(loadpath: str = './airway_tree.pickle') -> pd.DataFrame:
+    try:
+        return pd.read_pickle(loadpath)
+    except FileNotFoundError as e:
+        logging.error(f"Loading airway tree from pickle failed. File {e.filename} not found.")
