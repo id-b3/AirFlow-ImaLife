@@ -35,7 +35,7 @@ class AirwayTree:
         if 'config' in kwargs:
             self.config = kwargs.get('config', None)
         else:
-            self.config = {'min_length': 5}
+            self.config = {'min_length': 5.0}
 
         if 'tree_csv' in kwargs:
             self.tree = brio.load_tree_csv(kwargs['tree_csv'])
@@ -108,7 +108,7 @@ class AirwayTree:
 
         return organised_tree
 
-    def set_minimum_length(self, minlen: float = 5):
+    def set_minimum_length(self, minlen: float = 5.0):
         """
         Set the minimum length of a branch in the airway tree.
 

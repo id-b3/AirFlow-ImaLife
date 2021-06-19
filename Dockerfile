@@ -98,6 +98,7 @@ RUN mkdir ./files && \
 
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
+# TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
 COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/", "./scripts/"]
