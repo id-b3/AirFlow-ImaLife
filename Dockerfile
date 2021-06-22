@@ -5,24 +5,26 @@ FROM ubuntu:trusty AS builder
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
 RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
-# OPFRONT Installation
-# -----------------------------------------
-WORKDIR /opfront
-COPY ./opfront .
-RUN mv /opfront/thirdparty/CImg.h /usr/include/CImg.h
-RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j16 install
 
-# PLAYGROUND
+# OPFRONT and PLAYGROUND
 # -----------------------------------------
 WORKDIR /lungseg
 
-# 2. ITK - PATCHED VERSION - Pre-compiler mod.
-COPY ./playground/thirdparty/InsightToolkit-3.20.1 ./InsightToolkit-3.20.1
-RUN mkdir itkbin && cd itkbin && cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && make -j install
-
 # COPY SOURCECODE
 COPY ["./legacy/", "./legacy/"]
+COPY ["./opfront", "/opfront/"]
 COPY ["./playground/", "./playground/"]
+RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
+RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
+RUN mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty
+
+RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install
+
+# 2. ITK - PATCHED VERSION - Pre-compiler mod.
+RUN mkdir playground/thirdparty/itkbin && \
+        cd playground/thirdparty/itkbin && \
+        cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
+        make -j install
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
@@ -99,7 +101,7 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
-COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
+COPY ["./bronchinet/models/", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/", "./scripts/"]
 
@@ -110,6 +112,7 @@ RUN rm -rf /var/lib/apt/lists/*
 # ENTRYPOINT ["/bin/bash"]
 
 # Run Launch script when container starts.
-ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+# ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+ENTRYPOINT ["/bin/bash"]
 # Arguments to pass to launch script.
-CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
+# CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
