@@ -33,13 +33,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.OPFRONT_SUBMODULE_PULL_KEY }}
 
       - name: Checkout bitbucket submodules
         run:
           git submodule init
-          git submodule update
-        with:
-          ssh-key: ${{ secrets.OPFRONT_SUBMODULE_PULL_KEY }}
+          git submodule update --remote
 
 
       # Login against a Docker registry except on PR
