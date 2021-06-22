@@ -16,6 +16,7 @@ COPY ["./opfront", "/opfront/"]
 COPY ["./playground/", "./playground/"]
 RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
 RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
+RUN mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty
 
 RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install
 
