@@ -16,13 +16,17 @@ RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j16 ins
 # -----------------------------------------
 WORKDIR /lungseg
 
-# 2. ITK - PATCHED VERSION - Pre-compiler mod.
-COPY ./playground/thirdparty/InsightToolkit-3.20.1 ./InsightToolkit-3.20.1
-RUN mkdir itkbin && cd itkbin && cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && make -j install
 
 # COPY SOURCECODE
 COPY ["./legacy/", "./legacy/"]
 COPY ["./playground/", "./playground/"]
+RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
+# 2. ITK - PATCHED VERSION - Pre-compiler mod.
+
+RUN mkdir playground/thirdparty/itkbin && \
+        cd playground/thirdparty/itkbin && \
+        cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
+        make -j install
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
