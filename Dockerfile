@@ -5,24 +5,22 @@ FROM ubuntu:trusty AS builder
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
 RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
-# OPFRONT Installation
-# -----------------------------------------
-WORKDIR /opfront
-COPY ./opfront .
-RUN mv /opfront/thirdparty/CImg.h /usr/include/CImg.h
-RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j16 install
 
-# PLAYGROUND
+# OPFRONT and PLAYGROUND
 # -----------------------------------------
 WORKDIR /lungseg
 
-
 # COPY SOURCECODE
 COPY ["./legacy/", "./legacy/"]
+COPY ["./opfront", "/opfront/"]
 COPY ["./playground/", "./playground/"]
 RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
-# 2. ITK - PATCHED VERSION - Pre-compiler mod.
+RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
+RUN mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty
 
+RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install
+
+# 2. ITK - PATCHED VERSION - Pre-compiler mod.
 RUN mkdir playground/thirdparty/itkbin && \
         cd playground/thirdparty/itkbin && \
         cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
