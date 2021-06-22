@@ -1,17 +1,16 @@
-
 import argparse
 
-from common.filereader import ImageFileReader
-from common.functionutil import *
-from common.imageoperations import *
+from ..common.filereader import ImageFileReader
+from ..common.functionutil import *
+from ..common.imageoperations import *
 
 
-def main(args):
+def split_seg_reg(in_dir: str, in_boxes: str):
 
-    in_filename_lumen = join_path_names(args.input_dir, './phantom_volume_surface0.nii.gz')
-    in_filename_outwall = join_path_names(args.input_dir, './phantom_volume_surface1.nii.gz')
+    in_filename_lumen = join_path_names(in_dir, './phantom_volume_surface0.nii.gz')
+    in_filename_outwall = join_path_names(in_dir, './phantom_volume_surface1.nii.gz')
 
-    in_list_boundboxes = list(np.load(args.in_boundboxes_file))
+    in_list_boundboxes = list(np.load(in_boxes))
 
     for i, iboundox in enumerate(in_list_boundboxes):
         in_list_boundboxes[i] = tuple([tuple(iboundox[0]), tuple(iboundox[1]), tuple(iboundox[2])])
@@ -46,7 +45,10 @@ def main(args):
 
         ImageFileReader.write_image(out_filename_lumen, out_image_region_lumen, metadata=in_image_metadata_lumen)
         ImageFileReader.write_image(out_filename_outwall, out_image_region_outwall, metadata=in_image_metadata_outwall)
-    # endfor
+
+
+def main(argmts):
+    split_seg_reg(argmts.input_dir, argmts.in_boundboxes_file)
 
 
 if __name__ == '__main__':
