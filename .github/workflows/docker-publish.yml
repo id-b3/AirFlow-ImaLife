@@ -31,11 +31,16 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout repository and submodules
+      - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Checkout bitbucket submodules
+        run:
+          git submodule init
+          git submodule update
         with:
           ssh-key: ${{ secrets.OPFRONT_SUBMODULE_PULL_KEY }}
-          submodules: recursive
+
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
