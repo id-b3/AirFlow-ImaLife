@@ -31,8 +31,10 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository and submodules
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
