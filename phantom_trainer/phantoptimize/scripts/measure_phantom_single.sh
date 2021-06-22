@@ -3,7 +3,7 @@
 # Compute measurements on given airway lumen and outer wall segmentations. Receives original volume ($1) and input surface segmentations '.dcm' ($2, $3). Results are stored in ($4).
 # Added by Antonio: export paths to missing libraries needed by executables in ($5)
 
-if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ] || [ "$5" == "" ]
+if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ]
 then
     echo Usage: "$0" VOLUME_FILE INIT_VOL_INNER_FILE INIT_VOL_OUTER_FILE OUTPUT_FOLDER
     exit 1
@@ -14,10 +14,6 @@ VOL=$1
 INNER_VOL=$2
 OUTER_VOL=$3
 FOLDEROUT=$4
-
-# EXPORT PATHS TO MISSING LIBRARIES
-ADD_LIBRARIES_PATH=$5
-export LD_LIBRARY_PATH=$ADD_LIBRARIES_PATH:${LD_LIBRARY_PATH}
 
 # PUT HERE THE PATH TO THE COMPILED EXECUTABLES FROM OPFRONT-PLAYGROUND
 BINARY_DIR="/usr/local/bin/"
