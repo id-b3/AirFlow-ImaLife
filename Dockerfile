@@ -103,7 +103,7 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
-COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
+COPY ["./bronchinet/models/", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/", "./scripts/"]
 
@@ -114,6 +114,7 @@ RUN rm -rf /var/lib/apt/lists/*
 # ENTRYPOINT ["/bin/bash"]
 
 # Run Launch script when container starts.
-ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+# ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+ENTRYPOINT ["/bin/bash"]
 # Arguments to pass to launch script.
-CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
+# CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
