@@ -34,6 +34,7 @@ jobs:
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
+          ssh-key: ${{ secrets.OPFRONT_SUBMODULE_PULL_KEY }}
           submodules: recursive
 
       # Login against a Docker registry except on PR
