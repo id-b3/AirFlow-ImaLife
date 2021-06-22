@@ -5,7 +5,7 @@ import nibabel as nib
 import pandas as pd
 import logging
 
-from ..calc.measureAirways import calc_branch_length
+from ..calc.measure_airways import calc_branch_length
 from ..io import branchio as brio
 
 
