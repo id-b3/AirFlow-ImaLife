@@ -2,8 +2,7 @@
 FROM ubuntu:trusty AS builder
 
 # Prepare building tools and libraries
-RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
-RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
+RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
 
 # OPFRONT and PLAYGROUND
@@ -14,22 +13,16 @@ WORKDIR /lungseg
 COPY ["./legacy/", "./legacy/"]
 COPY ["./opfront", "/opfront/"]
 COPY ["./playground/", "./playground/"]
-RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
-RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
-RUN mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty
-
-RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install
-
-# 2. ITK - PATCHED VERSION - Pre-compiler mod.
-RUN mkdir playground/thirdparty/itkbin && \
-        cd playground/thirdparty/itkbin && \
-        cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
-        make -j install
-
-RUN make -C /lungseg/playground/thirdparty/kdtree install
-
-# Compile the playground tools
-RUN make -C /lungseg/playground/src/libac && \
+RUN tar xf ./playground/thirdparty.tar.gz -C ./playground && \
+    mv ./playground/thirdparty/CImg.h /usr/include/CImg.h && \
+    mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty && \
+    mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install && \
+    mkdir playground/thirdparty/itkbin && \
+    cd playground/thirdparty/itkbin && \
+    cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
+    make -j install && \
+    make -C /lungseg/playground/thirdparty/kdtree install && \
+    make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/libmy_functions && \
     make -C /lungseg/playground/src/lung_segmentation && \
     make -C /lungseg/playground/src/6con && \
@@ -40,10 +33,8 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/smooth_brh && \
     make -C /lungseg/playground/src/imgconv && \
     make -C /lungseg/playground/src/brh2vol && \     
-    make -C /lungseg/playground/src/gts_ray_measure
-
-# Copy the tool binaries
-RUN mkdir /lungseg/bins && \
+    make -C /lungseg/playground/src/gts_ray_measure && \
+    mkdir /lungseg/bins && \
     cp /lungseg/playground/src/lung_segmentation/lung_segmentation /lungseg/bins && \
     cp /lungseg/playground/src/6con/6con /lungseg/bins && \
     cp /lungseg/playground/src/be/be /lungseg/bins && \
@@ -53,9 +44,8 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/smooth_brh/smooth_brh /lungseg/bins && \
     cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
-    cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
-
-RUN make -C /lungseg/playground/src/histogram/ && \
+    cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins && \
+    make -C /lungseg/playground/src/histogram/ && \
     make -C /lungseg/playground/src/measure_volume && \
     cp /lungseg/playground/src/histogram/histogram /lungseg/bins && \
     cp /lungseg/playground/src/measure_volume/measure_volume /lungseg/bins
