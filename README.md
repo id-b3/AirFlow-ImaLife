@@ -1,7 +1,7 @@
 # ImaLife Air-Flow Pipeline
 
 [![CodeFactor](https://www.codefactor.io/repository/github/id-b3/air_flow_imalife/badge?s=1dae3aeee26afb253ec4aedd3b702d828daacdf3)](https://www.codefactor.io/repository/github/id-b3/air_flow_imalife)
-
+[![GitHub Super-Linter](https://github.com/id-b3/air_flow_imalife/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 -------------------
 
 ## Introduction
