@@ -60,6 +60,10 @@ FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 LABEL version="0.9.2"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
 
+# TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
+# For default bronchinet, source is ./bronchinet/models
+ARG MODEL_DIR=./imalife_models/imalife
+
 # Update apt and install RUNTIME dependencies (lower size etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.8 python3-pip python-is-python3 \
@@ -90,8 +94,7 @@ RUN mkdir ./files && \
 
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
-# TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
-COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
+COPY ["${MODEL_DIR}", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/run_machine.sh", "./run_scripts/opfront_scripts/opfront_one_scan.sh", "./scripts/"]
 COPY ["./airway_analysis/", "./airway_analysis/"]
