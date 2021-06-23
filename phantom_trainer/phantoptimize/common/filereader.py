@@ -11,7 +11,7 @@ with warnings.catch_warnings():
     import nibabel as nib
 import csv
 
-from common.functionutil import fileextension, handle_error_message
+from .functionutil import fileextension, handle_error_message
 
 
 class ImageFileReader(object):
@@ -53,7 +53,7 @@ class ImageFileReader(object):
         elif extension == '.dcm':
             return DicomReader
         else:
-            message = "Not valid file extension: %s..." % (extension)
+            message = f"Not valid file extension: {extension}..."
             handle_error_message(message)
 
 

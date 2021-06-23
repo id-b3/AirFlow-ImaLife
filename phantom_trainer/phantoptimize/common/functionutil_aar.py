@@ -1,5 +1,5 @@
 
-from common.functionutil import *
+from .functionutil import *
 import numpy as np
 from scipy.stats import pearsonr, spearmanr
 from collections import OrderedDict

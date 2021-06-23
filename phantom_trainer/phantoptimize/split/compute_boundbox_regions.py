@@ -1,16 +1,15 @@
 
 import argparse
 
-from common.filereader import ImageFileReader
-from common.functionutil import *
-from common.imageoperations import *
+from ..common.filereader import ImageFileReader
+from ..common.imageoperations import *
 
 NUM_VOXELS_BUFFER = 8
 
 
-def main(args):
+def comp_bound_box(input_file, output_file):
 
-    in_image = ImageFileReader.get_image(args.input_file)
+    in_image = ImageFileReader.get_image(input_file)
 
     (in_connected_labels_image, num_regions) = compute_connected_components(in_image)
 
@@ -26,13 +25,17 @@ def main(args):
     # ----------
 
     # output bounding boxes
-    np.save(args.output_file, list_boundboxes_connected_images)
+    np.save(output_file, list_boundboxes_connected_images)
 
-    output_file_csv = args.output_file.replace('.npy', '.csv')
+    output_file_csv = output_file.replace('.npy', '.csv')
 
     with open(output_file_csv, 'w') as fout:
         for i, iboundbox in enumerate(list_boundboxes_connected_images):
-            fout.write("%s: %s\n" % ('case%d' % (i+1), str(iboundbox)))
+            fout.write("%s: %s\n" % ('case%d' % (i + 1), str(iboundbox)))
+
+
+def main(argmts):
+    comp_bound_box(argmts.input_file, argmts.output_file)
 
 
 if __name__ == '__main__':

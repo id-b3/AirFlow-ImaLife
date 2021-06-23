@@ -9,3 +9,6 @@ scipy~=1.6.2
 pandas~=1.2.4
 tqdm~=4.61.1
 h5py~=3.2.1
+
+setuptools~=52.0.0.post20210125
+optuna~=2.8.0
