@@ -2,8 +2,8 @@
 FROM ubuntu:trusty AS builder
 
 # Prepare building tools and libraries
-RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
-
+RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
+RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
 # OPFRONT and PLAYGROUND
 # -----------------------------------------
