@@ -31,6 +31,10 @@ class AirwayTree:
         AirwayTree Object containing volume information and the airway tree data.
 
         """
+        if 'volume' not in kwargs:
+            logging.error("Missing volume file!")
+            raise
+
         vol_header = nib.load(kwargs['volume']).header
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()

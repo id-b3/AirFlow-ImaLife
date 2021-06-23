@@ -91,9 +91,10 @@ RUN mkdir ./files && \
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
-COPY ["./bronchinet/models/", "./model/" ]
+COPY ["./bronchinet/model_to_dockerise/", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
-COPY ["./run_scripts/", "./scripts/"]
+COPY ["./run_scripts/run_machine.sh", "./run_scripts/opfront_scripts/opfront_one_scan.sh", "./scripts/"]
+COPY ["./airway_analysis/", "./airway_analysis/"]
 
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
