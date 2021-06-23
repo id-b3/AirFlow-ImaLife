@@ -17,8 +17,8 @@ RUN tar xf ./playground/thirdparty.tar.gz -C ./playground && \
     mv ./playground/thirdparty/CImg.h /usr/include/CImg.h && \
     mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty && \
     mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install && \
-    mkdir playground/thirdparty/itkbin && \
-    cd playground/thirdparty/itkbin && \
+    mkdir -p ./playground/thirdparty/itkbin && \
+    cd ./playground/thirdparty/itkbin && \
     cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
     make -j install && \
     make -C /lungseg/playground/thirdparty/kdtree install && \
