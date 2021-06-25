@@ -94,6 +94,8 @@ class PhantomTrainer:
         for split_path in Path(split_out_dir).iterdir():
             logging.debug(f"Measuring results for run {run_number} and {split_path.stem}...")
             inner_vol, outer_vol = self.get_split_vol(split_path)
+            logging.debug(f"Split surface dirs are: \n"
+                          f"{inner_vol}\n{outer_vol}")
             subprocess.run([measure_split, str(self.volume), inner_vol, outer_vol, str(split_path.resolve())])
 
         # 4. merge the airways
@@ -120,4 +122,4 @@ class PhantomTrainer:
         # Create filepaths for the measure_phantom script to match the opfront_phantom script.
         root_out = split_dir / self.volume.stem.partition('.')[0]
         logging.debug(f"Getting surface filenames relative to split folder \n{root_out}")
-        return str(Path(f"{root_out}_surface-1.nii.gz").resolve()), str(Path(f"{root_out}_surface0.nii.gz").resolve())
+        return str(Path(f"{root_out}_surface0.nii.gz").resolve()), str(Path(f"{root_out}_surface1.nii.gz").resolve())
