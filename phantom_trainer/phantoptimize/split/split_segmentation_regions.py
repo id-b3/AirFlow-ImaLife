@@ -1,14 +1,14 @@
 import argparse
-
+import logging
 from ..common.filereader import ImageFileReader
 from ..common.functionutil import *
 from ..common.imageoperations import *
 
 
 def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume') -> str:
-
     in_filename_lumen = join_path_names(in_dir, f'./{root_name}_surface0.nii.gz')
     in_filename_outwall = join_path_names(in_dir, f'./{root_name}_surface1.nii.gz')
+    logging.debug(f"Splitting in {in_dir} using {in_boxes}. \n{in_filename_lumen}\n{in_filename_outwall}")
 
     in_list_boundboxes = list(np.load(in_boxes))
 
@@ -25,8 +25,8 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
 
     # output files: 1 per cropped image to each bounding box
     out_template_subdirnames = dirname(in_filename_lumen).replace('\\.', '_region{}\\')
-    print(dirname(in_filename_lumen))
-    print(out_template_subdirnames)
+    logging.debug(dirname(in_filename_lumen))
+    logging.debug(out_template_subdirnames)
 
     for i, iboundox in enumerate(in_list_boundboxes):
         out_cropped_image_lumen = compute_cropped_image(in_image_lumen, iboundox)
@@ -36,7 +36,7 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
         out_image_region_outwall = compute_setpatch_image(out_cropped_image_outwall, in_image_outwall.shape, iboundox)
 
         output_dir_region = out_template_subdirnames.format(i + 1)
-        print(output_dir_region)
+        logging.debug(output_dir_region)
 
         makedir(output_dir_region)
 
