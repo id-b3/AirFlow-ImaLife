@@ -26,7 +26,7 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
     # ----------
 
     # output files: 1 per cropped image to each bounding box
-    out_template_subdirnames = dirname(in_filename_lumen).replace('.', 'split_regions/')
+    out_template_subdirnames = dirname(in_filename_lumen).replace('/.', '/split_regions/')
     logging.debug(dirname(in_filename_lumen))
     logging.debug(out_template_subdirnames)
 

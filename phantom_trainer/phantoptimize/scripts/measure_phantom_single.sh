@@ -44,7 +44,7 @@ OUTER_RESULTS_LOCAL="${ROOT}_outer_localRadius.csv"
 INNER_RESULTS_PANDAS="${ROOT}_inner_local_pandas.csv"
 OUTER_RESULTS_PANDAS="${ROOT}_outer_local_pandas.csv"
 
-BRANCHES_PANDAS="${ROOT}_airways_centrelines.m"
+BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv"
 
 LOGFILE="${ROOT}.log"
 

@@ -16,7 +16,7 @@ p_surf_1 = "./phantom_volume_surface1.nii.gz"
 
 
 class PhantomTrainer:
-    def __init__(self, p_vol: str, p_seg: str, out_dir: str):
+    def __init__(self, p_vol: str, p_seg: str, out_dir: str, log_lev: int = logging.DEBUG):
         """
         Phantom Trainer class. Contains the information to repeatedly run the process_phantom method, which calculates
         an error meaasure for a given set of parameters.
@@ -44,7 +44,7 @@ class PhantomTrainer:
         # Compute and output the boundinx boxes for splitting.
         comp_bound_box(self.segmentation, self.bound_box)
 
-        logging.basicConfig(level=logging.DEBUG, filename=self.log_dir)
+        logging.basicConfig(level=log_lev, filename=self.log_dir)
         logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
     # TODO: Create a function that runs one loop of phantom opfront and measuring. Returns an error measure.
