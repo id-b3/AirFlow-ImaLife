@@ -7,7 +7,7 @@ import argparse
 
 def main(infiles):
     trainer = PhantomTrainer(infiles.in_volume, infiles.in_segment, infiles.out_dir, logging.INFO)
-    trainer.process_phantom(1, i_der=-0.47, o_der=-0.51, s_pen=6.8)
+    trainer.process_phantom(1, i_der=-0.41, o_der=-0.57, s_pen=6.8)
 
 
 if __name__ == '__main__':
