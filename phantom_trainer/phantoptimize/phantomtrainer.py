@@ -6,8 +6,8 @@ from datetime import datetime
 import logging
 
 # Script constants
-opfront_script = str(Path("./scripts/opfront_phantom_single.sh").resolve())
-measure_split = str(Path("./scripts/measure_phantom_single.sh").resolve())
+opfront_script = str((Path(__file__).parent / "scripts/opfront_phantom_single.sh").resolve())
+measure_split = str((Path(__file__).parent / "scripts/measure_phantom_single.sh").resolve())
 
 # TODO: File constants - incorrect, have to obtain from the running process... in case the volume name is different.
 p_surf_0 = "./phantom_volume_surface0.nii.gz"
@@ -33,6 +33,9 @@ class PhantomTrainer:
         self.volume = Path(p_vol).resolve()
         self.segmentation = str(Path(p_seg).resolve())
         self.out_dir = Path(out_dir).resolve()
+        self.out_dir.mkdir(parents=True)
+        (self.out_dir / "logs").mkdir()
+        (self.out_dir / "common_files").mkdir()
 
         self.log_dir = str(self.out_dir / "logs" / f"training_log_{datetime.now()}.log")
         self.bound_box = str(self.out_dir / "common_files" / "boundboxes_split_regions_phantom.npy")
@@ -78,7 +81,7 @@ class PhantomTrainer:
 
         # 1. run opfront with parameters VOL SEG OUT_DIR OPFRONT_PARAMS
         logging.debug(f"Launching opfront for {str(self.volume)} number {run_number}...")
-        subprocess.run([opfront_script, str(self.volume), self.segmentation, run_out_dir])
+        subprocess.run([opfront_script, str(self.volume), self.segmentation, run_out_dir, parameters])
 
         # 2. split the airways
         logging.debug(f"Splitting results for opfront number {run_number}...")
