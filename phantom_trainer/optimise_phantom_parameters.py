@@ -1,4 +1,4 @@
-from phantoptimize.process import PhantomTrainer
+from phantoptimize.phantomtrainer import PhantomTrainer
 
 # 1. Set parameters
 # 2. TODO Run trial.

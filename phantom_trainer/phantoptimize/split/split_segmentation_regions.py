@@ -5,7 +5,7 @@ from ..common.functionutil import *
 from ..common.imageoperations import *
 
 
-def split_seg_reg(in_dir: str, in_boxes: str):
+def split_seg_reg(in_dir: str, in_boxes: str) -> str:
 
     in_filename_lumen = join_path_names(in_dir, './phantom_volume_surface0.nii.gz')
     in_filename_outwall = join_path_names(in_dir, './phantom_volume_surface1.nii.gz')
@@ -45,6 +45,8 @@ def split_seg_reg(in_dir: str, in_boxes: str):
 
         ImageFileReader.write_image(out_filename_lumen, out_image_region_lumen, metadata=in_image_metadata_lumen)
         ImageFileReader.write_image(out_filename_outwall, out_image_region_outwall, metadata=in_image_metadata_outwall)
+
+    return out_template_subdirnames
 
 
 def main(argmts):
