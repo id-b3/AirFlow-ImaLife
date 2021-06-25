@@ -7,7 +7,7 @@ import logging
 
 # Script constants
 opfront_script = str(Path("./scripts/opfront_phantom_single.sh").resolve())
-measre_spt = str(Path("./scripts/measure_phantom_single.sh").resolve())
+measure_split = str(Path("./scripts/measure_phantom_single.sh").resolve())
 
 # TODO: File constants - incorrect, have to obtain from the running process... in case the volume name is different.
 p_surf_0 = "./phantom_volume_surface0.nii.gz"
@@ -87,7 +87,7 @@ class PhantomTrainer:
         split_seg_reg()
         # 3. measure the airways
         logging.debug(f"Measuring results for run {run_number}...")
-        subprocess.run([measre_spt, "VOL", "INNER_SURF", "OUTER_SURF", "OUT_FOLDER"])  # TODO CHANGE PLACEHOLDER INPUTS
+        subprocess.run([measure_split, "VOL", "INNER_SURF", "OUTER_SURF", "OUT_FOLDER"])  # TODO CHANGE PLACEHOLDER INPUTS
         # 4. merge the airways
         logging.debug(f"Merging results for run {run_number}...")
         # 5. calculate the error measure
