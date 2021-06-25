@@ -17,11 +17,10 @@ COPY ["./playground/", "./playground/"]
 RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
 RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
 RUN mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty
-
 RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install
 
 # 2. ITK - PATCHED VERSION - Pre-compiler mod.
-RUN mkdir playground/thirdparty/itkbin && \
+RUN mkdir -p playground/thirdparty/itkbin && \
         cd playground/thirdparty/itkbin && \
         cmake -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON ../InsightToolkit-3.20.1/ && \
         make -j install
@@ -70,9 +69,6 @@ FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 LABEL version="0.9.2"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
 
-# TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
-# For default bronchinet, source is ./bronchinet/models
-ARG MODEL_DIR=./imalife_models/imalife
 
 # Update apt and install RUNTIME dependencies (lower size etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -91,8 +87,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
 COPY --from=builder /lungseg/bins /usr/local/bin
 COPY --from=builder /usr/local/bin /usr/local/bin
-COPY ["./airflow_libs", "/usr/lib"]
-RUN ldconfig
+ADD ["airflow_libs.tar.gz", "."]
+RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
 # Set up the file structure for CT scan processing.
 ENV PYTHONPATH "/bronchinet/src"
@@ -104,6 +100,9 @@ RUN mkdir ./files && \
 
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
+# TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
+# For default bronchinet, source is ./bronchinet/models
+ARG MODEL_DIR=./imalife_models/imalife
 COPY ["${MODEL_DIR}", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/", "./scripts/"]

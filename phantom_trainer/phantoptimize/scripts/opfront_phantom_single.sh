@@ -38,18 +38,6 @@ OUTER_VOL="${ROOT}_surface1.nii.gz"
 # INNER_VOL_ISO="${ROOT}_surface0_iso05.nii.gz" # Results from opfront, converted to isotropic volumes.
 INNER_VOL_TH1="${ROOT}_surface0_th1.nii.gz"
 
-BRANCHES_ISO="${ROOT}_surface0_th1.nii-branch.brh" # Results of computing branches, DO NOT EDIT
-BRANCHES="${ROOT}_airways.brh"
-
-INNER_RESULTS="${ROOT}_inner.csv"
-OUTER_RESULTS="${ROOT}_outer.csv"
-INNER_RESULTS_LOCAL="${ROOT}_inner_localRadius.csv"
-OUTER_RESULTS_LOCAL="${ROOT}_outer_localRadius.csv"
-INNER_RESULTS_LOCAL_PANDAS="${ROOT}_inner_localRadius_pandas.csv"
-OUTER_RESULTS_LOCAL_PANDAS="${ROOT}_outer_localRadius_pandas.csv"
-
-BRANCHES_VOL="${ROOT}_airways_centrelines.nii.gz"
-BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv"
 
 mkdir -p "$FOLDEROUT"
 
@@ -62,7 +50,7 @@ echo -e "Segmentation: $SEG"
 echo -e "Opfront parameters: $OPFRONT_PARAMETERS"
 echo -e "Results folder: $FOLDEROUT\n"
 echo -e "File without extension: $FILE_NO_EXTENSION\n"
-} | tee "$LOGFILE"
+} | tee -a "$LOGFILE"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
 {
 echo -e "\n6-connecting initial surface:"
@@ -94,38 +82,4 @@ echo -e "\nBinarising isotropic inner surface with threshold 1 for branch extrac
 CALL="${BINARY_DIR}/imgconv -i $INNER_VOL -o $INNER_VOL_TH1 -t 0 -x 1"
 echo -e "\n$CALL"
 eval "$CALL"
-} | tee "$LOGFILE"
-
-# -- BRANCHES ----------------------------------
-{
-echo -e "\nComputing branches:" # this creates $BRANCHES_ISO
-CALL="${BINARY_DIR}/be $INNER_VOL_TH1 -o $FOLDEROUT -vessels"
-echo -e "\n$CALL"
-eval "$CALL"
-
-echo -e "\nRenaming Branches File:"
-CALL="mv $BRANCHES_ISO $BRANCHES"
-echo -e "\n$CALL"
-eval "$CALL"
-
-echo -e "\nMeasure inner surface:"
-CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_LOCAL_PANDAS"
-echo -e "\n$CALL"
-eval "$CALL"
-
-echo -e "\nMeasure outer surface:"
-CALL="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_LOCAL_PANDAS"
-echo -e "\n$CALL"
-eval "$CALL"
-
-echo -e "\nConvert branches to volume:"
-CALL="${BINARY_DIR}/brh2vol $BRANCHES -volume $VOL -o $BRANCHES_VOL"
-echo -e "\n$CALL"
-eval "$CALL"
-
-echo -e "\n\nConvert branches to MATLAB readable format:"
-CALL="${BINARY_DIR}/brh_translator $BRANCHES $BRANCHES_PANDAS -pandas"
-echo -e "\n$CALL"
-echo -e "DONE\n"
-eval "$CALL"
-} | tee "$LOGFILE"
+} | tee -a "$LOGFILE"
