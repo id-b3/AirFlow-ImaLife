@@ -14,17 +14,19 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
 
     for i, iboundox in enumerate(in_list_boundboxes):
         in_list_boundboxes[i] = tuple([tuple(iboundox[0]), tuple(iboundox[1]), tuple(iboundox[2])])
+        logging.debug(f"bounding boxes: {in_list_boundboxes[i]}")
 
     in_image_lumen = ImageFileReader.get_image(in_filename_lumen)
     in_image_outwall = ImageFileReader.get_image(in_filename_outwall)
 
     in_image_metadata_lumen = ImageFileReader.get_image_metadata_info(in_filename_lumen)
+    logging.debug(in_image_metadata_lumen)
     in_image_metadata_outwall = ImageFileReader.get_image_metadata_info(in_filename_outwall)
-
+    logging.debug(in_image_metadata_outwall)
     # ----------
 
     # output files: 1 per cropped image to each bounding box
-    out_template_subdirnames = dirname(in_filename_lumen).replace('\\.', '_region{}\\')
+    out_template_subdirnames = dirname(in_filename_lumen).replace('/.', '_region{}/')
     logging.debug(dirname(in_filename_lumen))
     logging.debug(out_template_subdirnames)
 
