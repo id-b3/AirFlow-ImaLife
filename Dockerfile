@@ -111,8 +111,8 @@ COPY ["./run_scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
 
-# Open bash when running container.
-# ENTRYPOINT ["/bin/bash"]
+# Include Phantom Training tools
+COPY ["./phantom_trainer", "./phantom_trainer"]
 
 # Run Launch script when container starts.
 # ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
