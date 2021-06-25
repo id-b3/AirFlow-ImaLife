@@ -98,6 +98,7 @@ class PhantomTrainer:
                           f"{inner_vol}\n{outer_vol}")
             subprocess.run([measure_split, str(self.volume), inner_vol, outer_vol, str(split_path.resolve())])
 
+        # TODO Merge all results into one CSV
         # 4. merge the airways
         logging.debug(f"Merging results for run {run_number}...")
 

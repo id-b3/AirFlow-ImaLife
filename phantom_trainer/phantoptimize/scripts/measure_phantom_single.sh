@@ -20,7 +20,7 @@ BINARY_DIR="/usr/local/bin/"
 
 # get the root of the name without extension
 FILE=$(basename "${VOL}")
-FILE_NO_EXTENSION="${FILE%.*}"
+FILE_NO_EXTENSION="${FILE%.*.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 FILE=$(basename "${INNER_VOL}")
 FILE_NO_EXTENSION="${FILE%.*}"
@@ -32,9 +32,9 @@ ROOT_OUTER_VOL="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 INNER_SURFACE="${ROOT_INNER_VOL}.gts" # Initial segmentation after 6-conexion as a surface
 OUTER_SURFACE="${ROOT_OUTER_VOL}.gts"
 
-INNER_VOL_ISO_TH1="${ROOT_INNER_VOL}_th1.dcm"
+INNER_VOL_ISO_TH1="${ROOT_INNER_VOL}_th1.nii.gz"
 
-BRANCHES_ISO="${ROOT_INNER_VOL}_th1-branch.brh" # Results of computing branches, DO NOT EDIT
+BRANCHES_ISO="${ROOT_INNER_VOL}_th1.nii-branch.brh" # Results of computing branches, DO NOT EDIT
 BRANCHES="${ROOT}_airways.brh"
 
 INNER_RESULTS="${ROOT}_inner.csv"
@@ -87,7 +87,7 @@ mkdir -p "$FOLDEROUT"
   echo -e "\nRenaming branches:"
   CALL="mv $BRANCHES_ISO $BRANCHES"
   echo -e "\n$CALL"
-  evala "$CALL"
+  eval "$CALL"
 
   echo -e "\nMeasure inner surface:"
   CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_PANDAS"
@@ -99,7 +99,7 @@ mkdir -p "$FOLDEROUT"
   echo -e "\n$CALL"
   eval "$CALL"
 
-  echo -e "\n\nConvert branches to MATLAB readable format:"
+  echo -e "\n\nConvert branches to pandas readable format:"
   CALL="${BINARY_DIR}/brh_translator $BRANCHES -pandas $BRANCHES_PANDAS"
   echo -e "\n$CALL"
   echo -e "DONE\n"
