@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from pathlib import Path
 from .split.compute_boundbox_regions import comp_bound_box
 from .split.split_segmentation_regions import split_seg_reg
@@ -44,6 +45,7 @@ class PhantomTrainer:
         comp_bound_box(self.segmentation, self.bound_box)
 
         logging.basicConfig(level=logging.DEBUG, filename=self.log_dir)
+        logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
     # TODO: Create a function that runs one loop of phantom opfront and measuring. Returns an error measure.
     def process_phantom(self, run_number: int,

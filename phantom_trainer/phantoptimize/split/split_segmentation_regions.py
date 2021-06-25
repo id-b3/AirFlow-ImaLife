@@ -5,10 +5,10 @@ from ..common.functionutil import *
 from ..common.imageoperations import *
 
 
-def split_seg_reg(in_dir: str, in_boxes: str) -> str:
+def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume') -> str:
 
-    in_filename_lumen = join_path_names(in_dir, './phantom_volume_surface0.nii.gz')
-    in_filename_outwall = join_path_names(in_dir, './phantom_volume_surface1.nii.gz')
+    in_filename_lumen = join_path_names(in_dir, f'./{root_name}_surface0.nii.gz')
+    in_filename_outwall = join_path_names(in_dir, f'./{root_name}_surface1.nii.gz')
 
     in_list_boundboxes = list(np.load(in_boxes))
 
