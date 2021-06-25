@@ -1,38 +1,55 @@
 import subprocess
 from pathlib import Path
+from .split.compute_boundbox_regions import comp_bound_box
 from .split.split_segmentation_regions import split_seg_reg
 import tempfile
 import logging
 
-opfrnt_spt = Path.resolve(Path("./scripts/opfront_phantom_single.sh"))
-measre_spt = Path.resolve(Path("./scripts/measure_phantom_single.sh"))
-temp_out = tempfile.TemporaryDirectory()
-log_out = Path.resolve(Path("../phantom_logs/"))
+# Script constants
+opfrnt_spt = Path("./scripts/opfront_phantom_single.sh").resolve()
+measre_spt = Path("./scripts/measure_phantom_single.sh").resolve()
+log_out = Path("./phantom_logs/").resolve()
+
+# File constants
 p_surf_0 = "./phantom_volume_surface0.nii.gz"
 p_surf_1 = "./phantom_volume_surface1.nii.gz"
+
+
+class PhantomTrainer:
+    def __init__(self, p_vol: str, p_seg: str, out_dir: str):
+
+        self.volume = Path(p_vol).resolve()
+        self.segmentation = Path(p_seg).resolve()
+        self.out_dir = Path(out_dir).resolve()
+        self.bound_box = self.out_dir / "common_files/boundboxes_split_regions_phantom.npy"
+        logging.basicConfig()
+
 
 
 # TODO: Create a function that runs one loop of phantom opfront and measuring. Returns an error measure.
 def process_phantom(proc_run: int, p_vol: str, p_seg: str,
                     op_par: str = "-i 15 -o 15 -I 2 -O 2 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0",
-                    i_der: float = 0, o_der: float = 0, s_pen: float = 0,
-                    box_f: str = "./temp_run/boundboxes_split_regions_phantom.npy") -> float:
+                    i_der: float = 0, o_der: float = 0, s_pen: float = 0) -> float:
 
+    err_m = 1  #: The error measure. Initialised to 1
     parameters = f"{op_par} -F {i_der} -G {o_der} -d {s_pen}"
     logging.info(f"Starting Phantom {p_vol} Training Run No.{proc_run} with parameters '{parameters}'\n"
                  f"----------------------------------------------------------------\n")
-    err_m = 0
-
     # 1. run opfront with parameters VOL SEG OUT_DIR OPFRONT_PARAMS
     logging.debug(f"Launching opfront for {p_vol} number {proc_run}...")
-    subprocess.run([str(opfrnt_spt), str(Path.resolve(Path(p_vol))),
-                    str(Path.resolve(Path(p_seg))), str(temp_out), parameters])
+    subprocess.run([opfrnt_spt), Path(p_vol))),
+                    Path(p_seg))), temp_out), parameters])
+
     # 2. split the airways
+    if not Path.exists(Path()):
+        logging.debug(f"No bounding box found, computing bounding-box regions for run {proc_run}...")
+        comp_bound_box(p_seg, "./common_run/boundboxes_split_regions_phantom.npy")
+
     logging.debug(f"Splitting results for opfront number {proc_run}...")
-    split_seg_reg(str(temp_out), box_f)
+    split_seg_reg(temp_out), box_f)
     # 3. measure the airways
     logging.debug(f"Measuring results for run {proc_run}...")
-    subprocess.run([str(measre_spt), "VOL", "INNER_SURF", "OUTER_SURF", "OUT_FOLDER"])  # TODO CHANGE PLACEHOLDER INPUTS
+    subprocess.run([measre_spt), "VOL", "INNER_SURF", "OUTER_SURF", "OUT_FOLDER"])  # TODO CHANGE PLACEHOLDER INPUTS
     # 4. merge the airways
     logging.debug(f"Merging results for run {proc_run}...")
     # 5. calculate the error measure

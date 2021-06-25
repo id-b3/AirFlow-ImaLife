@@ -7,8 +7,17 @@ from ..common.imageoperations import *
 NUM_VOXELS_BUFFER = 8
 
 
-def comp_bound_box(input_file, output_file):
+def comp_bound_box(input_file: str, output_file: str):
+    """
+    Compute the bounding box regions for the phantom airways.
 
+    Parameters
+    ----------
+    input_file: str
+        Path for the input file (the initial phantom segmentation)
+    output_file
+        Path for the output file. Default: ./boundboxes_split_regions_phantom.npy
+    """
     in_image = ImageFileReader.get_image(input_file)
 
     (in_connected_labels_image, num_regions) = compute_connected_components(in_image)
