@@ -84,6 +84,11 @@ mkdir -p "$FOLDEROUT"
   echo -e "\n$CALL"
   eval "$CALL"
 
+  echo -e "\nRenaming branches:"
+  CALL="mv $BRANCHES_ISO $BRANCHES"
+  echo -e "\n$CALL"
+  evala "$CALL"
+
   echo -e "\nMeasure inner surface:"
   CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_PANDAS"
   echo -e "\n$CALL"
