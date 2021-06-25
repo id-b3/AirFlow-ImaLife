@@ -1,6 +1,7 @@
 import nibabel as nib
 import argparse
 
+
 def main(args):
     image = nib.load(args.input_volume)
     print("Header: \n{}".format(image.header))
