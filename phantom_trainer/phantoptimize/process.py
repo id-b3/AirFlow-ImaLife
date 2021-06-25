@@ -37,8 +37,7 @@ def process_phantom(proc_run: int, p_vol: str, p_seg: str,
                  f"----------------------------------------------------------------\n")
     # 1. run opfront with parameters VOL SEG OUT_DIR OPFRONT_PARAMS
     logging.debug(f"Launching opfront for {p_vol} number {proc_run}...")
-    subprocess.run([opfrnt_spt), Path(p_vol))),
-                    Path(p_seg))), temp_out), parameters])
+    subprocess.run()
 
     # 2. split the airways
     if not Path.exists(Path()):
@@ -46,10 +45,10 @@ def process_phantom(proc_run: int, p_vol: str, p_seg: str,
         comp_bound_box(p_seg, "./common_run/boundboxes_split_regions_phantom.npy")
 
     logging.debug(f"Splitting results for opfront number {proc_run}...")
-    split_seg_reg(temp_out), box_f)
+    split_seg_reg()
     # 3. measure the airways
     logging.debug(f"Measuring results for run {proc_run}...")
-    subprocess.run([measre_spt), "VOL", "INNER_SURF", "OUTER_SURF", "OUT_FOLDER"])  # TODO CHANGE PLACEHOLDER INPUTS
+    subprocess.run([measre_spt, "VOL", "INNER_SURF", "OUTER_SURF", "OUT_FOLDER"])  # TODO CHANGE PLACEHOLDER INPUTS
     # 4. merge the airways
     logging.debug(f"Merging results for run {proc_run}...")
     # 5. calculate the error measure
