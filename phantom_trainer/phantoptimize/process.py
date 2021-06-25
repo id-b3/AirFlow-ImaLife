@@ -6,10 +6,10 @@ from datetime import datetime
 import logging
 
 # Script constants
-opfrnt_spt = Path("./scripts/opfront_phantom_single.sh").resolve()
-measre_spt = Path("./scripts/measure_phantom_single.sh").resolve()
+opfront_script = str(Path("./scripts/opfront_phantom_single.sh").resolve())
+measre_spt = str(Path("./scripts/measure_phantom_single.sh").resolve())
 
-# File constants
+# TODO: File constants - incorrect, have to obtain from the running process... in case the volume name is different.
 p_surf_0 = "./phantom_volume_surface0.nii.gz"
 p_surf_1 = "./phantom_volume_surface1.nii.gz"
 
@@ -29,13 +29,17 @@ class PhantomTrainer:
         out_dir: str
             Output Directory for this training run.
         """
+
         self.volume = str(Path(p_vol).resolve())
         self.segmentation = str(Path(p_seg).resolve())
         self.out_dir = Path(out_dir).resolve()
-        self.log_dir = self.out_dir / "logs" / f"training_log_{datetime.now()}.log"
-        self.bound_box = self.out_dir / "common_files" / "boundboxes_split_regions_phantom.npy"
+        self.log_dir = str(self.out_dir / "logs" / f"training_log_{datetime.now()}.log")
+        self.bound_box = str(self.out_dir / "common_files" / "boundboxes_split_regions_phantom.npy")
 
-        logging.basicConfig(level=logging.DEBUG, filename=str(self.log_dir))
+        # Compute and output the boundinx boxes for splitting.
+        comp_bound_box(self.segmentation, self.bound_box)
+
+        logging.basicConfig(level=logging.DEBUG, filename=self.log_dir)
 
     # TODO: Create a function that runs one loop of phantom opfront and measuring. Returns an error measure.
     def process_phantom(self, run_number: int,
@@ -61,13 +65,18 @@ class PhantomTrainer:
         -------
         The error measure for this set of opfront parameters.
         """
+
         err_m = 1  #: The error measure. Initialised to 1
         parameters = f"{op_par} -F {i_der} -G {o_der} -d {s_pen}"
+        run_out_dir = str(self.out_dir / f"run_{run_number}_F{i_der}G{o_der}d{s_pen}")  #: Dir for current run output
+
         logging.info(f"Starting Phantom {self.volume} Training Run No.{run_number} with parameters '{parameters}'\n"
+                     f"Outputdir {run_out_dir} \n"
                      f"----------------------------------------------------------------\n")
+
         # 1. run opfront with parameters VOL SEG OUT_DIR OPFRONT_PARAMS
         logging.debug(f"Launching opfront for {self.volume} number {run_number}...")
-        subprocess.run()
+        subprocess.run([opfront_script, self.volume, self.segmentation, run_out_dir])
 
         # 2. split the airways
         if not Path.exists(Path()):
