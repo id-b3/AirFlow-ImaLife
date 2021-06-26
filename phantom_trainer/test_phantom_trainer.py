@@ -3,11 +3,25 @@ import logging
 import tempfile
 from phantoptimize.phantomtrainer import PhantomTrainer
 import argparse
+import optuna
 
 
 def main(infiles):
-    trainer = PhantomTrainer(infiles.in_volume, infiles.in_segment, infiles.out_dir, logging.DEBUG)
-    trainer.process_phantom(1, i_der=-0.41, o_der=-0.57, s_pen=6.8)
+
+    trainer = PhantomTrainer(infiles.in_volume, infiles.in_segment, infiles.out_dir, logging.INFO)
+    logging.getLogger().setLevel(logging.INFO)
+
+    def objective(trial):
+        in_der = trial.suggest_float('inner_derivative', -1, 1, step=0.01)
+        out_der = trial.suggest_float('outer_derivative', -1, 1, step=0.01)
+        error = trainer.process_phantom(trial.number, i_der=in_der, o_der=out_der, s_pen=0)
+
+        return abs(error)
+
+    study = optuna.create_study()
+    study.optimize(objective, n_trials=20)
+    print(study.best_trial)
+    study.trials_dataframe().to_csv('trial_results.csv')
 
 
 if __name__ == '__main__':

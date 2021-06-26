@@ -91,7 +91,7 @@ ADD ["airflow_libs.tar.gz", "."]
 RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
 # Set up the file structure for CT scan processing.
-ENV PYTHONPATH "/bronchinet/src"
+ENV PYTHONPATH "/bronchinet/src:/bronchinet/airway_analysis"
 RUN mkdir ./files && \
         ln -s ./src Code && \
         mkdir -p ./temp_work/files && \
@@ -106,9 +106,12 @@ ARG MODEL_DIR=./imalife_models/imalife
 COPY ["${MODEL_DIR}", "./model/" ]
 COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
 COPY ["./run_scripts/", "./scripts/"]
-
+RUN pip3 install --no-cache-dir optuna
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
+
+# Include Airway Analysis Tools
+COPY ["./airway_analysis", "./airway_analysis"]
 
 # Include Phantom Training tools
 COPY ["./phantom_trainer", "./phantom_trainer"]

@@ -31,6 +31,7 @@ class AirwayTree:
         AirwayTree Object containing volume information and the airway tree data.
 
         """
+        logging.basicConfig(level=logging.INFO)
         if 'volume' not in kwargs:
             logging.error("Missing volume file!")
             raise
@@ -85,9 +86,13 @@ class AirwayTree:
         # Calculate the area from the radius and insert as new column.
         outer_df['outer_global_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
         outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
+        logging.debug(outer_radius_df.dtypes)
 
         # Combine all the loaded data frames based on branches ID.
         all_dfs = [branch_df, inner_df, inner_radius_df, outer_df, outer_radius_df]
+        for df in all_dfs:
+            logging.debug(df.dtypes)
+
         organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
         organised_tree.set_index('branch', inplace=True)
 

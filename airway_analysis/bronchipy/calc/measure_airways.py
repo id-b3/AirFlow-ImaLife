@@ -23,10 +23,9 @@ def calc_branch_length(points: list) -> float:
     logging.debug(f"Number of points loaded {num_points}")
 
     for i in range(1, num_points):
-        logging.debug(f"Index {i}. Distance between {points[i]} and {points[i-1]}")
         local_dist = np.linalg.norm(points_arr[i] - points_arr[i - 1])
         branch_length += local_dist
-        logging.debug(f"Distance between points {local_dist: .3f}. Total distance {branch_length: .3f}")
+    logging.debug(f"Total centreline length {branch_length}")
 
     return branch_length
 
