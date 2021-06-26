@@ -8,6 +8,7 @@ import logging
 import pandas as pd
 import numpy as np
 from airway_analysis.bronchipy.tree.airwaytree import AirwayTree
+from airway_analysis.bronchipy.io.branchio import load_csv, load_branch_csv, load_local_radius_csv
 
 # Script constants
 opfront_script = str((Path(__file__).parent / "scripts" / "opfront_phantom_single.sh").resolve())
@@ -126,16 +127,16 @@ class PhantomTrainer:
         logging.debug(f"List of files: Outer Local {list_local_outer}")
         logging.debug(f"List of files: Branches {list_branches}")
 
-        combined_inner = pd.concat([pd.read_csv(f) for f in list_inner])
+        combined_inner = pd.concat([load_csv(in_file=f, inner=True) for f in list_inner])
         combined_inner['branch'] = np.arange(1, len(combined_inner) + 1)
-        combined_outer = pd.concat([pd.read_csv(f) for f in list_outer])
+        combined_outer = pd.concat([load_csv(in_file=f, inner=False) for f in list_outer])
         combined_outer['branch'] = np.arange(1, len(combined_inner) + 1)
-        combined_local_inner = pd.concat([pd.read_csv(f, delimiter=";") for f in list_local_inner])
+        combined_local_inner = pd.concat([load_local_radius_csv(in_file=f, inner=True) for f in list_local_inner])
         combined_local_inner['branch'] = np.arange(1, len(combined_inner) + 1)
-        combined_local_outer = pd.concat([pd.read_csv(f, delimiter=";") for f in list_local_outer])
+        combined_local_outer = pd.concat([load_local_radius_csv(in_file=f, inner=False) for f in list_local_outer])
         combined_local_outer['branch'] = np.arange(1, len(combined_inner) + 1)
-        combined_branches = pd.concat([pd.read_csv(f, delimiter=";") for f in list_branches])
-        combined_branches['branch'] = np.arange(1, len(combined_inner) + 1)
+        combined_branches = pd.concat([load_branch_csv(f) for f in list_branches])
+        combined_local_outer['airway_id'] = np.arange(1, len(combined_inner) + 1)
 
         inner_file = f"{run_out_dir}/inner.csv"
         outer_file = f"{run_out_dir}/outer.csv"
@@ -152,10 +153,15 @@ class PhantomTrainer:
         # 6.  Process using airway analysis tools for summary.
         phantom = AirwayTree(branch_file=branch_file, inner_file=inner_file, outer_file=outer_file,
                              inner_radius_file=inner_local, outer_radius_file=outer_local, volume=self.volume)
-        phantom.tree.tail()
 
         # 5. Calculate the error measure
         logging.debug(f"Calculating error measure for run {run_number}...")
+        err_inner = phantom.tree.inner_radius.sum() - 35.0
+        err_outer = phantom.tree.outer_radius.sum() - 48.6
+        logging.info(f"Inner error: {err_inner}")
+        logging.info(f"Outer error: {err_outer}")
+        err_m = (err_inner + err_outer)/2
+
         # return the error measure
         logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")
         return err_m

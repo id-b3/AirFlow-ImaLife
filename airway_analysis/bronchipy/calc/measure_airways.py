@@ -19,8 +19,8 @@ def calc_branch_length(points: list) -> float:
     branch_length = 0
 
     points_arr = np.array(points)
-    logging.debug(points_arr)
-    num_points = points_arr.shape[1]
+    num_points = points_arr.shape[0]
+    logging.debug(f"Number of points loaded {num_points}")
 
     for i in range(1, num_points):
         logging.debug(f"Index {i}. Distance between {points[i]} and {points[i-1]}")
