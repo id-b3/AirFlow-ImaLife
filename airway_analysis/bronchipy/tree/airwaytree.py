@@ -66,7 +66,7 @@ class AirwayTree:
         branch_df = brio.load_branch_csv(self.files['branch'])
         # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
         branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(point) for point in row.points], axis=1)
-        logging.info(branch_df.columns)
+        logging.debug(branch_df.columns)
         # Add entry describing the number of points in the airway measurement.
         branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
         # Calculate and add the branch lengths in mm.

@@ -6,6 +6,8 @@ from .split.split_segmentation_regions import split_seg_reg
 from datetime import datetime
 import logging
 import pandas as pd
+import numpy as np
+from airway_analysis.bronchipy.tree.airwaytree import AirwayTree
 
 # Script constants
 opfront_script = str((Path(__file__).parent / "scripts" / "opfront_phantom_single.sh").resolve())
@@ -99,20 +101,24 @@ class PhantomTrainer:
                           f"{inner_vol}\n{outer_vol}")
             subprocess.run([measure_split, str(self.volume), inner_vol, outer_vol, str(split_path.resolve())])
 
-        # TODO Merge all results into one CSV
         # 4. merge the airways
         logging.info(f"Merging results for run {run_number}...")
 
-        list_inner = [str(split_path.glob("*_inner.csv"))
+        list_inner = [str(list(split_path.glob("*_inner.csv"))[0])
                       for split_path in Path(split_out_dir).iterdir()]
-        list_outer = [str(split_path.glob("*_outer.csv"))
+        list_inner.sort()
+        list_outer = [str(list(split_path.glob("*_outer.csv"))[0])
                       for split_path in Path(split_out_dir).iterdir()]
-        list_local_inner = [str(split_path.glob("*_inner_localRadius.csv"))
+        list_outer.sort()
+        list_local_inner = [str(list(split_path.glob("*_inner_local_pandas.csv"))[0])
                             for split_path in Path(split_out_dir).iterdir()]
-        list_local_outer = [str(split_path.glob("*_outer_localRadius.csv"))
+        list_local_inner.sort()
+        list_local_outer = [str(list(split_path.glob("*_outer_local_pandas.csv"))[0])
                             for split_path in Path(split_out_dir).iterdir()]
-        list_branches = [str(split_path.glob("*_airways_centrelines.csv"))
+        list_local_outer.sort()
+        list_branches = [str(list(split_path.glob("*_airways_centrelines.csv"))[0])
                          for split_path in Path(split_out_dir).iterdir()]
+        list_branches.sort()
 
         logging.debug(f"List of files: Inner {list_inner}")
         logging.debug(f"List of files: Outer {list_outer}")
@@ -121,18 +127,34 @@ class PhantomTrainer:
         logging.debug(f"List of files: Branches {list_branches}")
 
         combined_inner = pd.concat([pd.read_csv(f) for f in list_inner])
+        combined_inner['branch'] = np.arange(1, len(combined_inner) + 1)
         combined_outer = pd.concat([pd.read_csv(f) for f in list_outer])
+        combined_outer['branch'] = np.arange(1, len(combined_inner) + 1)
         combined_local_inner = pd.concat([pd.read_csv(f, delimiter=";") for f in list_local_inner])
+        combined_local_inner['branch'] = np.arange(1, len(combined_inner) + 1)
         combined_local_outer = pd.concat([pd.read_csv(f, delimiter=";") for f in list_local_outer])
+        combined_local_outer['branch'] = np.arange(1, len(combined_inner) + 1)
         combined_branches = pd.concat([pd.read_csv(f, delimiter=";") for f in list_branches])
+        combined_branches['branch'] = np.arange(1, len(combined_inner) + 1)
 
-        combined_inner.to_csv(f"{run_out_dir}/inner.csv")
-        combined_outer.to_csv(f"{run_out_dir}/outer.csv")
-        combined_local_inner.to_csv(f"{run_out_dir}/inner_local.csv", delimiter=";")
-        combined_local_outer.to_csv(f"{run_out_dir}/outer_local.csv", delimiter=";")
-        combined_branches.to_csv(f"{run_out_dir}/branches.csv", delimiter=";")
+        inner_file = f"{run_out_dir}/inner.csv"
+        outer_file = f"{run_out_dir}/outer.csv"
+        inner_local = f"{run_out_dir}/inner_local.csv"
+        outer_local = f"{run_out_dir}/outer_local.csv"
+        branch_file = f"{run_out_dir}/branches.csv"
 
-        # 5. calculate the error measure
+        combined_inner.to_csv(inner_file, index=False)
+        combined_outer.to_csv(outer_file, index=False)
+        combined_local_inner.to_csv(inner_local, sep=";", index=False)
+        combined_local_outer.to_csv(outer_local, sep=";", index=False)
+        combined_branches.to_csv(branch_file, sep=";", index=False)
+
+        # 6.  Process using airway analysis tools for summary.
+        phantom = AirwayTree(branch_file=branch_file, inner_file=inner_file, outer_file=outer_file,
+                             inner_radius_file=inner_local, outer_radius_file=outer_local, volume=self.volume)
+        phantom.tree.tail()
+
+        # 5. Calculate the error measure
         logging.debug(f"Calculating error measure for run {run_number}...")
         # return the error measure
         logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")
