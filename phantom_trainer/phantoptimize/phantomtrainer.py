@@ -8,8 +8,8 @@ import logging
 import pandas as pd
 
 # Script constants
-opfront_script = str((Path(__file__).parent / "scripts/opfront_phantom_single.sh").resolve())
-measure_split = str((Path(__file__).parent / "scripts/measure_phantom_single.sh").resolve())
+opfront_script = str((Path(__file__).parent / "scripts" / "opfront_phantom_single.sh").resolve())
+measure_split = str((Path(__file__).parent / "scripts" / "measure_phantom_single.sh").resolve())
 
 # TODO: File constants - incorrect, have to obtain from the running process... in case the volume name is different.
 p_surf_0 = "./phantom_volume_surface0.nii.gz"
