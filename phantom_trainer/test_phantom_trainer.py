@@ -12,16 +12,20 @@ def main(infiles):
     logging.getLogger().setLevel(logging.INFO)
 
     def objective(trial):
-        in_der = trial.suggest_float('inner_derivative', -1, 1, step=0.01)
-        out_der = trial.suggest_float('outer_derivative', -1, 1, step=0.01)
-        error = trainer.process_phantom(trial.number, i_der=in_der, o_der=out_der, s_pen=0)
+        in_der = trial.suggest_float('inner_derivative', -0.398, -0.392, step=0.002)
+        out_der = trial.suggest_float('outer_derivative', -1.06, -1.05, step=0.002)
+        try:
+            error = trainer.process_phantom(trial.number, i_der=in_der, o_der=out_der, s_pen=6)
+        except IndexError as e:
+            logging.error(f"Run {trial.number} failed with error:\n {e}")
+            return 10
 
         return abs(error)
 
     study = optuna.create_study()
-    study.optimize(objective, n_trials=20)
+    study.optimize(objective, n_trials=6)
     print(study.best_trial)
-    study.trials_dataframe().to_csv('trial_results.csv')
+    study.trials_dataframe().to_csv('trial_results_final.csv')
 
 
 if __name__ == '__main__':

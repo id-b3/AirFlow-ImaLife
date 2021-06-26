@@ -56,7 +56,7 @@ mkdir -p "$FOLDEROUT"
   echo -e "Inner Surface: $INNER_VOL"
   echo -e "Outer Surface: $OUTER_VOL"
   echo -e "Results folder: $FOLDEROUT\n"
-} | tee -a "$LOGFILE"
+} >> "$LOGFILE"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
 
 {
@@ -110,4 +110,4 @@ mkdir -p "$FOLDEROUT"
   CALL="rm $INNER_VOL_ISO $INNER_VOL_ISO_TH1 $BRANCHES_ISO"
   echo -e "\n$CALL"
   eval "$CALL"
-} | tee -a "$LOGFILE"
+} >> "$LOGFILE"

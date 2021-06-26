@@ -32,6 +32,7 @@ echo "-------------------------------------------------------"
 mkdir -p $DESTAIR
 mkdir -p $DESTLUNG
 mkdir -p $DESTIMG
+mkdir -p "${OUTPUTFOLDER}"
 mkdir -p /temp_work/processing/Airways
 
 cp "$INPUTFILE" $DESTIMG/
@@ -79,5 +80,5 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}/opfront" "-i 48 -o 23 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57"
-/airway_analysis/airway_summary.py
+/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.4 -G -0.96"
+#/airway_analysis/airway_summary.py

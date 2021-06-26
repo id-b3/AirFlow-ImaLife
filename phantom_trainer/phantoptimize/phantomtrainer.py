@@ -78,10 +78,10 @@ class PhantomTrainer:
 
         err_m = 1  #: The error measure. Initialised to 1
         parameters = f"{op_par} -F {i_der} -G {o_der} -d {s_pen}"
-        run_out_dir = str(self.out_dir / f"run_{run_number}_F{i_der}G{o_der}d{s_pen}").replace('.', '-')
+        run_out_dir = str(self.out_dir / f"run_{run_number}").replace('.', '-')
 
         logging.info(
-            f"Starting Phantom {str(self.volume)} Training Run No.{run_number} with parameters '{parameters}'\n"
+            f"Starting Phantom {str(self.volume)} Training Run No.{run_number} with parameters:\n'{parameters}'\n"
             f"Outputdir {run_out_dir} \n"
             f"----------------------------------------------------------------\n")
 
@@ -160,7 +160,7 @@ class PhantomTrainer:
         err_outer = phantom.tree.outer_radius.mean() - (48.6/2/8)
         logging.info(f"Inner error: {err_inner}")
         logging.info(f"Outer error: {err_outer}")
-        err_m = (err_inner + err_outer)/2
+        err_m = (abs(err_inner) + abs(err_outer))/2
 
         # return the error measure
         logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")

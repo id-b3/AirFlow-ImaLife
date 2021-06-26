@@ -50,7 +50,7 @@ echo -e "Segmentation: $SEG"
 echo -e "Opfront parameters: $OPFRONT_PARAMETERS"
 echo -e "Results folder: $FOLDEROUT\n"
 echo -e "File without extension: $FILE_NO_EXTENSION\n"
-} | tee -a "$LOGFILE"
+} >> "$LOGFILE"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
 {
 echo -e "\n6-connecting initial surface:"
@@ -82,4 +82,4 @@ echo -e "\nBinarising isotropic inner surface with threshold 1 for branch extrac
 CALL="${BINARY_DIR}/imgconv -i $INNER_VOL -o $INNER_VOL_TH1 -t 0 -x 1"
 echo -e "\n$CALL"
 eval "$CALL"
-} | tee -a "$LOGFILE"
+} >> "$LOGFILE"
