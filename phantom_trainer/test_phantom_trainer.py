@@ -6,7 +6,7 @@ import argparse
 
 
 def main(infiles):
-    trainer = PhantomTrainer(infiles.in_volume, infiles.in_segment, infiles.out_dir, logging.INFO)
+    trainer = PhantomTrainer(infiles.in_volume, infiles.in_segment, infiles.out_dir, logging.DEBUG)
     trainer.process_phantom(1, i_der=-0.41, o_der=-0.57, s_pen=6.8)
 
 

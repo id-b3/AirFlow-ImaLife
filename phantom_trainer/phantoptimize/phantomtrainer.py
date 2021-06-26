@@ -5,6 +5,7 @@ from .split.compute_boundbox_regions import comp_bound_box
 from .split.split_segmentation_regions import split_seg_reg
 from datetime import datetime
 import logging
+import pandas as pd
 
 # Script constants
 opfront_script = str((Path(__file__).parent / "scripts/opfront_phantom_single.sh").resolve())
@@ -100,7 +101,36 @@ class PhantomTrainer:
 
         # TODO Merge all results into one CSV
         # 4. merge the airways
-        logging.debug(f"Merging results for run {run_number}...")
+        logging.info(f"Merging results for run {run_number}...")
+
+        list_inner = [str(split_path.glob("*_inner.csv"))
+                      for split_path in Path(split_out_dir).iterdir()]
+        list_outer = [str(split_path.glob("*_outer.csv"))
+                      for split_path in Path(split_out_dir).iterdir()]
+        list_local_inner = [str(split_path.glob("*_inner_localRadius.csv"))
+                            for split_path in Path(split_out_dir).iterdir()]
+        list_local_outer = [str(split_path.glob("*_outer_localRadius.csv"))
+                            for split_path in Path(split_out_dir).iterdir()]
+        list_branches = [str(split_path.glob("*_airways_centrelines.csv"))
+                         for split_path in Path(split_out_dir).iterdir()]
+
+        logging.debug(f"List of files: Inner {list_inner}")
+        logging.debug(f"List of files: Outer {list_outer}")
+        logging.debug(f"List of files: Inner Local {list_local_inner}")
+        logging.debug(f"List of files: Outer Local {list_local_outer}")
+        logging.debug(f"List of files: Branches {list_branches}")
+
+        combined_inner = pd.concat([pd.read_csv(f) for f in list_inner])
+        combined_outer = pd.concat([pd.read_csv(f) for f in list_outer])
+        combined_local_inner = pd.concat([pd.read_csv(f, delimiter=";") for f in list_local_inner])
+        combined_local_outer = pd.concat([pd.read_csv(f, delimiter=";") for f in list_local_outer])
+        combined_branches = pd.concat([pd.read_csv(f, delimiter=";") for f in list_branches])
+
+        combined_inner.to_csv(f"{run_out_dir}/inner.csv")
+        combined_outer.to_csv(f"{run_out_dir}/outer.csv")
+        combined_local_inner.to_csv(f"{run_out_dir}/inner_local.csv", delimiter=";")
+        combined_local_outer.to_csv(f"{run_out_dir}/outer_local.csv", delimiter=";")
+        combined_branches.to_csv(f"{run_out_dir}/branches.csv", delimiter=";")
 
         # 5. calculate the error measure
         logging.debug(f"Calculating error measure for run {run_number}...")
