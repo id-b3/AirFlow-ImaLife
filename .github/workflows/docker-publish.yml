@@ -6,10 +6,7 @@ name: Docker
 # documentation.
 
 on:
-  # schedule:
-  #   - cron: '26 14 * * *'
-  push:
-    tags: [ 'v*.*.*' ]
+
   workflow_dispatch:
     inputs:
       version:
