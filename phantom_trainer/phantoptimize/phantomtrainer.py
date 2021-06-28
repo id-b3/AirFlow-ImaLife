@@ -8,7 +8,7 @@ import logging
 import pandas as pd
 import numpy as np
 from bronchipy.tree.airwaytree import AirwayTree
-from bronchipy.io.branchio import load_csv, load_branch_csv, load_local_radius_csv
+from bronchipy.io.branchio import save_summary_csv
 
 # Script constants
 opfront_script = str((Path(__file__).parent / "scripts" / "opfront_phantom_single.sh").resolve())
@@ -153,6 +153,8 @@ class PhantomTrainer:
         # 6.  Process using airway analysis tools for summary.
         phantom = AirwayTree(branch_file=branch_file, inner_file=inner_file, outer_file=outer_file,
                              inner_radius_file=inner_local, outer_radius_file=outer_local, volume=self.volume)
+
+        save_summary_csv(phantom.tree, f"{run_out_dir}/branch_summary.csv")
 
         # 5. Calculate the error measure
         logging.debug(f"Calculating error measure for run {run_number}...")

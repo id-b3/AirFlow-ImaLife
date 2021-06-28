@@ -23,7 +23,7 @@ def main(infiles):
         return abs(error)
 
     study = optuna.create_study()
-    study.optimize(objective, n_trials=6)
+    study.optimize(objective, n_trials=1)
     print(study.best_trial)
     study.trials_dataframe().to_csv('trial_results_final.csv')
 

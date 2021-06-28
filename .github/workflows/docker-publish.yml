@@ -15,15 +15,15 @@ on:
   pull_request:
     branches: [ release ]
   workflow_dispatch:
-  inputs:
-    version:
-      description: 'version x.x.x'
-      required: true
-      default: ''
-    tag:
-      description: ':tag'
-      required: false
-      default: ''
+    inputs:
+      version:
+        description: 'version x.x.x'
+        required: true
+        default: ''
+      tag:
+        description: ':tag'
+        required: false
+        default: ''
 
 jobs:
   build:

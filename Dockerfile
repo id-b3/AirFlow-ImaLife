@@ -1,5 +1,5 @@
 # Choose the base image in for the compilation environment
-FROM ubuntu:trusty AS builder
+FROM ubuntu:18.04 AS builder
 
 # Prepare building tools and libraries
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
@@ -27,7 +27,9 @@ RUN mkdir -p playground/thirdparty/itkbin && \
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
-# Compile the playground tools
+
+
+# Compile the playground
 RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/libmy_functions && \
     make -C /lungseg/playground/src/lung_segmentation && \
@@ -38,8 +40,8 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/connected_brh && \
     make -C /lungseg/playground/src/smooth_brh && \
     make -C /lungseg/playground/src/imgconv && \
-    make -C /lungseg/playground/src/brh2vol && \     
-    make -C /lungseg/playground/src/gts_ray_measure
+    make -C /lungseg/playground/src/gts_ray_measure && \
+    make -C /lungseg/playground/src/brh2vol
 
 # Copy the tool binaries
 RUN mkdir /lungseg/bins && \
