@@ -27,7 +27,7 @@ def calc_branch_length(points: np.array) -> float:
 
     return branch_length
 
-
+# TODO add this to the airway summary csv
 def calc_smoothing(in_data: np.array, smo_filter: np.array, is_padded: bool = True) -> np.array:
     """
     Apply smoothing to data by convolution with a filter
@@ -103,7 +103,7 @@ def calc_smoothing_asAdria(in_data: np.array, smo_filter: np.array, is_padded: b
 
     return out_data
 
-
+# TODO Add this to the bronchial parameter summary csv
 def calc_local_orientations(points: np.array, min_width: float) -> np.array:
     """
     Compute the local orientations at every point of centerline
