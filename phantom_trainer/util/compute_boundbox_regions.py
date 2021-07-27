@@ -1,8 +1,8 @@
 
 import argparse
 
-from airway_analysis.functionsutil.filereader import ImageFileReader
-from airway_analysis.functionsutil.functionutil import *
+from airway_analysis.functionsutil.filereaders import ImageFileReader
+from airway_analysis.functionsutil.functionsutil import *
 from airway_analysis.functionsutil.imageoperations import *
 
 NUM_VOXELS_BUFFER = 8

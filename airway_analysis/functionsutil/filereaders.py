@@ -11,7 +11,7 @@ with warnings.catch_warnings():
     import nibabel as nib
 import csv
 
-from common.functionutil import fileextension, handle_error_message
+from airway_analysis.functionsutil.functionsutil import fileextension, handle_error_message
 
 
 class ImageFileReader(object):
@@ -53,40 +53,66 @@ class ImageFileReader(object):
         elif extension == '.dcm':
             return DicomReader
         else:
-            message = "Not valid file extension: %s..." % (extension)
+            message = f"Not valid file extension: {extension}"
             handle_error_message(message)
 
 
-class NiftiReader(object):
+class NiftiReader(ImageFileReader):
 
     @classmethod
     def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
-        affine = nib.load(filename).affine
+        affine = cls._get_image_affine_matrix(filename)
         return tuple(affine[:3, -1])
 
     @classmethod
     def get_image_voxelsize(cls, filename: str) -> Tuple[float, float, float]:
-        affine = nib.load(filename).affine
+        affine = cls._get_image_affine_matrix(filename)
         return tuple(np.abs(np.diag(affine)[:3]))
 
     @classmethod
+    def _get_image_affine_matrix(cls, filename: str) -> np.ndarray:
+        affine = nib.load(filename).affine
+        return cls._fix_dims_affine_matrix(affine)
+
+    @classmethod
     def get_image_metadata_info(cls, filename: str) -> Any:
-        return nib.load(filename).affine
+        return cls._get_image_affine_matrix(filename)
 
     @classmethod
     def get_image(cls, filename: str) -> np.ndarray:
         out_image = nib.load(filename).get_data()
-        return np.swapaxes(out_image, 0, 2)
+        return cls._fix_dims_image_read(out_image)
 
     @classmethod
     def write_image(cls, filename: str, in_image: np.ndarray, **kwargs) -> None:
-        affine = kwargs['metadata'] if 'metadata' in kwargs.keys() else None
-        in_image = np.swapaxes(in_image, 0, 2)
+        if 'metadata' in kwargs.keys():
+            affine = kwargs['metadata']
+            affine = cls._fix_dims_affine_matrix(affine)
+        else:
+            affine = None
+        in_image = cls._fix_dims_image_write(in_image)
         nib_image = nib.Nifti1Image(in_image, affine)
         nib.save(nib_image, filename)
 
+    @staticmethod
+    def _fix_dims_affine_matrix(inout_affine: np.ndarray) -> np.ndarray:
+        # Change dims from (dx, dy, dz) to (dz, dy, dx)
+        inout_affine[[0, 2], :] = inout_affine[[2, 0], :]
+        inout_affine[:, [0, 2]] = inout_affine[:, [2, 0]]
+        return inout_affine
 
-class DicomReader(object):
+    @staticmethod
+    def _fix_dims_image_read(in_image: np.ndarray) -> np.ndarray:
+        # Roll dims from (dx, dy, dz) to (dz, dy, dx)
+        return np.swapaxes(in_image, 0, 2)
+
+    @staticmethod
+    def _fix_dims_image_write(in_image: np.ndarray) -> np.ndarray:
+        # Roll dims from (dz, dy, dx) to (dx, dy, dz)
+        return np.swapaxes(in_image, 0, 2)
+
+
+class DicomReader(ImageFileReader):
 
     @classmethod
     def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
