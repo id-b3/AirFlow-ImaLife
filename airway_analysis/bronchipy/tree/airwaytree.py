@@ -31,6 +31,11 @@ class AirwayTree:
         AirwayTree Object containing volume information and the airway tree data.
 
         """
+        logging.basicConfig(level=logging.INFO)
+        if 'volume' not in kwargs:
+            logging.error("Missing volume file!")
+            raise
+
         vol_header = nib.load(kwargs['volume']).header
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()
@@ -62,7 +67,7 @@ class AirwayTree:
         branch_df = brio.load_branch_csv(self.files['branch'])
         # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
         branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(point) for point in row.points], axis=1)
-        logging.info(branch_df.columns)
+        logging.debug(branch_df.columns)
         # Add entry describing the number of points in the airway measurement.
         branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
         # Calculate and add the branch lengths in mm.
@@ -81,9 +86,13 @@ class AirwayTree:
         # Calculate the area from the radius and insert as new column.
         outer_df['outer_global_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
         outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
+        logging.debug(outer_radius_df.dtypes)
 
         # Combine all the loaded data frames based on branches ID.
         all_dfs = [branch_df, inner_df, inner_radius_df, outer_df, outer_radius_df]
+        for df in all_dfs:
+            logging.debug(df.dtypes)
+
         organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
         organised_tree.set_index('branch', inplace=True)
 
