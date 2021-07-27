@@ -1,5 +1,7 @@
+
 import argparse
-from ..common.functionutil import *
+
+from airway_analysis.functionsutil.functionsutil import *
 
 
 def main(args):
