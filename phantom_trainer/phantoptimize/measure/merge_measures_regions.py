@@ -1,8 +1,6 @@
 
 import argparse
 
-from airway_analysis.functionsutil.functionsutil import *
-
 
 def main(args):
     region_input_case = get_substring_filename(args.input_dir_region1, 'region[0-9]')
