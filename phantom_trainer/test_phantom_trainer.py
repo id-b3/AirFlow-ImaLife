@@ -15,17 +15,18 @@ def main(infiles):
         in_der = trial.suggest_float('inner_derivative', -0.4, -0.3, step=0.01)
         out_der = trial.suggest_float('outer_derivative', -1.1, -0.96, step=0.01)
         try:
-            error_inner, error_outer, error_total = trainer.process_phantom(trial.number, i_der=in_der, o_der=out_der, s_pen=0)
+            error_inner, error_outer, error_total = trainer.process_phantom(trial.number, i_der=in_der, o_der=out_der,
+                                                                            s_pen=0)
         except IndexError as e:
             logging.error(f"Run {trial.number} failed with error:\n {e}")
-            return 10
+            return 10, 10
 
         return error_inner, error_outer
 
     study = optuna.create_study(directions=["minimize", "minimize"])
     study.optimize(objective, n_trials=1)
-    print(study.best_trial)
-    study.trials_dataframe().to_csv('trial_results_final.csv')
+    # print(study.best_trial)
+    study.trials_dataframe().to_csv('trial_results.csv')
 
 
 if __name__ == '__main__':

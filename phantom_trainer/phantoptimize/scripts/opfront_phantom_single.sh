@@ -21,7 +21,7 @@ BINARY_DIR="/usr/local/bin"
 
 # get the root of the name without extension
 FILE=$(basename "${VOL}")
-FILE_NO_EXTENSION="${FILE%.*.*}"
+FILE_NO_EXTENSION="${FILE%%.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 LOGFILE="${ROOT}.log"
 
@@ -33,11 +33,8 @@ INNER_SURFACE="${ROOT}surface0.gts" # Converted results from opfront, DO NOT EDI
 OUTER_SURFACE="${ROOT}surface1.gts"
 
 INNER_VOL="${ROOT}_surface0.nii.gz" # Results from opfront, original sizes
+INNER_VOL_ISO="${ROOT}_surface0.nii.gz" # Iso surface
 OUTER_VOL="${ROOT}_surface1.nii.gz"
-
-# INNER_VOL_ISO="${ROOT}_surface0_iso05.nii.gz" # Results from opfront, converted to isotropic volumes.
-INNER_VOL_TH1="${ROOT}_surface0_th1.nii.gz"
-
 
 mkdir -p "$FOLDEROUT"
 
@@ -78,8 +75,9 @@ CALL="${BINARY_DIR}/gts2img -g $OUTER_SURFACE -s $OUTER_VOL -v $VOL -u 3"
 echo -e "\n$CALL"
 eval "$CALL"
 
-echo -e "\nBinarising isotropic inner surface with threshold 1 for branch extraction:"
-CALL="${BINARY_DIR}/imgconv -i $INNER_VOL -o $INNER_VOL_TH1 -t 0 -x 1"
+echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
+CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5"
 echo -e "\n$CALL"
-eval "$CALL"
+eval "$CALL"p
+
 } >> "$LOGFILE"

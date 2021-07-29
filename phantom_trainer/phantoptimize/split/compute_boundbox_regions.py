@@ -1,8 +1,8 @@
-
+import numpy as np
 import argparse
 
-from util.functionsutil.filereaders import ImageFileReader
-from util.functionsutil.imageoperations import compute_connected_components, compute_boundbox_around_mask
+from ..functionsutil.filereaders import ImageFileReader
+from ..functionsutil.imageoperations import compute_connected_components, compute_boundbox_around_mask
 
 NUM_VOXELS_BUFFER = 8
 

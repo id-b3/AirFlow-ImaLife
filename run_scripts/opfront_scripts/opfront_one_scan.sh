@@ -22,7 +22,7 @@ BINARY_DIR="/usr/local/bin"
 
 # get the root of the name without extension
 FILE=$(basename "${VOL}")
-FILE_NO_EXTENSION="${FILE%.*.*}"
+FILE_NO_EXTENSION="${FILE%%.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 LOGFILE="${ROOT}.log" # Process Log File
 

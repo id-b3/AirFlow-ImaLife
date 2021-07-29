@@ -76,7 +76,6 @@ class PhantomTrainer:
         The error measure for this set of opfront parameters.
         """
 
-        err_m = 1  #: The error measure. Initialised to 1
         parameters = f"{op_par} -F {i_der} -G {o_der} -d {s_pen}"
         run_out_dir = str(self.out_dir / f"run_{run_number}").replace('.', '-')
 

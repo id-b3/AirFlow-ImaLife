@@ -1,7 +1,9 @@
 import argparse
 import logging
-from util.functionsutil.filereaders import ImageFileReader
-from util.functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
+import numpy as np
+from ..functionsutil.filereaders import ImageFileReader
+from ..functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
+from ..functionsutil.functionsutil import *
 
 
 def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume') -> str:
