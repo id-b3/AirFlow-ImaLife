@@ -1,8 +1,8 @@
 
 import argparse
 
-from airway_analysis.functionsutil.filereaders import ImageFileReader
-from airway_analysis.functionsutil.imageoperations import compute_connected_components, compute_boundbox_around_mask
+from util.functionsutil.filereaders import ImageFileReader
+from util.functionsutil.imageoperations import compute_connected_components, compute_boundbox_around_mask
 
 NUM_VOXELS_BUFFER = 8
 

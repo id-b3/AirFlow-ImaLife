@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
-from airway_analysis.functionsutil.functionsutil import *
-
 
 def main(args):
 

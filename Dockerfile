@@ -108,7 +108,7 @@ COPY ["./bronchinet/src/", "./src/"]
 # For default bronchinet, source is ./bronchinet/models
 ARG MODEL_DIR=./imalife_models/imalife
 COPY ["${MODEL_DIR}", "./model/" ]
-COPY ["./util/fix_transfer_syntax.py", "./util/reset_nifti_header.py", "./scripts/"]
+COPY ["./util/", "./scripts/util/"]
 COPY ["./run_scripts/", "./scripts/"]
 RUN pip3 install --no-cache-dir optuna
 # Clean up apt-get cache to lower image size

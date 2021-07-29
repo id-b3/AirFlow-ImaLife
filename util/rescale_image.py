@@ -1,9 +1,8 @@
-
 import numpy as np
 import argparse
 
-from airway_analysis.functionsutil.filereaders import ImageFileReader
-from airway_analysis.functionsutil.imageoperations import compute_rescaled_image, compute_thresholded_mask
+from functionsutil.filereaders import ImageFileReader
+from functionsutil.imageoperations import compute_rescaled_image, compute_thresholded_mask
 
 
 def main(args):
