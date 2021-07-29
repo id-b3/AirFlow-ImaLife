@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial import distance
 
 
-def calc_branch_length(points: np.array) -> float:
+def calc_branch_length(points: list) -> float:
     """
     Calculates and sums the euclidian distance between all points along a branch centreline.
 
@@ -17,13 +17,15 @@ def calc_branch_length(points: np.array) -> float:
     Length of branch in millimeters
     """
     branch_length = 0
-    num_points = points.shape(1)
+
+    points_arr = np.array(points)
+    num_points = points_arr.shape[0]
+    logging.debug(f"Number of points loaded {num_points}")
 
     for i in range(1, num_points):
-        # logging.info(f"Index {i}. Distance between {points[i]} and {points[i-1}")
-        local_dist = np.linalg.norm(points[i] - points[i - 1])
+        local_dist = np.linalg.norm(points_arr[i] - points_arr[i - 1])
         branch_length += local_dist
-        # logging.info(f"Distance between points {local_dist: .3f}. Total distance {branch_length: .3f}")
+    logging.debug(f"Total centreline length {branch_length}")
 
     return branch_length
 

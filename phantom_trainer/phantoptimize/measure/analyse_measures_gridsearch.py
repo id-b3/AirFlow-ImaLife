@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
-from common.functionutil import *
-
 
 def main(args):
 

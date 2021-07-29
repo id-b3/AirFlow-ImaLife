@@ -13,17 +13,20 @@ This is followed by the [Opfront](/opfront) method which uses optimal-surface gr
 From this, various bronchial parameters can be derived.
 
 ## Repository Structure
+<pre>
     .
-    ├── airflow_libs      -> backup of c++ libraries required for opfront and playground tools   
-    ├── airway_analysis   -> python code for processing opfront output and producing summary measures of airways  
-    ├── bronchinet        -> 3D-Unet developed for airway lumen segmentations
-    ├── Dockerfile        -> Dockerfile for building docker image of the pipeline  
-    ├── legacy            -> resources for compiling /playground tools  
-    ├── opfront           -> Opfront tools for segmenting airway lumen and wall surfaces  
-    ├── phantom_trainer   -> Set of tools for automatically determining parameters for the opfront tool  
-    ├── playground        -> set of tools for post-processin opfront results  
-    ├── README.md         -> This file.  
-    ├── requirements.txt  -> List of required packages for python tools. Install with pip install -r requirements.txt  
-    ├── run_scripts       -> Bash scripts used to automate the docker image. 
-    ├── test_docker.sh    -> Script to rapidly run docker container into bash for testing/debugging.  
-    └── util              -> Set of utility scripts for manipulating volume/segmentation files.
+    ├── airway_analysis     -> python code for processing opfront output and producing summary measures of airways  
+    ├── <i>bronchinet</i>          -> 3D-Unet developed for airway lumen segmentations 
+    ├── <i>legacy</i>              -> resources for compiling /playground tools  
+    ├── <i>opfront</i>             -> Opfront tools for segmenting airway lumen and wall surfaces  
+    ├── phantom_trainer     -> Set of tools for automatically determining parameters for the opfront tool  
+    ├── <i>playground</i>          -> set of tools for post-processin opfront results  
+    ├── run_scripts         -> Bash scripts used to automate the docker image. 
+    ├── util                -> Set of utility scripts for manipulating volume/segmentation files.
+    ├─────── Dockerfile          -> Dockerfile for building docker image of the pipeline  
+    ├─────── airflow_libs.tar.gz -> Package containing runtime libraries for opfront tools  
+    ├─────── README.md           -> This file.  
+    ├─────── requirements.txt    -> List of required packages for python tools. Install with pip install -r requirements.txt  
+    └─────── test_docker.sh      -> Script to rapidly run docker container into bash for testing/debugging.
+    <i>Submodules in italics.</i>
+</pre>

@@ -16,8 +16,12 @@ name: Lint Code Base
 #############################
 on:
   push:
-    branches: [master, optimise_phantom]
-    # Remove the line above to run when pushing to master
+    branches: [master]
+    paths-ignore:
+      - 'README.md'
+      - '.github/workflows/*'
+      - 'Dockerfile'
+
   pull_request:
     branches: [master]
 

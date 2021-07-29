@@ -1,11 +1,8 @@
 
 import argparse
 
-from common.functionutil import *
-
 
 def main(args):
-
     region_input_case = get_substring_filename(args.input_dir_region1, 'region[0-9]')
     if region_input_case != 'region1':
         message = 'Please input subdir for measures corresponding to \'region1\'...'
@@ -47,7 +44,7 @@ def main(args):
                     strdata_infile = strdata_infile.replace(first_elem_strdata, first_elem_strdata_new)
                     fout.write(strdata_infile)
 
-            except:
+            except IOError as e:
                 print('ERROR. Cannot read data in \'%s\'. '
                       'Add dummy line in output file and skip this region... ' % (indir_thisreg))
 
@@ -56,7 +53,6 @@ def main(args):
                 strdata_infile = ', '.join(list_dummy_data) + '\n'
                 fout.write(strdata_infile)
                 continue
-        # endfor
 
 
 if __name__ == '__main__':
