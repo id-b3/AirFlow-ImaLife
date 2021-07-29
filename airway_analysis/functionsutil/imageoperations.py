@@ -1,9 +1,24 @@
 
 from typing import Tuple
 import numpy as np
+from skimage.transform import rescale
 from skimage.measure import label
 
 BoundBoxType = Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, int]]
+
+
+def compute_rescaled_image(in_image: np.ndarray,
+                           scale_factor: Tuple[float, float, float], order: int = 3) -> np.ndarray:
+    return rescale(in_image,
+                   scale=scale_factor,
+                   order=order,
+                   preserve_range=True,
+                   multichannel=False,
+                   anti_aliasing=True)
+
+
+def compute_thresholded_mask(in_image: np.ndarray, thres_val: float) -> np.ndarray:
+    return np.where(in_image > thres_val, 1.0, 0.0).astype(np.int16)
 
 
 def compute_connected_components(in_image: np.ndarray) -> Tuple[np.ndarray, int]:

@@ -1,8 +1,8 @@
 import argparse
 import logging
-from ..common.filereader import ImageFileReader
-from ..common.functionutil import *
-from ..common.imageoperations import *
+from airway_analysis.functionsutil.filereaders import ImageFileReader
+from airway_analysis.functionsutil.functionsutil import *
+from airway_analysis.functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
 
 
 def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume') -> str:
