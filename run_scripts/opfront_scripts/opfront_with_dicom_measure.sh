@@ -4,18 +4,19 @@
 
 if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ]
 then
-    echo Usage: "$0" VOLUME_FILE_NIFTI INITIAL_SEGMENTATION_FILE OUTPUT_FOLDER OPFRONT_PARAMETERS
+    echo Usage: "$0" VOLUME_FILE_DICOM VOLUME_FILE_NIFTI INITIAL_SEGMENTATION_FILE OUTPUT_FOLDER OPFRONT_PARAMETERS
     echo e.g. default opfront params: -i 15 -o 15 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57
     exit 1
 fi
 
 # INDPUT PARAMETERS
-VOL=$1
-SEG=$2
-FOLDEROUT=$3
+VOL_DICOM=$1
+VOL=$2
+SEG=$3
+FOLDEROUT=$4
 
 # capture all remainign aprameters
-OPFRONT_PARAMETERS=${*:4:$#} # eg. "-i 15 -o 15 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57"
+OPFRONT_PARAMETERS=${*:5:$#} # eg. "-i 15 -o 15 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57"
 
 # PUT HERE THE PATH TO THE COMPILED EXECUTABLES FROM OPFRONT-PLAYGROUND
 BINARY_DIR="/usr/local/bin"
@@ -48,7 +49,6 @@ OUTER_RESULTS_LOCAL="${ROOT}_outer_localRadius.csv"
 INNER_RESULTS_LOCAL_PANDAS="${ROOT}_inner_localRadius_pandas.csv"
 OUTER_RESULTS_LOCAL_PANDAS="${ROOT}_outer_localRadius_pandas.csv"
 
-BRANCHES_VOL="${ROOT}_airways_centrelines.nii.gz"
 BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv"
 
 mkdir -p "$FOLDEROUT"
@@ -70,7 +70,7 @@ echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nCreating mesh surface using marching cubes:"
-CALL="${BINARY_DIR}/img2gts -s $SEG_CON6 -g $SEG_SURFACE"
+CALL="${BINARY_DIR}/img2gts -s $SEG_CON6 -d short -g $SEG_SURFACE"
 echo -e "\n$CALL"
 eval "$CALL"
 
@@ -96,7 +96,7 @@ eval "$CALL"
 
 # -- BRANCHES ----------------------------------
 echo -e "\nComputing branches:" # this creates $BRANCHES_ISO
-CALL="${BINARY_DIR}/be $INNER_VOL_TH1 -o $FOLDEROUT"
+CALL="${BINARY_DIR}/be $INNER_VOL_TH1 -v $VOL -o $FOLDEROUT"
 echo -e "\n$CALL"
 eval "$CALL"
 
@@ -106,17 +106,12 @@ echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nMeasure inner surface:"
-CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_LOCAL_PANDAS"
+CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL_DICOM -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_LOCAL_PANDAS"
 echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nMeasure outer surface:"
-CALL="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_LOCAL_PANDAS"
-echo -e "\n$CALL"
-eval "$CALL"
-
-echo -e "\nConvert branches to volume:"
-CALL="${BINARY_DIR}/brh2vol $BRANCHES -volume $VOL -o $BRANCHES_VOL"
+CALL="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL_DICOM -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_LOCAL_PANDAS"
 echo -e "\n$CALL"
 eval "$CALL"
 

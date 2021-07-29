@@ -54,7 +54,7 @@ class PhantomTrainer:
     # TODO: Create a function that runs one loop of phantom opfront and measuring. Returns an error measure.
     def process_phantom(self, run_number: int,
                         op_par: str = "-i 15 -o 15 -I 2 -O 2 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0",
-                        i_der: float = 0, o_der: float = 0, s_pen: float = 0) -> float:
+                        i_der: float = 0, o_der: float = 0, s_pen: float = 0) -> tuple:
         """
         A method that processes the phantom and calculates an error measure.
 
@@ -158,15 +158,15 @@ class PhantomTrainer:
 
         # 5. Calculate the error measure
         logging.debug(f"Calculating error measure for run {run_number}...")
-        err_inner = phantom.tree.inner_radius.mean() - (35.0/2/8)
-        err_outer = phantom.tree.outer_radius.mean() - (48.6/2/8)
+        err_inner = phantom.tree.inner_radius.sum() - (35.0/2)
+        err_outer = phantom.tree.outer_radius.sum() - (48.6/2)
         logging.info(f"Inner error: {err_inner}")
         logging.info(f"Outer error: {err_outer}")
         err_m = (abs(err_inner) + abs(err_outer))/2
 
         # return the error measure
         logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")
-        return err_m
+        return err_inner, err_outer, err_m
 
     def get_split_vol(self, split_dir: Path) -> tuple:
         """

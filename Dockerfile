@@ -1,5 +1,5 @@
 # Choose the base image in for the compilation environment
-FROM ubuntu:18.04 AS builder
+FROM ubuntu:trusty AS builder
 
 # Prepare building tools and libraries
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
@@ -41,7 +41,8 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/smooth_brh && \
     make -C /lungseg/playground/src/imgconv && \
     make -C /lungseg/playground/src/gts_ray_measure && \
-    make -C /lungseg/playground/src/brh2vol
+    make -C /lungseg/playground/src/brh2vol && \
+    make -C /lungseg/playground/src/volume_maker
 
 # Copy the tool binaries
 RUN mkdir /lungseg/bins && \
@@ -54,7 +55,8 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/smooth_brh/smooth_brh /lungseg/bins && \
     cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
-    cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins
+    cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins && \
+    cp /lungseg/playground/src/volume_maker/volume_maker /lungseg/bins
 
 RUN make -C /lungseg/playground/src/histogram/ && \
     make -C /lungseg/playground/src/measure_volume && \
