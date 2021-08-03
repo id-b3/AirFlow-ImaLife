@@ -19,7 +19,7 @@ OPFRONT_PARAMETERS=${*:4:$#} # (e.g.: "-i 15 -o 15 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.
 # PUT HERE THE PATH TO THE COMPILED EXECUTABLES FROM OPFRONT-PLAYGROUND
 BINARY_DIR="/usr/local/bin"
 # Location of python scripts
-PYTHON_SCR="/bronchinet/scripts/util"
+PYTHON_SCR="/bronchinet/airway_analysis/util_scripts"
 
 # get the root of the name without extension
 FILE=$(basename "${VOL}")
@@ -74,7 +74,6 @@ eval "$CALL"
 
 echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
 CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5"
-#CALL="python ${PYTHON_SCR}/rescale_nifti.py $INNER_VOL $INNER_VOL_ISO -r 0.5 0.5 0.5"
 echo -e "\n$CALL"
 eval "$CALL"
 

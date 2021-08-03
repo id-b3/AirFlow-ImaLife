@@ -19,7 +19,7 @@ FOLDEROUT=$4
 BINARY_DIR="/usr/local/bin/"
 
 # Location of python scripts
-PYTHON_SCR="/bronchinet/scripts/util"
+PYTHON_SCR="/bronchinet/airway_analysis/util_scripts"
 
 # get the root of the name without extension
 FILE=$(basename "${VOL}")
@@ -76,11 +76,11 @@ mkdir -p "$FOLDEROUT"
   CALL="${BINARY_DIR}/img2gts -s $OUTER_VOL -g $OUTER_SURFACE"
   echo -e "\n$CALL"
   eval "$CALL"
-
-  echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
-  CALL="python ${PYTHON_SCR}/rescale_nifti.py $INNER_VOL $INNER_VOL_ISO -r 0.5 0.5 0.5"
-  echo -e "\n$CALL"
-  eval "$CALL"
+#
+#  echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
+#  CALL="python ${PYTHON_SCR}/rescale_nifti.py $INNER_VOL $INNER_VOL_ISO -r 0.5 0.5 0.5"
+#  echo -e "\n$CALL"
+#  eval "$CALL"
 
   # -- BRANCHES ----------------------------------
   echo -e "\nComputing branches:"                          # this creates $BRANCHES_ISO

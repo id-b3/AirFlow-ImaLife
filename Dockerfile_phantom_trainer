@@ -27,8 +27,6 @@ RUN mkdir -p playground/thirdparty/itkbin && \
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
-
-
 # Compile the playground
 RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/libmy_functions && \

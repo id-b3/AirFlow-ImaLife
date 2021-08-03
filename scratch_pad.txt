@@ -1,0 +1,6 @@
+currently:
+    Init_seg -> img2gts -> opfront -> gts2img -> SPLIT -> (img2gts) -> rescale -> branches -> rescale back -> measure using the complete gts_file -> TEST if using original gts
+potential?:
+    Init_seg -> SPLIT -> img2gts -> opfront -> gts2img -> branches -> measure -> TEST if results are the same if separately analysed.
+potential:
+    Init_seg -> img2gts -> opfront -> gts2img -> rescale -> Get new coordinate on rescaled image -> SPLIT -> branches -> COMBINE -> rescale_back -> measure -> TEST
