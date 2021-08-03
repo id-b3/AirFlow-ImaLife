@@ -1,4 +1,4 @@
-name: Build Pipeline Docker
+name: Build Phantom Docker
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'version v*.*.*'
+        description: 'image version'
         required: true
-        default: ''
+        default: 'latest'
       tag:
         description: ':tag'
         required: false
@@ -29,13 +29,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Checkout ImaLife models
-        uses: actions/checkout@v2
-        with:
-          repository: id-b3/imalife_models
-          token: ${{ secrets.GITHUBS }}
-          path: imalife_models
 
       - name: Checkout bitbucket submodules
         env:
@@ -61,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          file: ./Dockerfile_phantom_trainer
           push: ${{ github.event_name != 'pull_request' }}
-          tags: colossali/airflow:${{ github.event.inputs.version }}
-          labels: colossali/airflow:${{ github.event.inputs.tag }}
+          tags: colossali/phantom_trainer:${{ github.event.inputs.version }}
+          labels: colossali/phantom_trainer:${{ github.event.inputs.tag }}
