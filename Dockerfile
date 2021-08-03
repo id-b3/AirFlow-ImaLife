@@ -78,6 +78,7 @@ LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.8 python3-pip python-is-python3 \
         dcm2niix dcmtk \
+        vim \
         libnifti2 libx11-6 libglib2.0-0 \
         && apt-get clean
 
@@ -87,6 +88,7 @@ COPY ["./bronchinet/requirements.txt", "./"]
 
 #Update the python install based on requirement. No cache to lower image size..
 RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir optuna
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
 COPY --from=builder /lungseg/bins /usr/local/bin
@@ -110,7 +112,6 @@ ARG MODEL_DIR=./imalife_models/imalife
 COPY ["${MODEL_DIR}", "./model/" ]
 COPY ["./util/", "./scripts/util/"]
 COPY ["./run_scripts/", "./scripts/"]
-RUN pip3 install --no-cache-dir optuna
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
 

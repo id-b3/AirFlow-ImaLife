@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import argparse
 
@@ -6,10 +8,13 @@ from functionsutil.imageoperations import compute_rescaled_image, compute_thresh
 
 
 def main(args):
+    logging.basicConfig(level=logging.INFO)
 
     in_image = ImageFileReader.get_image(args.in_file)
+    logging.info(f"Original image dims:\n {in_image.shape}")
 
     in_affine_matrix = ImageFileReader.get_image_metadata_info(args.in_file)
+    logging.info(f"Original affine matrix:\n {in_affine_matrix}")
 
     # to match the format of loaded nifti images (dz, dy, dx)
     args.resol = (args.resol[2], args.resol[1], args.resol[0])
@@ -19,7 +24,7 @@ def main(args):
     scale_factor = tuple([voxel_size[i] / args.resol[i] for i in range(3)])
 
     out_image = compute_rescaled_image(in_image, scale_factor, order=3)
-
+    logging.info(f"New image dims:\n {out_image.shape}")
     # remove noise due to interpolation in rescaling
     thres_rm_noise = 0.5
     out_image = compute_thresholded_mask(out_image, thres_rm_noise)
@@ -28,6 +33,7 @@ def main(args):
     for i in range(3):
         in_affine_matrix[i, i] = np.sign(in_affine_matrix[i, i]) * args.resol[i]
 
+    logging.info(f"New rescaled affine matrix:\n {in_affine_matrix}")
     ImageFileReader.write_image(args.out_file, out_image, metadata=in_affine_matrix)
 
 

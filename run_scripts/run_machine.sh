@@ -6,7 +6,7 @@ INPUT=${1:-/eureka/input/dicom-series-in/*.dcm}
 OUTPUTFOLDER=${2:-/eureka/output/nifti-series-out/}
 INPUTFILE=${3:-/eureka/input/dicom-series-in/proc_scan.dcm}
 
-CALL="/bronchinet/scripts/fix_transfer_syntax.py ${INPUT} ${INPUTFILE}"
+CALL="python /bronchinet/scripts/util/fix_transfer_syntax.py ${INPUT} ${INPUTFILE}"
 eval "$CALL"
 
 echo "Input File: ${INPUTFILE}"
@@ -80,5 +80,5 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.4 -G -0.96"
+/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0"
 #/airway_analysis/airway_summary.py

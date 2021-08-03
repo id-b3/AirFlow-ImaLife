@@ -30,6 +30,7 @@ LOGFILE="${ROOT}.log" # Process Log File
 PYTHON_SCR="/bronchinet/scripts/util"
 
 # NAMES for all generated files
+SEG_FILL="$ROOT-fill.nii.gz"
 SEG_CON6="${ROOT}-seg-6con.nii.gz" # Initial segmentaiton after 6-connexion
 SEG_SURFACE="${ROOT}-seg.gts" # Initial segmentaitno after 6-conexion as a surface
 
@@ -67,8 +68,13 @@ mkdir -p "$FOLDEROUT"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
 
 {
+echo -e "\nFilling Holes in segmentation:"
+CALL="${BINARY_DIR}/holefiller -i $SEG -o $SEG_FILL"
+echo -e "\n$CALL"
+eval "$CALL"
+
 echo -e "\n6-connecting initial surface:"
-CALL="${BINARY_DIR}/6con $SEG $SEG_CON6"
+CALL="${BINARY_DIR}/6con $SEG_FILL $SEG_CON6"
 echo -e "\n$CALL"
 eval "$CALL"
 
@@ -107,11 +113,6 @@ echo -e "\nRescaling branches to original scaling:" # this creates $BRANCHES_ISO
 CALL="${BINARY_DIR}/scale_branch -f $INNER_VOL_ISO -t $VOL -b $BRANCHES_ISO -o $BRANCHES"
 echo -e "\n$CALL"
 eval "$CALL"
-
-#echo -e "\nRenaming Branches File:"
-#CALL="mv $BRANCHES_ISO $BRANCHES"
-#echo -e "\n$CALL"
-#eval "$CALL"
 
 echo -e "\nMeasure inner surface:"
 CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_LOCAL_PANDAS"
