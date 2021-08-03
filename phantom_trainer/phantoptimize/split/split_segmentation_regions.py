@@ -8,9 +8,9 @@ from ..functionsutil.functionsutil import *
 
 def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume') -> str:
     in_filename_lumen = join_path_names(in_dir, f'./{root_name}_surface0.nii.gz')
-    in_filename_lumen_iso = join_path_names(in_dir, f'./{root_name}_surface0_iso.nii.gz')
+    # in_filename_lumen_iso = join_path_names(in_dir, f'./{root_name}_surface0_iso.nii.gz')
     in_filename_outwall = join_path_names(in_dir, f'./{root_name}_surface1.nii.gz')
-    logging.debug(f"Splitting in {in_dir} using {in_boxes}. \n{in_filename_lumen}\n{in_filename_lumen_iso}"
+    logging.debug(f"Splitting in {in_dir} using {in_boxes}. \n{in_filename_lumen}"
                   f"\n{in_filename_outwall}")
 
     in_list_boundboxes = list(np.load(in_boxes))
@@ -20,13 +20,13 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
         logging.debug(f"bounding boxes: {in_list_boundboxes[i]}")
 
     in_image_lumen = ImageFileReader.get_image(in_filename_lumen)
-    in_image_lumen_iso = ImageFileReader.get_image(in_filename_lumen_iso)
+    # in_image_lumen_iso = ImageFileReader.get_image(in_filename_lumen_iso)
     in_image_outwall = ImageFileReader.get_image(in_filename_outwall)
 
     in_image_metadata_lumen = ImageFileReader.get_image_metadata_info(in_filename_lumen)
     logging.debug(in_image_metadata_lumen)
-    in_image_metadata_lumen_iso = ImageFileReader.get_image_metadata_info(in_filename_lumen_iso)
-    logging.debug(in_image_metadata_lumen_iso)
+    # in_image_metadata_lumen_iso = ImageFileReader.get_image_metadata_info(in_filename_lumen_iso)
+    # logging.debug(in_image_metadata_lumen_iso)
     in_image_metadata_outwall = ImageFileReader.get_image_metadata_info(in_filename_outwall)
     logging.debug(in_image_metadata_outwall)
     # ----------
@@ -38,11 +38,11 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
 
     for i, iboundox in enumerate(in_list_boundboxes):
         out_cropped_image_lumen = compute_cropped_image(in_image_lumen, iboundox)
-        out_cropped_image_lumen_iso = compute_cropped_image(in_image_lumen_iso, iboundox)
+        # out_cropped_image_lumen_iso = compute_cropped_image(in_image_lumen_iso, iboundox)
         out_cropped_image_outwall = compute_cropped_image(in_image_outwall, iboundox)
 
         out_image_region_lumen = compute_setpatch_image(out_cropped_image_lumen, in_image_lumen.shape, iboundox)
-        out_image_region_lumen_iso = compute_setpatch_image(out_cropped_image_lumen_iso, in_image_lumen_iso.shape, iboundox)
+        # out_image_region_lumen_iso = compute_setpatch_image(out_cropped_image_lumen_iso, in_image_lumen_iso.shape, iboundox)
         out_image_region_outwall = compute_setpatch_image(out_cropped_image_outwall, in_image_outwall.shape, iboundox)
 
         output_dir_region = out_template_subdirnames + f'region_{i+1}'
@@ -51,11 +51,11 @@ def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume')
         makedir(output_dir_region)
 
         out_filename_lumen = join_path_names(output_dir_region, './phantom_volume_surface0.nii.gz')
-        out_filename_lumen_iso = join_path_names(output_dir_region, './phantom_volume_surface0_iso.nii.gz')
+        # out_filename_lumen_iso = join_path_names(output_dir_region, './phantom_volume_surface0_iso.nii.gz')
         out_filename_outwall = join_path_names(output_dir_region, './phantom_volume_surface1.nii.gz')
 
         ImageFileReader.write_image(out_filename_lumen, out_image_region_lumen, metadata=in_image_metadata_lumen)
-        ImageFileReader.write_image(out_filename_lumen_iso, out_image_region_lumen_iso, metadata=in_image_metadata_lumen_iso)
+        # ImageFileReader.write_image(out_filename_lumen_iso, out_image_region_lumen_iso, metadata=in_image_metadata_lumen_iso)
         ImageFileReader.write_image(out_filename_outwall, out_image_region_outwall, metadata=in_image_metadata_outwall)
 
     return out_template_subdirnames

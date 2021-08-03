@@ -23,7 +23,7 @@ def main(args):
 
     scale_factor = tuple([voxel_size[i] / args.resol[i] for i in range(3)])
 
-    out_image = compute_rescaled_image(in_image, scale_factor, order=3)
+    out_image = compute_rescaled_image(in_image, scale_factor, order=0)
     logging.info(f"New image dims:\n {out_image.shape}")
     # remove noise due to interpolation in rescaling
     thres_rm_noise = 0.5
@@ -31,7 +31,7 @@ def main(args):
 
     # set the new resolution in the affine matrix
     for i in range(3):
-        in_affine_matrix[i, i] = np.sign(in_affine_matrix[i, i]) * args.resol[i]
+        in_affine_matrix[i, i] = args.resol[i]
 
     logging.info(f"New rescaled affine matrix:\n {in_affine_matrix}")
     ImageFileReader.write_image(args.out_file, out_image, metadata=in_affine_matrix)
