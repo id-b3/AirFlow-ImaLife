@@ -77,10 +77,10 @@ mkdir -p "$FOLDEROUT"
   echo -e "\n$CALL"
   eval "$CALL"
 #
-#  echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
-#  CALL="python ${PYTHON_SCR}/rescale_nifti.py $INNER_VOL $INNER_VOL_ISO -r 0.5 0.5 0.5"
-#  echo -e "\n$CALL"
-#  eval "$CALL"
+  echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
+  CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5"
+  echo -e "\n$CALL"
+  eval "$CALL"
 
   # -- BRANCHES ----------------------------------
   echo -e "\nComputing branches:"                          # this creates $BRANCHES_ISO

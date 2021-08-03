@@ -100,7 +100,6 @@ ENV PYTHONPATH "/bronchinet/src:/bronchinet/airway_analysis"
 COPY ["./bronchinet/src/", "./src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
 # For default bronchinet, source is ./bronchinet/models
-COPY ["./util/", "./scripts/util/"]
 COPY ["./run_scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
