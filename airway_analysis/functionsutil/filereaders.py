@@ -195,7 +195,7 @@ class CsvFileReader(object):
                     in_value_str = row_data[ifie]
                     in_data_type = list_datatype_fields[ifie]
 
-                    if in_value_str == 'NaN':
+                    if in_value_str == 'NaN' and in_value_str == 'nan':
                         out_value = np.NaN
                     elif in_data_type == 'integer':
                         out_value = int(in_value_str)

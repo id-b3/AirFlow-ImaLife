@@ -9,7 +9,7 @@ if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ]; then
   exit 1
 fi
 
-# INDPUT PARAMETERS
+# INPUT PARAMETERS
 VOL=$1
 INNER_VOL=$2
 OUTER_VOL=$3

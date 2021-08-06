@@ -1,10 +1,9 @@
 import logging
-
-import numpy as np
 import argparse
 
-from functionsutil.filereaders import ImageFileReader
-from functionsutil.imageoperations import compute_rescaled_image, compute_thresholded_mask
+# from airway_analysis.functionsutil.functionsutil import *
+from airway_analysis.functionsutil.filereaders import ImageFileReader
+from airway_analysis.functionsutil.imageoperations import compute_rescaled_image#, compute_thresholded_mask
 
 
 def main(args):
@@ -23,11 +22,14 @@ def main(args):
 
     scale_factor = tuple([voxel_size[i] / args.resol[i] for i in range(3)])
 
-    out_image = compute_rescaled_image(in_image, scale_factor, order=0)
+    # apply 3rd order interpolation (cubic splines) for rescaling
+    out_image = compute_rescaled_image(in_image, scale_factor, order=3)
     logging.info(f"New image dims:\n {out_image.shape}")
-    # remove noise due to interpolation in rescaling
-    thres_rm_noise = 0.5
-    out_image = compute_thresholded_mask(out_image, thres_rm_noise)
+
+    # THIS STEP IS NOT NEEDED IS OUTPUT OPFRONT SEGMENTATIONS ARE NOT BINARY BY DEFAULT
+    # # remove noise due to interpolation in rescaling
+    # thres_rm_noise = 0.5
+    # out_image = compute_thresholded_mask(out_image, thres_rm_noise)
 
     # set the new resolution in the affine matrix
     for i in range(3):

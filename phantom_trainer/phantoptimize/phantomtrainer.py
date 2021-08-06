@@ -1,7 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
-from .split.compute_boundbox_regions import comp_bound_box
+from .split.calc_boundbox_regions import comp_bound_box
 from .split.split_segmentation_regions import split_seg_reg
 from datetime import datetime
 import logging

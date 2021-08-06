@@ -1,6 +1,7 @@
 
 from typing import List, Tuple, Dict, Union, Any
 import glob
+import pickle
 import os
 import re
 import shutil
@@ -173,3 +174,13 @@ def get_substring_filename(filename: str, pattern_search: str) -> Union[str, Non
 def handle_error_message(message: str) -> None:
     print("ERROR: %s... EXIT" % (message))
     sys.exit(0)
+
+
+def read_dictionary(filename: str) -> Dict[str, Any]:
+    with open(filename, 'rb') as fin:
+        return pickle.load(fin)
+
+
+def save_dictionary(filename: str, in_dictionary: Dict[str, Any]) -> None:
+    with open(filename, 'wb') as fout:
+        pickle.dump(in_dictionary, fout, pickle.HIGHEST_PROTOCOL)

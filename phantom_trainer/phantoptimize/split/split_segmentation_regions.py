@@ -1,74 +1,62 @@
 import argparse
 import logging
 import numpy as np
-from functionsutil.filereaders import ImageFileReader
-from functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
-from functionsutil.functionsutil import *
+
+from airway_analysis.functionsutil.functionsutil import *
+from airway_analysis.functionsutil.filereaders import ImageFileReader
+from airway_analysis.functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
 
 
-def split_seg_reg(in_dir: str, in_boxes: str, root_name: str = 'phantom_volume') -> str:
-    in_filename_lumen = join_path_names(in_dir, f'./{root_name}_surface0.nii.gz')
-    # in_filename_lumen_iso = join_path_names(in_dir, f'./{root_name}_surface0_iso.nii.gz')
-    in_filename_outwall = join_path_names(in_dir, f'./{root_name}_surface1.nii.gz')
-    logging.debug(f"Splitting in {in_dir} using {in_boxes}. \n{in_filename_lumen}"
-                  f"\n{in_filename_outwall}")
+def split_seg_reg(in_file: str, in_boxes_file: str, out_dir: str):
+    logging.debug(f"Splitting {in_file} using {in_boxes_file}. Output results in {out_dir}")
 
-    in_list_boundboxes = list(np.load(in_boxes))
+    dict_boundboxes_regions = read_dictionary(in_boxes_file)
 
-    for i, iboundox in enumerate(in_list_boundboxes):
-        in_list_boundboxes[i] = tuple([tuple(iboundox[0]), tuple(iboundox[1]), tuple(iboundox[2])])
-        logging.debug(f"bounding boxes: {in_list_boundboxes[i]}")
+    for iboundox in dict_boundboxes_regions.values():
+        iboundox = tuple([tuple(iboundox[0]), tuple(iboundox[1]), tuple(iboundox[2])])
+        logging.debug(f"bounding boxes: {iboundox}")
 
-    in_image_lumen = ImageFileReader.get_image(in_filename_lumen)
-    # in_image_lumen_iso = ImageFileReader.get_image(in_filename_lumen_iso)
-    in_image_outwall = ImageFileReader.get_image(in_filename_outwall)
+    in_image = ImageFileReader.get_image(in_file)
 
-    in_image_metadata_lumen = ImageFileReader.get_image_metadata_info(in_filename_lumen)
-    logging.debug(in_image_metadata_lumen)
-    # in_image_metadata_lumen_iso = ImageFileReader.get_image_metadata_info(in_filename_lumen_iso)
-    # logging.debug(in_image_metadata_lumen_iso)
-    in_image_metadata_outwall = ImageFileReader.get_image_metadata_info(in_filename_outwall)
-    logging.debug(in_image_metadata_outwall)
-    # ----------
+    in_image_metadata = ImageFileReader.get_image_metadata_info(in_file)
+    logging.debug(in_image_metadata)
 
     # output files: 1 per cropped image to each bounding box
-    out_template_subdirnames = dirname(in_filename_lumen).replace('/.', '/split_regions/')
-    logging.debug(dirname(in_filename_lumen))
-    logging.debug(out_template_subdirnames)
+    templ_output_filenames = join_path_names(out_dir, basename_filenoext(in_file) + '_region-%0.2i.nii.gz')
+    logging.debug(templ_output_filenames)
 
-    for i, iboundox in enumerate(in_list_boundboxes):
-        out_cropped_image_lumen = compute_cropped_image(in_image_lumen, iboundox)
-        # out_cropped_image_lumen_iso = compute_cropped_image(in_image_lumen_iso, iboundox)
-        out_cropped_image_outwall = compute_cropped_image(in_image_outwall, iboundox)
+    for i, iboundox in enumerate(dict_boundboxes_regions.values()):
+        out_cropped_image = compute_cropped_image(in_image, iboundox)
 
-        out_image_region_lumen = compute_setpatch_image(out_cropped_image_lumen, in_image_lumen.shape, iboundox)
-        # out_image_region_lumen_iso = compute_setpatch_image(out_cropped_image_lumen_iso, in_image_lumen_iso.shape, iboundox)
-        out_image_region_outwall = compute_setpatch_image(out_cropped_image_outwall, in_image_outwall.shape, iboundox)
+        out_region_image = compute_setpatch_image(out_cropped_image, in_image.shape, iboundox)
 
-        output_dir_region = out_template_subdirnames + f'region_{i+1}'
-        logging.debug(output_dir_region)
+        out_region_file = templ_output_filenames % (i + 1)
+        print("Output file: \'%s\'..." %(out_region_file))
 
-        makedir(output_dir_region)
-
-        out_filename_lumen = join_path_names(output_dir_region, './phantom_volume_surface0.nii.gz')
-        # out_filename_lumen_iso = join_path_names(output_dir_region, './phantom_volume_surface0_iso.nii.gz')
-        out_filename_outwall = join_path_names(output_dir_region, './phantom_volume_surface1.nii.gz')
-
-        ImageFileReader.write_image(out_filename_lumen, out_image_region_lumen, metadata=in_image_metadata_lumen)
-        # ImageFileReader.write_image(out_filename_lumen_iso, out_image_region_lumen_iso, metadata=in_image_metadata_lumen_iso)
-        ImageFileReader.write_image(out_filename_outwall, out_image_region_outwall, metadata=in_image_metadata_outwall)
-
-    return out_template_subdirnames
+        ImageFileReader.write_image(out_region_file, out_region_image, metadata=in_image_metadata)
 
 
 def main(argmts):
-    split_seg_reg(argmts.input_dir, argmts.in_boundboxes_file)
+    if not is_exist_file(argmts.in_file):
+        message = 'Input file \'%s\' does not exist' % (argmts.in_file)
+        handle_error_message(message)
+    if not is_exist_file(argmts.in_boxes_file):
+        message = 'Input file of boxes \'%s\' does not exist' % (argmts.in_boxes_file)
+        handle_error_message(message)
+    if not is_exist_dir(argmts.out_dir):
+        print("Output dir \'%s\' does not exist. Let's create it" % (argmts.in_file))
+
+    split_seg_reg(argmts.in_file, argmts.in_boxes_file, args.out_dir)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input_dir', type=str)
-    parser.add_argument('--in_boundboxes_file', type=str, default='./boundboxes_split_regions_phantom.npy')
+    parser = argparse.ArgumentParser(description='Split segmentation in 8 regions present in the COPDGene phantom')
+    parser.add_argument('-i', '--in_file', type=str, help='Input file', required=True)
+    parser.add_argument('-ib', '--in_boxes_file', type=str, help='file with bounding boxes', default='./boundboxes_regions_phantom.pkl')
+    parser.add_argument('-o', '--out_dir', type=str, help='Output dir', required=True)
     args = parser.parse_args()
 
+    print("Print input arguments...")
+    for key, value in vars(args).items():
+        print("\'%s\' = %s" % (key, value))
     main(args)
