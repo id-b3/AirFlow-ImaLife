@@ -1,5 +1,4 @@
 #!/bin/bash
-# Created by Antonio:
 # Compute measurements on given airway lumen and outer wall segmentations. Receives original volume ($1) and input surface segmentations '.dcm' ($2, $3). Results are stored in ($4).
 # Added by Antonio: export paths to missing libraries needed by executables in ($5)
 # Modified by Ivan: Work with docker and newer opfront tools.

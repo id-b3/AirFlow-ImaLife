@@ -14,7 +14,6 @@ def split_seg_reg(in_file: str, in_boxes_file: str, out_dir: str):
 
     for iboundox in dict_boundboxes_regions.values():
         iboundox = tuple([tuple(iboundox[0]), tuple(iboundox[1]), tuple(iboundox[2])])
-        logging.debug(f"bounding boxes: {iboundox}")
 
     in_image = ImageFileReader.get_image(in_file)
 
@@ -26,12 +25,14 @@ def split_seg_reg(in_file: str, in_boxes_file: str, out_dir: str):
     logging.debug(templ_output_filenames)
 
     for i, iboundox in enumerate(dict_boundboxes_regions.values()):
+        logging.debug(f"Calc region {i + 1}, with bounding box: {iboundox}")
+
         out_cropped_image = compute_cropped_image(in_image, iboundox)
 
         out_region_image = compute_setpatch_image(out_cropped_image, in_image.shape, iboundox)
 
         out_region_file = templ_output_filenames % (i + 1)
-        print("Output file: \'%s\'..." %(out_region_file))
+        logging.debug(f"Output file: {out_region_file}, with dims: {out_region_image.shape}")
 
         ImageFileReader.write_image(out_region_file, out_region_image, metadata=in_image_metadata)
 

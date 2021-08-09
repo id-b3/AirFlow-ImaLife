@@ -6,7 +6,10 @@ from airway_analysis.functionsutil.functionsutil import *
 from airway_analysis.functionsutil.filereaders import ImageFileReader
 from airway_analysis.functionsutil.imageoperations import compute_connected_components, compute_boundbox_around_mask
 
-NUM_VOXELS_BUFFER = 8
+# when using original input segmentation
+#NUM_VOXELS_BUFFER = 8
+# when using rescale input to isometric 0.5 0.5 0.5
+NUM_VOXELS_BUFFER = 10
 
 
 def comp_bound_box(in_file: str, out_file: str):
