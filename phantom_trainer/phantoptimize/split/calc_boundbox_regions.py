@@ -1,9 +1,10 @@
+
 from collections import OrderedDict
 import argparse
 import csv
 
 from airway_analysis.functionsutil.functionsutil import *
-from airway_analysis.functionsutil.filereaders import ImageFileReader
+from airway_analysis.functionsutil.imagefilereaders import ImageFileReader
 from airway_analysis.functionsutil.imageoperations import compute_connected_components, compute_boundbox_around_mask
 
 # when using original input segmentation
@@ -21,7 +22,7 @@ def comp_bound_box(in_file: str, out_file: str):
     in_file: str
         Path for the input file (the initial phantom segmentation)
     out_file: str
-        Path for the output file. Default: ./boundboxes_regions_phantom.pkl
+        Path for the output file (Default: ./boundboxes_regions_phantom.pkl)
     """
     in_image = ImageFileReader.get_image(in_file)
 
@@ -55,7 +56,7 @@ def main(argmts):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Compute the bounding boxes around 8 the regions in COPDGene phantom')
+    parser = argparse.ArgumentParser(description='Compute the bounding boxes around the 8 regions in phantom')
     parser.add_argument('-i', '--in_file', type=str, help='Input file', required=True)
     parser.add_argument('-o', '--out_file', type=str, help='Output file', default='./boundboxes_regions_phantom.pkl')
     args = parser.parse_args()

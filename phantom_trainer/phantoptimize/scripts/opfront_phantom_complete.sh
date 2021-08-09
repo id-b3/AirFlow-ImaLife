@@ -24,7 +24,7 @@ PYTHON_SCR_DIR="/bronchinet/airway_analysis/util_scripts"
 PYTHON_SCR_PHANTOM_DIR="/bronchinet/phantom_trainer/phantoptimize/split"
 
 # get the root of the name without extension
-FILE=$(basename "${VOL}")
+FILE=$(basename "${SEG}")
 FILE_NO_EXTENSION="${FILE%%.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 LOGFILE="${ROOT}.log"
@@ -33,8 +33,8 @@ LOGFILE="${ROOT}.log"
 SEG_CON6="${ROOT}_seg-6con.nii.gz"            # Initial segmentation after 6-connexion
 SEG_SURFACE="${ROOT}_seg.gts"                 # Initial segmentation after 6-conexion as a surface
 
-INNER_SURFACE="${ROOT}_surface0.gts"           # Converted results from opfront
-OUTER_SURFACE="${ROOT}_surface1.gts"
+INNER_SURFACE="${ROOT}surface0.gts"           # Converted results from opfront
+OUTER_SURFACE="${ROOT}surface1.gts"
 
 INNER_VOL="${ROOT}_surface0.nii.gz"           # Results from opfront, original sizes
 INNER_VOL_ISO="${ROOT}_surface0_iso.nii.gz"   # Results from opfront, rescaled to isometric resolution
@@ -104,12 +104,12 @@ mkdir -p "$FOLDEROUT"
   mkdir -p "$FOLDER_VOLS_REGIONS"
 
   echo -e "\nCompute coordinates of bounding-boxes of every region in phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/calc_boundbox_regions.py -i ${$INNER_VOL_ISO} -o ${VOL_REGIONS_BOXES}"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/calc_boundbox_regions.py -i $INNER_VOL_ISO -o $VOL_REGIONS_BOXES"
   echo -e "\n$CALL"
   eval "$CALL"
 
   echo -e "\nSplit the segmentation in 8 regions present in the COPDgene phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i ${$INNER_VOL_ISO} -ib ${VOL_REGIONS_BOXES} -o ${FOLDER_VOLS_REGIONS}"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i $INNER_VOL_ISO -ib $VOL_REGIONS_BOXES -o $FOLDER_VOLS_REGIONS"
   echo -e "\n$CALL"
   eval "$CALL"
 } >> "$LOGFILE"
@@ -118,15 +118,12 @@ mkdir -p "$FOLDEROUT"
   LIST_VOLS_REGIONS_ISO=$(find $FOLDER_VOLS_REGIONS -type f -name "*.nii.gz")
 
   count=1
-  FOR VOL_REGION_ISO IN LIST_VOLS_REGIONS_ISO
-  DO
+  for VOL_REGION_ISO in $LIST_VOLS_REGIONS_ISO
+  do
     echo -e "\nComputing branches, for region ${count}:"
     CALL="${BINARY_DIR}/be $VOL_REGION_ISO -o $FOLDER_VOLS_REGIONS"
     echo -e "\n$CALL"
     eval "$CALL"
     counter=$((counter+1))
-  DONE
+  done
 } >> "$LOGFILE"
-
-
-}

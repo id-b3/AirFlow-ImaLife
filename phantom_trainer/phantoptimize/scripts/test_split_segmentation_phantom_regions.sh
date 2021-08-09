@@ -21,11 +21,11 @@ echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nCompute coordinates of bounding-boxes of every region in phantom:"
-CALL="python3 ${SCR_CALC_BOXES} -i ${IN_VOLSEG_ISO} -o ${IN_VOLSEG_BOXES}"
+CALL="python3 ${SCR_CALC_BOXES} -i $IN_VOLSEG_ISO -o $IN_VOLSEG_BOXES"
 echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nSplit segmentation in 8 regions in phantom:"
-CALL="python3 ${SCR_SPLIT_SEG} -i ${IN_VOLSEG_ISO} -ib ${IN_VOLSEG_BOXES} -o ${OUT_DIR}"
+CALL="python3 ${SCR_SPLIT_SEG} -i $IN_VOLSEG_ISO -ib $IN_VOLSEG_BOXES -o $OUT_DIR"
 echo -e "\n$CALL"
 eval "$CALL"

@@ -1,155 +1,8 @@
 
-from typing import Tuple, Any
+from typing import List, Tuple, Dict, Any
 from collections import OrderedDict
-import numpy as np
-import SimpleITK as sitk
-import pydicom
-import warnings
-with warnings.catch_warnings():
-    # disable FutureWarning: conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    import nibabel as nib
 import csv
-
-from .functionsutil import fileextension, handle_error_message
-
-
-class ImageFileReader(object):
-
-    @classmethod
-    def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
-        return cls._get_filereader_class(filename).get_image_position(filename)
-
-    @classmethod
-    def get_image_voxelsize(cls, filename: str) -> Tuple[float, float, float]:
-        return cls._get_filereader_class(filename).get_image_voxelsize(filename)
-
-    @classmethod
-    def get_image_metadata_info(cls, filename: str) -> Any:
-        return cls._get_filereader_class(filename).get_image_metadata_info(filename)
-
-    @classmethod
-    def update_image_metadata_info(cls, filename: str, **kwargs) -> Any:
-        in_metadata = cls.get_image_metadata_info(filename)
-        return cls._get_filereader_class(filename).update_image_metadata_info(in_metadata, **kwargs)
-
-    @classmethod
-    def get_image_size(cls, filename: str) -> Tuple[int, int, int]:
-        return cls.get_image(filename).shape
-
-    @classmethod
-    def get_image(cls, filename: str) -> np.ndarray:
-        return cls._get_filereader_class(filename).get_image(filename)
-
-    @classmethod
-    def write_image(cls, filename: str, in_image: np.ndarray, **kwargs) -> None:
-        cls._get_filereader_class(filename).write_image(filename, in_image, **kwargs)
-
-    @staticmethod
-    def _get_filereader_class(filename: str) -> 'ImageFileReader':
-        extension = fileextension(filename)
-        if extension == '.nii' or extension == '.nii.gz':
-            return NiftiReader
-        elif extension == '.dcm':
-            return DicomReader
-        else:
-            message = f"Not valid file extension: {extension}"
-            handle_error_message(message)
-
-
-class NiftiReader(ImageFileReader):
-
-    @classmethod
-    def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
-        affine = cls._get_image_affine_matrix(filename)
-        return tuple(affine[:3, -1])
-
-    @classmethod
-    def get_image_voxelsize(cls, filename: str) -> Tuple[float, float, float]:
-        affine = cls._get_image_affine_matrix(filename)
-        return tuple(np.abs(np.diag(affine)[:3]))
-
-    @classmethod
-    def _get_image_affine_matrix(cls, filename: str) -> np.ndarray:
-        affine = nib.load(filename).affine
-        return cls._fix_dims_affine_matrix(affine)
-
-    @classmethod
-    def get_image_metadata_info(cls, filename: str) -> Any:
-        return cls._get_image_affine_matrix(filename)
-
-    @classmethod
-    def get_image(cls, filename: str) -> np.ndarray:
-        out_image = nib.load(filename).get_data()
-        return cls._fix_dims_image_read(out_image)
-
-    @classmethod
-    def write_image(cls, filename: str, in_image: np.ndarray, **kwargs) -> None:
-        if 'metadata' in kwargs.keys():
-            affine = kwargs['metadata']
-            affine = cls._fix_dims_affine_matrix(affine)
-        else:
-            affine = None
-        in_image = cls._fix_dims_image_write(in_image)
-        nib_image = nib.Nifti1Image(in_image, affine)
-        nib.save(nib_image, filename)
-
-    @staticmethod
-    def _fix_dims_affine_matrix(inout_affine: np.ndarray) -> np.ndarray:
-        # Change dims from (dx, dy, dz) to (dz, dy, dx)
-        inout_affine[[0, 2], :] = inout_affine[[2, 0], :]
-        inout_affine[:, [0, 2]] = inout_affine[:, [2, 0]]
-        return inout_affine
-
-    @staticmethod
-    def _fix_dims_image_read(in_image: np.ndarray) -> np.ndarray:
-        # Roll dims from (dx, dy, dz) to (dz, dy, dx)
-        return np.swapaxes(in_image, 0, 2)
-
-    @staticmethod
-    def _fix_dims_image_write(in_image: np.ndarray) -> np.ndarray:
-        # Roll dims from (dz, dy, dx) to (dx, dy, dz)
-        return np.swapaxes(in_image, 0, 2)
-
-
-class DicomReader(ImageFileReader):
-
-    @classmethod
-    def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
-        ds = pydicom.read_file(filename)
-        image_position_str = ds[0x0020, 0x0032].value   # Elem 'Image Position (Patient)'
-        return (float(image_position_str[0]),
-                float(image_position_str[1]),
-                float(image_position_str[2]))
-
-    @classmethod
-    def get_image_voxelsize(cls, filename: str) -> Tuple[float, float, float]:
-        ds = pydicom.read_file(filename)
-        return (float(ds.SpacingBetweenSlices),
-                float(ds.PixelSpacing[0]),
-                float(ds.PixelSpacing[1]))
-
-    @classmethod
-    def get_image_metadata_info(cls, filename: str) -> Any:
-        image_read = sitk.ReadImage(filename)
-        metadata_keys = image_read.GetMetaDataKeys()
-        return {key: image_read.GetMetaData(key) for key in metadata_keys}
-
-    @classmethod
-    def get_image(cls, filename: str) -> np.ndarray:
-        image_read = sitk.ReadImage(filename)
-        return sitk.GetArrayFromImage(image_read)
-
-    @classmethod
-    def write_image(cls, filename: str, in_image: np.ndarray, **kwargs) -> None:
-        if in_image.dtype != np.uint16:
-            in_image = in_image.astype(np.uint16)
-        image_write = sitk.GetImageFromArray(in_image)
-        if 'metadata' in kwargs.keys():
-            dict_metadata = kwargs['metadata']
-            for (key, val) in dict_metadata.items():
-                image_write.SetMetaData(key, val)
-        sitk.WriteImage(image_write, filename)
+import struct
 
 
 class CsvFileReader(object):
@@ -167,7 +20,7 @@ class CsvFileReader(object):
             return 'string'
 
     @classmethod
-    def get_data(cls, input_file: str):
+    def get_data(cls, input_file: str) -> Dict[str, List[Any]]:
         with open(input_file, 'r') as fin:
             csv_reader = csv.reader(fin, delimiter=',')
 
@@ -209,3 +62,121 @@ class CsvFileReader(object):
                     out_dict_data[field_name].append(out_value)
 
         return out_dict_data
+
+
+class BranchFileReader(object):
+    # branch is binary file
+    _size_bool = 1
+    _size_int = 4
+    _size_double = 8
+    _bindata_all = None
+    _count = -1
+    _max_count = -1
+    _fout = None
+
+    @classmethod
+    def get_data(cls, input_file: str) -> Dict[str, List[Any]]:
+        with open(input_file, "rb") as fin:
+            cls._initialize_read(fin)
+
+            out_data = OrderedDict()
+            out_data['index'] = []
+            out_data['parent'] = []
+            out_data['generation'] = []
+            out_data['ignore'] = []
+            out_data['maxRadius'] = []
+            out_data['children'] = []
+            out_data['points'] = []
+
+            num_branches_incl_dummy = cls._read_elem_int()
+            while cls._count < cls._max_count:
+
+                out_data['index'].append(cls._read_elem_int())
+                out_data['parent'].append(cls._read_elem_int())
+                out_data['generation'].append(cls._read_elem_int())
+                out_data['ignore'].append(cls._read_elem_bool())
+                out_data['maxRadius'].append(cls._read_elem_double())
+
+                num_children_brh = cls._read_elem_int()
+                children_brh = [cls._read_elem_int() for j in range(num_children_brh)]
+                out_data['children'].append(children_brh)
+
+                num_points_brh = cls._read_elem_int()
+                points_brh = [[cls._read_elem_double() for k in range(3)] for j in range(num_points_brh)]
+                out_data['points'].append(points_brh)
+
+            return out_data
+
+    @classmethod
+    def _initialize_read(cls, fin) -> None:
+        cls._bindata_all = fin.read()
+        cls._count = 0
+        cls._max_count = len(cls._bindata_all)
+
+    @classmethod
+    def _read_elem_bool(cls) -> bool:
+        #out_elem = bool.from_bytes(cls._data_all[cls._count:cls._count + cls._size_bool], byteorder='little')
+        out_elem = bool(struct.unpack('?', cls._bindata_all[cls._count:cls._count + cls._size_bool])[0])
+        cls._count += cls._size_bool
+        return out_elem
+
+    @classmethod
+    def _read_elem_int(cls) -> int:
+        #out_elem = int.from_bytes(cls._data_all[cls._count:cls._count + cls._size_int], byteorder='little')
+        out_elem = struct.unpack('i', cls._bindata_all[cls._count:cls._count + cls._size_int])[0]
+        cls._count += cls._size_int
+        return out_elem
+
+    @classmethod
+    def _read_elem_double(cls) -> float:
+        out_elem = struct.unpack('d', cls._bindata_all[cls._count:cls._count + cls._size_double])[0]
+        cls._count += cls._size_double
+        return out_elem
+
+    @classmethod
+    def write_data(cls, output_file: str, out_data: Dict[str, List[Any]]) -> None:
+        with open(output_file, "wb") as fout:
+            cls._initialize_write(fout)
+
+            num_branches_incl_dummy = max(out_data['index'])
+            cls._write_elem_int(num_branches_incl_dummy)
+
+            num_branches = len(out_data['index'])
+            for ibr in range(num_branches):
+
+                cls._write_elem_int(out_data['index'][ibr])
+                cls._write_elem_int(out_data['parent'][ibr])
+                cls._write_elem_int(out_data['generation'][ibr])
+                cls._write_elem_bool(out_data['ignore'][ibr])
+                cls._write_elem_float(out_data['maxRadius'][ibr])
+
+                num_children_brh = len(out_data['children'][ibr])
+                cls._write_elem_int(num_children_brh)
+                for j in range(num_children_brh):
+                    cls._write_elem_int(out_data['children'][ibr][j])
+
+                num_points_brh = len(out_data['points'][ibr])
+                cls._write_elem_int(num_points_brh)
+                for j in range(num_points_brh):
+                    for k in range(3):
+                        cls._write_elem_float(out_data['points'][ibr][j][k])
+
+    @classmethod
+    def _initialize_write(cls, fout) -> None:
+        cls._fout = fout
+        cls._bindata_all = None
+
+    @classmethod
+    def _write_elem_bool(cls, in_elem: bool) -> None:
+        # cls._bindata_all += struct.pack('?', in_elem)
+        cls._fout.write(struct.pack('?', in_elem))
+
+    @classmethod
+    def _write_elem_int(cls, in_elem: int) -> None:
+        # cls._bindata_all += struct.pack('i', in_elem)
+        cls._fout.write(struct.pack('i', in_elem))
+
+    @classmethod
+    def _write_elem_float(cls, in_elem: float) -> None:
+        # cls._bindata_all += struct.pack('d', in_elem)
+        cls._fout.write(struct.pack('d', in_elem))
