@@ -37,11 +37,12 @@ INNER_SURFACE="${ROOT}surface0.gts"           # Converted results from opfront
 OUTER_SURFACE="${ROOT}surface1.gts"
 
 INNER_VOL="${ROOT}_surface0.nii.gz"           # Results from opfront, original sizes
-INNER_VOL_ISO="${ROOT}_surface0_iso.nii.gz"   # Results from opfront, rescaled to isometric resolution
+INNER_VOL_ISO="${ROOT}_surface0_iso05.nii.gz" # Results from opfront, rescaled to isometric resolution
 OUTER_VOL="${ROOT}_surface1.nii.gz"
 
 BRANCHES="${ROOT}_airways.brh"                # Results of computing branches
-BRANCHES_ISO="${ROOT_INNER_VOL}_iso_branch.brh"
+BRANCHES_ISO="${ROOT}_surface0_iso05_branch.brh"
+BRANCHES_VOL_ISO="${ROOT}_surface0_iso05_branch.nii.gz"
 
 INNER_RESULTS="${ROOT}_inner.csv"             # Branch measurements (both lumen and outer wall)
 OUTER_RESULTS="${ROOT}_outer.csv"
@@ -103,13 +104,13 @@ mkdir -p "$FOLDEROUT"
 {
   mkdir -p "$FOLDER_VOLS_REGIONS"
 
-  echo -e "\nCompute coordinates of bounding-boxes of every region in phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/calc_boundbox_regions.py -i $INNER_VOL_ISO -o $VOL_REGIONS_BOXES"
+  echo -e "\nCompute coordinates of bounding-boxes of regions in phantom:"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/calc_boundbox_regions.py -i $INNER_VOL_ISO -o $BOXES_REGIONS"
   echo -e "\n$CALL"
   eval "$CALL"
 
   echo -e "\nSplit the segmentation in 8 regions present in the COPDgene phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i $INNER_VOL_ISO -ib $VOL_REGIONS_BOXES -o $FOLDER_VOLS_REGIONS"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i $INNER_VOL_ISO -ib $BOXES_REGIONS -o $FOLDER_VOLS_REGIONS"
   echo -e "\n$CALL"
   eval "$CALL"
 } >> "$LOGFILE"
@@ -124,6 +125,52 @@ mkdir -p "$FOLDEROUT"
     CALL="${BINARY_DIR}/be $VOL_REGION_ISO -o $FOLDER_VOLS_REGIONS"
     echo -e "\n$CALL"
     eval "$CALL"
-    counter=$((counter+1))
+
+    ROOL_VOL_REGION_ISO="${VOL_REGION_ISO%.nii.gz}"
+
+    echo -e "\nRename output branch files (solve issue with nifti file extension), for region ${count}:"
+    CALL="mv ${ROOL_VOL_REGION_ISO}.nii-branch.brh ${ROOL_VOL_REGION_ISO}-branch.brh && mv ${ROOL_VOL_REGION_ISO}.nii-branch.nii.gz ${ROOL_VOL_REGION_ISO}-branch.nii.gz"
+    echo -e "\n$CALL"
+    eval "$CALL"
+
+    count=$((count+1))
   done
+} >> "$LOGFILE"
+# ------------------------------------------------ MERGE BRANCHES FROM BRANCH EXTRACTOR ---------------------------------------
+{
+  echo -e "\nMerge the branches extracted in every region in phantom:"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/merge_branches_regions.py -i $FOLDER_VOLS_REGIONS -o $BRANCHES_ISO --is_merge_vols=True -ib $BOXES_REGIONS -ov $BRANCHES_VOL_ISO"
+  echo -e "\n$CALL"
+  eval "$CALL"
+
+  echo -e "\nRemove the temp branch data in regions in phantom:"
+  CALL="rm -r ${FOLDER_VOLS_REGIONS}"
+  echo -e "\n$CALL"
+  eval "$CALL"
+} >> "$LOGFILE"
+# ------------------------------------------------ EXECUTION STEPS ---------------------------------------
+{
+  echo -e "\nRescaling branches to original scaling:" # this creates $BRANCHES_ISO
+  CALL="${BINARY_DIR}/scale_branch -f $INNER_VOL_ISO -t $VOL -b $BRANCHES_ISO -o $BRANCHES"
+  echo -e "\n$CALL"
+  eval "$CALL"
+
+  echo -e "\nMeasure inner surface:"
+  CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_PANDAS"
+  echo -e "\n$CALL"
+  eval "$CALL"
+
+  echo -e "\nMeasure outer surface:"
+  CALL="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_PANDAS"
+  echo -e "\n$CALL"
+  eval "$CALL"
+
+  echo -e "\n\nConvert branches to pandas readable format:"
+  CALL="${BINARY_DIR}/brh_translator $BRANCHES -pandas $BRANCHES_PANDAS"
+  echo -e "\n$CALL"
+  eval "$CALL"
+  CALL="${BINARY_DIR}/brh_translator $BRANCHES_ISO -pandas $BRANCHES_ISO_PANDAS"
+  echo -e "\n$CALL"
+  echo -e "DONE\n"
+  eval "$CALL"
 } >> "$LOGFILE"
