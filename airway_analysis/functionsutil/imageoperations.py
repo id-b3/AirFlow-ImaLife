@@ -46,9 +46,16 @@ def compute_cropped_image(in_image: np.ndarray, in_crop_boundbox: BoundBoxType) 
                     in_crop_boundbox[2][0]: in_crop_boundbox[2][1]]
 
 
-def compute_setpatch_image(in_image: np.ndarray, out_image_shape: Tuple[int, int, int],
+def compute_extended_image(in_image: np.ndarray, out_image_shape: Tuple[int, int, int],
                            in_set_boundbox: BoundBoxType) -> np.ndarray:
     out_image = np.zeros(out_image_shape)
+    out_image[in_set_boundbox[0][0]: in_set_boundbox[0][1],
+              in_set_boundbox[1][0]: in_set_boundbox[1][1],
+              in_set_boundbox[2][0]: in_set_boundbox[2][1]] = in_image
+    return out_image
+
+
+def compute_setpatch_image(in_image: np.ndarray, out_image: np.ndarray, in_set_boundbox: BoundBoxType) -> np.ndarray:
     out_image[in_set_boundbox[0][0]: in_set_boundbox[0][1],
               in_set_boundbox[1][0]: in_set_boundbox[1][1],
               in_set_boundbox[2][0]: in_set_boundbox[2][1]] = in_image

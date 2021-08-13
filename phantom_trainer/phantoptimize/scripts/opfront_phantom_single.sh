@@ -8,7 +8,7 @@ then
     exit 1
 fi
 
-# INDPUT PARAMETERS
+# INPUT PARAMETERS
 VOL=$1
 SEG=$2
 FOLDEROUT=$3
