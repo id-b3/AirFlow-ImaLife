@@ -54,8 +54,8 @@ OUTER_RESULTS_PANDAS="${ROOT}_outer_local_pandas.csv"
 BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv" # Branch centerline measurements
 BRANCHES_ISO_PANDAS="${ROOT}_airways_centrelines_ISO.csv"
 
-FOLDER_VOLS_REGIONS="${ROOT}_regions/"         # Temporary dir with split phantom in regions
-VOL_REGIONS_BOXES="${FOLDER_VOLS_REGIONS}/boundboxes_regions_phantom.pkl"
+FOLDER_REGIONS="${ROOT}_regions/"         # Temporary dir with split phantom in regions
+BOXES_REGIONS="${FOLDER_REGIONS}/boundboxes_regions_phantom.pkl"
 
 mkdir -p "$FOLDEROUT"
 
@@ -102,7 +102,7 @@ mkdir -p "$FOLDEROUT"
 } >> "$LOGFILE"
 # ------------------------------------------------ SPLIT PHANTOM SEGMENTATION ---------------------------------------
 {
-  mkdir -p "$FOLDER_VOLS_REGIONS"
+  mkdir -p "$FOLDER_REGIONS"
 
   echo -e "\nCompute coordinates of bounding-boxes of regions in phantom:"
   CALL="python ${PYTHON_SCR_PHANTOM_DIR}/calc_boundbox_regions.py -i $INNER_VOL_ISO -o $BOXES_REGIONS"
@@ -110,26 +110,26 @@ mkdir -p "$FOLDEROUT"
   eval "$CALL"
 
   echo -e "\nSplit the segmentation in 8 regions present in the COPDgene phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i $INNER_VOL_ISO -ib $BOXES_REGIONS -o $FOLDER_VOLS_REGIONS"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i $INNER_VOL_ISO -ib $BOXES_REGIONS -o $FOLDER_REGIONS"
   echo -e "\n$CALL"
   eval "$CALL"
 } >> "$LOGFILE"
 # ------------------------------------------------ BRANCH EXTRACTOR STEPS ---------------------------------------
 {
-  LIST_VOLS_REGIONS_ISO=$(find $FOLDER_VOLS_REGIONS -type f -name "*.nii.gz")
+  LIST_INNER_VOLS_ISO_REGIONS=$(find $FOLDER_REGIONS -type f -name "*.nii.gz")
 
   count=1
-  for VOL_REGION_ISO in $LIST_VOLS_REGIONS_ISO
+  for INNER_VOL_ISO_REGION in $LIST_INNER_VOLS_ISO_REGIONS
   do
     echo -e "\nComputing branches, for region ${count}:"
-    CALL="${BINARY_DIR}/be $VOL_REGION_ISO -o $FOLDER_VOLS_REGIONS"
+    CALL="${BINARY_DIR}/be $INNER_VOL_ISO_REGION -o $FOLDER_REGIONS"
     echo -e "\n$CALL"
     eval "$CALL"
 
-    ROOL_VOL_REGION_ISO="${VOL_REGION_ISO%.nii.gz}"
+    ROOT_INNER_VOL_ISO_REGION="${INNER_VOL_ISO_REGION%.nii.gz}"
 
     echo -e "\nRename output branch files (solve issue with nifti file extension), for region ${count}:"
-    CALL="mv ${ROOL_VOL_REGION_ISO}.nii-branch.brh ${ROOL_VOL_REGION_ISO}-branch.brh && mv ${ROOL_VOL_REGION_ISO}.nii-branch.nii.gz ${ROOL_VOL_REGION_ISO}-branch.nii.gz"
+    CALL="mv ${ROOT_INNER_VOL_ISO_REGION}.nii-branch.brh ${ROOT_INNER_VOL_ISO_REGION}-branch.brh && mv ${ROOT_INNER_VOL_ISO_REGION}.nii-branch.nii.gz ${ROOT_INNER_VOL_ISO_REGION}-branch.nii.gz"
     echo -e "\n$CALL"
     eval "$CALL"
 
@@ -139,12 +139,12 @@ mkdir -p "$FOLDEROUT"
 # ------------------------------------------------ MERGE BRANCHES FROM BRANCH EXTRACTOR ---------------------------------------
 {
   echo -e "\nMerge the branches extracted in every region in phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/merge_branches_regions.py -i $FOLDER_VOLS_REGIONS -o $BRANCHES_ISO --is_merge_vols=True -ib $BOXES_REGIONS -ov $BRANCHES_VOL_ISO"
+  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/merge_branches_regions.py -i $FOLDER_REGIONS -o $BRANCHES_ISO --is_merge_vols=True -ib $BOXES_REGIONS -ov $BRANCHES_VOL_ISO"
   echo -e "\n$CALL"
   eval "$CALL"
 
   echo -e "\nRemove the temp branch data in regions in phantom:"
-  CALL="rm -r ${FOLDER_VOLS_REGIONS}"
+  CALL="rm -r ${FOLDER_REGIONS}"
   echo -e "\n$CALL"
   eval "$CALL"
 } >> "$LOGFILE"
