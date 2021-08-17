@@ -9,7 +9,7 @@ with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
     import nibabel as nib
 
-from airway_analysis.functionsutil.functionsutil import fileextension, handle_error_message
+from functionsutil.functionsutil import fileextension, handle_error_message
 
 
 class ImageFileReader(object):

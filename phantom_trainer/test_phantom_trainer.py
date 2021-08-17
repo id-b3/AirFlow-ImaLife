@@ -8,8 +8,7 @@ import optuna
 
 def main(infiles):
 
-    trainer = PhantomTrainer(infiles.in_volume, infiles.in_segment, infiles.out_dir, logging.INFO)
-    logging.getLogger().setLevel(logging.INFO)
+    trainer = PhantomTrainer(infiles.out_dir, log_lev=logging.DEBUG)
 
     def objective(trial):
         in_der = trial.suggest_float('inner_derivative', infiles.inner_min, infiles.inner_max, step=infiles.step)
@@ -33,10 +32,6 @@ if __name__ == '__main__':
     temp_out_folder = tempfile.TemporaryDirectory().name
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in_volume', type=str, help="Phantom Volume in nifti format.",
-                        default="copdgene_phantom/phantom_volume.nii.gz")
-    parser.add_argument('--in_segment', type=str, help="Phantom Segmentation in nifti format.",
-                        default="copdgene_phantom/phantom_lumen.nii.gz")
     parser.add_argument('--out_dir', type=str, help="Output directory", default=temp_out_folder)
     parser.add_argument('--out_file', type=str, help="Output csv of the trials", default="trial_results.csv")
     parser.add_argument('--inner_min', type=float, help="Minimum inner derivative value", default=-0.6)

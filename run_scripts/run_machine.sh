@@ -80,5 +80,5 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0"
+/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.7"
 #/airway_analysis/airway_summary.py

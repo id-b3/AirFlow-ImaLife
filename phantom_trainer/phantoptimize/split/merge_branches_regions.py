@@ -1,16 +1,16 @@
-
 import numpy as np
 from collections import OrderedDict
 import argparse
 import logging
 
-from airway_analysis.functionsutil.functionsutil import *
-from airway_analysis.functionsutil.filereaders import BranchFileReader
-from airway_analysis.functionsutil.imagefilereaders import ImageFileReader
-from airway_analysis.functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
+from functionsutil.functionsutil import *
+from functionsutil.filereaders import BranchFileReader
+from functionsutil.imagefilereaders import ImageFileReader
+from functionsutil.imageoperations import compute_cropped_image, compute_setpatch_image
 
 
-def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_file: str, out_vol_file: str):
+def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_file: str, out_vol_file: str,
+                     log_lev: int = logging.DEBUG):
     """
     Merge the extracted branch '.brh' files from the segmentations in regions in the phantom airways.
 
@@ -26,7 +26,10 @@ def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_f
         Path for the file with coordinates of bounding boxes of regions (Default: ./boundboxes_regions_phantom.pkl)
     out_vol_file: str
         Path for the output file with merged volume masks
+    log_lev: int
+        Logging Level
     """
+    logging.basicConfig(level=log_lev)
     logging.debug(f"Merge branches found in {in_dir} and output file {out_file}")
 
     list_in_branch_files = list_files_dir(in_dir, "*-branch.brh")
@@ -46,15 +49,18 @@ def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_f
     curr_offset_index_branch = 0
 
     for ibranch_file in list_in_branch_files:
+        logging.debug(f"Current Branch offset: {curr_offset_index_branch}")
         logging.debug(f"Input branch file: {ibranch_file}")
 
         in_branch_data = BranchFileReader.get_data(ibranch_file)
+        logging.debug(f"Input Branch Data: {in_branch_data}")
 
         num_branches = max(in_branch_data['index'])
         count_branches_all += num_branches
 
         # to merge the branches, offset the "index", "parent" and "children" data by the index of last branch visited
         in_branch_data['index'] = [ind + curr_offset_index_branch for ind in in_branch_data['index']]
+        logging.debug(f"Merging branch indexes {in_branch_data['index']}")
         in_branch_data['parent'] = [ind + curr_offset_index_branch for ind in in_branch_data['parent']]
         in_branch_data['children'] = [[ind + curr_offset_index_branch for ind in in_children_brh]
                                       for in_children_brh in in_branch_data['children']]
@@ -69,11 +75,12 @@ def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_f
         out_branch_data_all['points'] += in_branch_data['points']
 
         curr_offset_index_branch += num_branches
+
     # endfor
 
     BranchFileReader.write_data(out_file, out_branch_data_all)
 
-
+    # Merge the separated branch volume files.
     if is_merge_vols:
         logging.debug(f"Merge the labelled volume masks of branches found in {in_dir} and output file {out_vol_file}")
 
@@ -94,9 +101,9 @@ def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_f
 
             iboundox = list_boundboxes_regions[i]
             logging.debug(f"Branch in this volume inside the bounding: {iboundox}")
+            logging.debug(f"Branch {i}")
 
             in_volmask = ImageFileReader.get_image(ivolmask_file)
-
             in_cropped_volmask = compute_cropped_image(in_volmask, iboundox)
 
             # to merge the masks, offset the labels by the label of the last branch visited
@@ -129,7 +136,8 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--in_dir', type=str, help='Input dir with branches', required=True)
     parser.add_argument('-o', '--out_file', type=str, help='Output file', required=True)
     parser.add_argument('--is_merge_vols', type=bool, help='merge the volume mask of branches ?', default=False)
-    parser.add_argument('-ib', '--in_boxes_file', type=str, help='file with bounding boxes', default='./boundboxes_regions_phantom.pkl')
+    parser.add_argument('-ib', '--in_boxes_file', type=str, help='file with bounding boxes',
+                        default='./boundboxes_regions_phantom.pkl')
     parser.add_argument('-ov', '--out_vol_file', type=str, help='Output segmentation file', required=False)
     args = parser.parse_args()
 

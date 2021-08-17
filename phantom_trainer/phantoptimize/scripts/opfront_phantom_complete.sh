@@ -5,17 +5,18 @@
 
 if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ] || [ "$4" == "" ]
 then
-    echo Usage: "$0" VOLUME_FILE_NIFTI INITIAL_SEGMENTATION_FILE OUTPUT_FOLDER OPFRONT_PARAMETERS
+    echo Usage: "$0" VOLUME_FILE_NIFTI INITIAL_SEGMENTATION_FILE BOUND_BOX_FILE OUTPUT_FOLDER OPFRONT_PARAMETERS
     exit 1
 fi
 
 # INPUT PARAMETERS
 VOL=$1
 SEG=$2
-FOLDEROUT=$3
+BOXES_REGIONS=$3
+FOLDEROUT=$4
 
 # capture all remainign aprameters
-OPFRONT_PARAMETERS=${*:4:$#} # (e.g.: "-i 15 -o 15 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.41 -G -0.57")
+OPFRONT_PARAMETERS=${*:5:$#} # (e.g.: "-i 15 -o 15 -I 2 -O 2 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.7")
 
 # PUT HERE THE PATH TO THE COMPILED EXECUTABLES FROM OPFRONT-PLAYGROUND
 BINARY_DIR="/usr/local/bin"
@@ -55,10 +56,10 @@ BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv" # Branch centerline measuremen
 BRANCHES_ISO_PANDAS="${ROOT}_airways_centrelines_ISO.csv"
 
 FOLDER_REGIONS="${ROOT}_regions/"         # Temporary dir with split phantom in regions
-BOXES_REGIONS="${FOLDER_REGIONS}/boundboxes_regions_phantom.pkl"
 
 mkdir -p "$FOLDEROUT"
 
+# shellcheck disable=SC2129
 {
   echo -e "\n Starting Phantom Opfront..."
   echo -e "\n *** ${FILE_NO_EXTENSION} ***\n"
@@ -96,18 +97,13 @@ mkdir -p "$FOLDEROUT"
   eval "$CALL"
 
   echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5:"
-  CALL="python ${PYTHON_SCR_DIR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5 --is_binary True"
+  CALL="python ${PYTHON_SCR_DIR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5 --is_binary False"
   echo -e "\n$CALL"
   eval "$CALL"
 } >> "$LOGFILE"
 # ------------------------------------------------ SPLIT PHANTOM SEGMENTATION ---------------------------------------
 {
   mkdir -p "$FOLDER_REGIONS"
-
-  echo -e "\nCompute coordinates of bounding-boxes of regions in phantom:"
-  CALL="python ${PYTHON_SCR_PHANTOM_DIR}/calc_boundbox_regions.py -i $INNER_VOL_ISO -o $BOXES_REGIONS"
-  echo -e "\n$CALL"
-  eval "$CALL"
 
   echo -e "\nSplit the segmentation in 8 regions present in the COPDgene phantom:"
   CALL="python ${PYTHON_SCR_PHANTOM_DIR}/split_segmentation_regions.py -i $INNER_VOL_ISO -ib $BOXES_REGIONS -o $FOLDER_REGIONS"
@@ -116,7 +112,7 @@ mkdir -p "$FOLDEROUT"
 } >> "$LOGFILE"
 # ------------------------------------------------ BRANCH EXTRACTOR STEPS ---------------------------------------
 {
-  LIST_INNER_VOLS_ISO_REGIONS=$(find $FOLDER_REGIONS -type f -name "*.nii.gz")
+  LIST_INNER_VOLS_ISO_REGIONS=$(find "$FOLDER_REGIONS" -type f -name "*.nii.gz")
 
   count=1
   for INNER_VOL_ISO_REGION in $LIST_INNER_VOLS_ISO_REGIONS
@@ -143,10 +139,10 @@ mkdir -p "$FOLDEROUT"
   echo -e "\n$CALL"
   eval "$CALL"
 
-  echo -e "\nRemove the temp branch data in regions in phantom:"
-  CALL="rm -r ${FOLDER_REGIONS}"
-  echo -e "\n$CALL"
-  eval "$CALL"
+#  echo -e "\nRemove the temp branch data in regions in phantom:"
+#  CALL="rm -r ${FOLDER_REGIONS}"
+#  echo -e "\n$CALL"
+#  eval "$CALL"
 } >> "$LOGFILE"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
 {

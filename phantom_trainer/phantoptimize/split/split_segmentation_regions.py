@@ -1,11 +1,9 @@
-
-import numpy as np
 import argparse
 import logging
 
-from airway_analysis.functionsutil.functionsutil import *
-from airway_analysis.functionsutil.imagefilereaders import ImageFileReader
-from airway_analysis.functionsutil.imageoperations import compute_cropped_image, compute_extended_image
+from functionsutil.functionsutil import *
+from functionsutil.imagefilereaders import ImageFileReader
+from functionsutil.imageoperations import compute_cropped_image, compute_extended_image
 
 
 def split_seg_reg(in_file: str, in_boxes_file: str, out_dir: str):

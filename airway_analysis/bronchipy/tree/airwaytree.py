@@ -43,7 +43,9 @@ class AirwayTree:
         if 'config' in kwargs:
             self.config = kwargs.get('config', None)
         else:
+            # TODO: IMPLEMENT CONFIG FILE!!
             self.config = {'min_length': 5.0}
+        logging.debug(f"Ignoring airways smaller than {self.config['min_length']}")
 
         if 'tree_csv' in kwargs:
             self.tree = brio.load_tree_csv(kwargs['tree_csv'])
@@ -71,7 +73,7 @@ class AirwayTree:
         # Add entry describing the number of points in the airway measurement.
         branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
         # Calculate and add the branch lengths in mm.
-        branch_df['length'] = branch_df.apply(lambda row: calc_branch_length(row.points), axis=1)
+        branch_df['length'] = branch_df.apply(lambda row: calc_branch_length(row.centreline), axis=1)
 
         # Load inner measurements csvs into dataframes
         inner_df = brio.load_csv(self.files['inner'], True)

@@ -94,7 +94,7 @@ ADD ["airflow_libs.tar.gz", "."]
 RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
 # Set up the file structure for CT scan processing.
-ENV PYTHONPATH "/bronchinet/src:/bronchinet"
+ENV PYTHONPATH "/bronchinet/src:/bronchinet/airway_analysis"
 
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]

@@ -1,8 +1,10 @@
-
+import logging
 from typing import List, Tuple, Dict, Any
 from collections import OrderedDict
 import csv
 import struct
+
+import numpy as np
 
 
 class CsvFileReader(object):
@@ -135,6 +137,9 @@ class BranchFileReader(object):
 
     @classmethod
     def write_data(cls, output_file: str, out_data: Dict[str, List[Any]]) -> None:
+        logging.debug(f"Writing Data to {output_file}")
+        logging.debug(f"{out_data}")
+
         with open(output_file, "wb") as fout:
             cls._initialize_write(fout)
 
@@ -142,8 +147,9 @@ class BranchFileReader(object):
             cls._write_elem_int(num_branches_incl_dummy)
 
             num_branches = len(out_data['index'])
+            # Offset the range to account for indexing starting at 1
             for ibr in range(num_branches):
-
+                logging.debug(f"Writing branch {ibr} to branch file.")
                 cls._write_elem_int(out_data['index'][ibr])
                 cls._write_elem_int(out_data['parent'][ibr])
                 cls._write_elem_int(out_data['generation'][ibr])

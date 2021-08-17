@@ -2,9 +2,9 @@ import logging
 import argparse
 import numpy as np
 
-from airway_analysis.functionsutil.functionsutil import *
-from airway_analysis.functionsutil.imagefilereaders import ImageFileReader
-from airway_analysis.functionsutil.imageoperations import compute_rescaled_image, compute_thresholded_mask
+from functionsutil.imagefilereaders import ImageFileReader
+from functionsutil.imageoperations import compute_rescaled_image, compute_thresholded_mask
+from functionsutil.functionsutil import *
 
 
 def rescale_img(in_file: str, out_file: str, resol: tuple, is_binary: bool):

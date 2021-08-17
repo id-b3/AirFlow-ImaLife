@@ -1,4 +1,4 @@
-from airway_analysis.functionsutil.imagefilereaders import ImageFileReader
+from ..functionsutil.imagefilereaders import ImageFileReader
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
