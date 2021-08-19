@@ -143,7 +143,7 @@ class BranchFileReader(object):
         with open(output_file, "wb") as fout:
             cls._initialize_write(fout)
 
-            num_branches_incl_dummy = max(out_data['index'])
+            num_branches_incl_dummy = max(out_data['index']) + 1
             cls._write_elem_int(num_branches_incl_dummy)
 
             num_branches = len(out_data['index'])
