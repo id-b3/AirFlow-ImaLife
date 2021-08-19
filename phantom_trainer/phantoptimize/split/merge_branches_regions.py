@@ -61,7 +61,7 @@ def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_f
         # to merge the branches, offset the "index", "parent" and "children" data by the index of last branch visited
         in_branch_data['index'] = [ind + curr_offset_index_branch for ind in in_branch_data['index']]
         logging.debug(f"Merging branch indexes {in_branch_data['index']}")
-        in_branch_data['parent'] = [ind + curr_offset_index_branch for ind in in_branch_data['parent']]
+        in_branch_data['parent'] = [ind + curr_offset_index_branch if ind >0 else 0 for ind in in_branch_data['parent']]
         in_branch_data['children'] = [[ind + curr_offset_index_branch for ind in in_children_brh]
                                       for in_children_brh in in_branch_data['children']]
 
