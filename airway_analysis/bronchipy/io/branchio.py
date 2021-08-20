@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def load_branch_csv(in_file: str) -> pd.DataFrame:

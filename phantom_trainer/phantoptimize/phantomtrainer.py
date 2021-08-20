@@ -1,17 +1,38 @@
 import subprocess
-import sys
 from pathlib import Path
 from .split.calc_boundbox_regions import comp_bound_box
-from .split.split_segmentation_regions import split_seg_reg
 from datetime import datetime
 import logging
 import pandas as pd
-import numpy as np
 from bronchipy.tree.airwaytree import AirwayTree
 from bronchipy.io.branchio import save_summary_csv
 
 # Script constants
 opfront_script = str((Path(__file__).parent / "scripts" / "opfront_phantom_complete.sh").resolve())
+measure_file = str((Path(__file__).parent.parent / "copdgene_phantom" / "COPDGene_Phantom_Measurements.csv"))
+
+
+def calculate_error(phan_measures) -> tuple:
+    measures = pd.read_csv(measure_file)
+    measures.set_index("tube", inplace=True)
+    mse_inner = 0
+    mse_outer = 0
+
+    for i in range(1, 9):
+        try:
+            inner_rad_t = (measures.loc[i]["diam_in"]/2)
+            inner_rad_p = phan_measures.get_branch(i).inner_radius
+            outer_rad_t = (measures.loc[i]["diam_out"]/2)
+            outer_rad_p = phan_measures.get_branch(i).outer_radius
+            mse_inner += (inner_rad_t - inner_rad_p)**2
+            mse_outer += (outer_rad_t - outer_rad_p)**2
+            logging.debug(f"Branch {i} mse inner {mse_inner}. True rad {inner_rad_t}, Measured rad {inner_rad_p}")
+            logging.debug(f"Branch {i} mse_outer {mse_outer}. True rad {outer_rad_t}, Measured rad {outer_rad_p}")
+        except AttributeError as e:
+            logging.error(f"No branch with id {i}: Incomplete semgentation. Continuing to next run...")
+            return 10, 10
+
+    return mse_inner, mse_outer
 
 
 class PhantomTrainer:
@@ -106,12 +127,12 @@ class PhantomTrainer:
 
         # 5. Calculate the error measure
         logging.debug(f"Calculating error measure for run {run_number}...")
-        err_inner = phantom.tree.inner_radius.sum() - (35.0/2)
-        err_outer = phantom.tree.outer_radius.sum() - (48.6/2)
-        logging.info(f"Inner error: {err_inner}")
-        logging.info(f"Outer error: {err_outer}")
-        err_m = (abs(err_inner) + abs(err_outer))/2
+        err_inner, err_outer = calculate_error(phantom)
+        logging.info(f"MSE Inner: {err_inner}")
+        logging.info(f"MSE Outer: {err_outer}")
+        err_m = err_inner + err_outer / 2
 
         # return the error measure
         logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")
         return err_inner, err_outer, err_m
+

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import datetime
 import logging
 import tempfile
 from phantoptimize.phantomtrainer import PhantomTrainer
@@ -8,7 +9,7 @@ import optuna
 
 def main(infiles):
 
-    trainer = PhantomTrainer(infiles.out_dir, log_lev=logging.DEBUG)
+    trainer = PhantomTrainer(infiles.out_dir, log_lev=logging.INFO)
 
     def objective(trial):
         in_der = trial.suggest_float('inner_derivative', infiles.inner_min, infiles.inner_max, step=infiles.step)
@@ -22,7 +23,8 @@ def main(infiles):
 
         return error_inner, error_outer
 
-    study = optuna.create_study(directions=["minimize", "minimize"])
+    study = optuna.create_study(study_name=infiles.study_name, storage=f"sqlite:///{infiles.study_name}.db",
+                                directions=["minimize", "minimize"])
     study.optimize(objective, n_trials=infiles.iter)
     study.trials_dataframe().to_csv('trial_results.csv')
 
@@ -34,13 +36,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--out_dir', type=str, help="Output directory", default=temp_out_folder)
     parser.add_argument('--out_file', type=str, help="Output csv of the trials", default="trial_results.csv")
-    parser.add_argument('--inner_min', type=float, help="Minimum inner derivative value", default=-0.6)
-    parser.add_argument('--inner_max', type=float, help="Maximum inner derivative value", default=-0.1)
-    parser.add_argument('--outer_min', type=float, help="Minimum outer derivative value", default=-1.1)
-    parser.add_argument('--outer_max', type=float, help="Maximum outer derivative value", default=-0.5)
-    parser.add_argument('--step', type=float, help="Step size", default=0.02)
+    parser.add_argument('--inner_min', type=float, help="Minimum inner derivative value", default=-0.7)
+    parser.add_argument('--inner_max', type=float, help="Maximum inner derivative value", default=-0.5)
+    parser.add_argument('--outer_min', type=float, help="Minimum outer derivative value", default=-0.8)
+    parser.add_argument('--outer_max', type=float, help="Maximum outer derivative value", default=-0.6)
+    parser.add_argument('--step', type=float, help="Step size", default=0.01)
     parser.add_argument('--sep', type=float, help="Separation penalty", default=0)
-    parser.add_argument('--iter', type=int, help="Number of iterations", default=10)
+    parser.add_argument('--iter', type=int, help="Number of iterations", default=30)
+    parser.add_argument('--study_name', type=str, help="Name of this study", default=f"trial_{datetime.date.today()}")
     print(f"Output to {temp_out_folder}")
     args = parser.parse_args()
 

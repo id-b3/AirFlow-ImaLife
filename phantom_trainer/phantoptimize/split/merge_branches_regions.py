@@ -10,7 +10,7 @@ from functionsutil.imageoperations import compute_cropped_image, compute_setpatc
 
 
 def merge_branch_reg(in_dir: str, out_file: str, is_merge_vols: bool, in_boxes_file: str, out_vol_file: str,
-                     log_lev: int = logging.DEBUG):
+                     log_lev: int = logging.INFO):
     """
     Merge the extracted branch '.brh' files from the segmentations in regions in the phantom airways.
 
