@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--outer_max', type=float, help="Maximum outer derivative value", default=-0.6)
     parser.add_argument('--step', type=float, help="Step size", default=0.01)
     parser.add_argument('--sep', type=float, help="Separation penalty", default=0)
-    parser.add_argument('--iter', type=int, help="Number of iterations", default=30)
+    parser.add_argument('--iter', type=int, help="Number of iterations", default=3)
     parser.add_argument('--study_name', type=str, help="Name of this study", default=f"trial_{datetime.date.today()}")
     print(f"Output to {temp_out_folder}")
     args = parser.parse_args()
