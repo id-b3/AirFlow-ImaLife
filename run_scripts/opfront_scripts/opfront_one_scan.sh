@@ -30,7 +30,8 @@ LOGFILE="${ROOT}.log" # Process Log File
 PYTHON_SCR="/bronchinet/scripts/util"
 
 # NAMES for all generated files
-SEG_FILL="$ROOT-fill.nii.gz"
+
+SEG_FILL="${ROOT}-filled.nii.gz"
 SEG_CON6="${ROOT}-seg-6con.nii.gz" # Initial segmentaiton after 6-connexion
 SEG_SURFACE="${ROOT}-seg.gts" # Initial segmentaitno after 6-conexion as a surface
 
@@ -129,9 +130,10 @@ CALL="${BINARY_DIR}/brh2vol $BRANCHES -volume $VOL -o $BRANCHES_VOL"
 echo -e "\n$CALL"
 eval "$CALL"
 
-echo -e "\n\nConvert branches to MATLAB readable format:"
+echo -e "\n\nConvert branches to PANDAS readable format:"
 CALL="${BINARY_DIR}/brh_translator $BRANCHES $BRANCHES_PANDAS -pandas"
 echo -e "\n$CALL"
 echo -e "DONE\n"
 eval "$CALL"
+
 } | tee "$LOGFILE"

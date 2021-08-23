@@ -56,5 +56,6 @@ jobs:
           context: .
           file: ./Dockerfile_phantom_trainer
           push: ${{ github.event_name != 'pull_request' }}
-          tags: colossali/phantom_trainer:${{ github.event.inputs.version }}
-          labels: colossali/phantom_trainer:${{ github.event.inputs.tag }}
+          tags: colossali/airflow:${{ github.event.inputs.version }}
+          labels: colossali/airflow:${{ github.event.inputs.tag }}
+
