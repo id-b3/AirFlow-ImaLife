@@ -12,7 +12,7 @@ on:
       version:
         description: 'image version'
         required: true
-        default: 'phantom_trainer_latest'
+        default: 'latest'
       tag:
         description: ':tag'
         required: false
@@ -58,3 +58,4 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: colossali/airflow:${{ github.event.inputs.version }}
           labels: colossali/airflow:${{ github.event.inputs.tag }}
+
