@@ -27,7 +27,7 @@ ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 LOGFILE="${ROOT}.log" # Process Log File
 
 # Location of python scripts
-PYTHON_SCR="/bronchinet/scripts/util"
+PYTHON_SCR="/bronchinet/airway_analysis/util_scripts"
 
 # NAMES for all generated files
 
@@ -100,7 +100,7 @@ echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
-CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5"
+CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5 --is_binary True"
 echo -e "\n$CALL"
 eval "$CALL"
 

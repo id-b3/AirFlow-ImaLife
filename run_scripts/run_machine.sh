@@ -6,7 +6,7 @@ INPUT=${1:-/eureka/input/dicom-series-in/*.dcm}
 OUTPUTFOLDER=${2:-/eureka/output/nifti-series-out/}
 INPUTFILE=${3:-/eureka/input/dicom-series-in/proc_scan.dcm}
 
-
+mkdir -p /eureka/input/dicom-series-in/
 CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT} ${INPUTFILE}"
 eval "$CALL"
 
@@ -41,7 +41,7 @@ cd /temp_work || exit
 ln -s /bronchinet/src Code
 ln -s /temp_work/processing BaseData
 
-lung_segmentation --verbose true --source "$INPUTFILE" --savepath $DESTLUNG
+lung_segmentation --verbose false --source "$INPUTFILE" --savepath $DESTLUNG
 rm $DESTLUNG/*.bmp
 mv $DESTLUNG/*-airways.dcm $DESTAIR/
 
@@ -82,5 +82,5 @@ echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
 
-/bronchinet/scripts/scripts_launch/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
-/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv ${OUTPUTFOLDER}/*_inner.csv --inner_rad_csv ${OUTPUTFOLDER}/*_inner_localRadius_pandas.csv --outer_csv ${OUTPUTFOLDER}/*_outer.csv --outer_rad_csv ${OUTPUTFOLDER}/*_outer_localRadius.csv --branch_csv ${OUTPUTFOLDER}/*_airways_centrelines.csv
+/bronchinet/scripts/opfront_scripts/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${RESDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
+python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv ${OUTPUTFOLDER}/*_inner.csv --inner_rad_csv ${OUTPUTFOLDER}/*_inner_localRadius_pandas.csv --outer_csv ${OUTPUTFOLDER}/*_outer.csv --outer_rad_csv ${OUTPUTFOLDER}/*_outer_localRadius_pandas.csv --branch_csv ${OUTPUTFOLDER}/*_airways_centrelines.csv

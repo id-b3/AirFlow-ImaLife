@@ -53,6 +53,8 @@ class PhantomTrainer:
             Output Directory for this training run.
         """
 
+        self.param = {'i': 14, 'I': 9, 'o': 14, 'O': 9, 'b': 0.4, 'k': 0.5, 'r': 0.7, 'c': 17, 'e': 0.7, 'K': -1,
+                      'F': -0.588, 'G': -0.688, 'd': 0.68, 'w': 0.5}
         self.volume = Path(p_vol).resolve()
         self.segmentation = str(Path(p_seg).resolve())
         self.segmentation_iso = str(Path(p_seg_iso).resolve())
@@ -72,9 +74,7 @@ class PhantomTrainer:
         logging.basicConfig(level=log_lev, filename=self.log_dir)
 
     # TODO: Create a function that runs one loop of phantom opfront and measuring. Returns an error measure.
-    def process_phantom(self, run_number: int,
-                        op_par: str = "-i 15 -o 15 -I 2 -O 2 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0",
-                        i_der: float = 0, o_der: float = 0, s_pen: float = 0) -> tuple:
+    def process_phantom(self, run_number: int) -> tuple:
         """
         A method that processes the phantom and calculates an error measure.
 
@@ -82,21 +82,18 @@ class PhantomTrainer:
         ----------
         run_number: int
             The number of the current run.
-        op_par: str
-            Opfront Parameters
-        i_der: float
-            Inner derivative - test variable (range -1 to 1)
-        o_der: float
-            Outer derivative - test variable (range -1 to 1)
-        s_pen: float
-            Separation penalty - test variable (range 0 to 10)
 
         Returns
         -------
         The error measure for this set of opfront parameters.
         """
 
-        parameters = f"{op_par} -F {i_der:.3f} -G {o_der:0.3f} -d {s_pen:0.2f}"
+        parameters = f"-i {self.param['i']} -I {self.param['I']} -o {self.param['o']} -O {self.param['O']} " \
+                     f"-b {self.param['b']:.2f} -k {self.param['k']:.2f} " \
+                     f"-r {self.param['r']:.2f} -c {self.param['c']:.0f} -e {self.param['e']:.2f} " \
+                     f"-K {self.param['K']:.0f} -F {self.param['F']:.3f} -G {self.param['G']:.3f} " \
+                     f"-d {self.param['d']:.2f} -w {self.param['w']:.2f}"
+
         run_out_dir = str(self.out_dir / f"run_{run_number}").replace('.', '-')
 
         logging.info(

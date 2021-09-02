@@ -27,8 +27,6 @@ RUN mkdir -p playground/thirdparty/itkbin && \
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
-
-
 # Compile the playground
 RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/libmy_functions && \
@@ -42,7 +40,9 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/imgconv && \
     make -C /lungseg/playground/src/gts_ray_measure && \
     make -C /lungseg/playground/src/brh2vol && \
-    make -C /lungseg/playground/src/volume_maker
+    make -C /lungseg/playground/src/volume_maker && \
+    make -C /lungseg/playground/src/measure_volume && \
+    make -C /lungseg/playground/src/histogram
 
 # Copy the tool binaries
 RUN mkdir /lungseg/bins && \
@@ -56,10 +56,7 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
     cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins && \
-    cp /lungseg/playground/src/volume_maker/volume_maker /lungseg/bins
-
-RUN make -C /lungseg/playground/src/histogram/ && \
-    make -C /lungseg/playground/src/measure_volume && \
+    cp /lungseg/playground/src/volume_maker/volume_maker /lungseg/bins && \
     cp /lungseg/playground/src/histogram/histogram /lungseg/bins && \
     cp /lungseg/playground/src/measure_volume/measure_volume /lungseg/bins
 
@@ -77,7 +74,7 @@ LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="
 # Update apt and install RUNTIME dependencies (lower size etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.8 python3-pip python-is-python3 \
-        dcm2niix dcmtk \
+        dcm2niix dcmtk pigz \
         vim \
         libnifti2 libx11-6 libglib2.0-0 \
         && apt-get clean
@@ -88,7 +85,6 @@ COPY ["./bronchinet/requirements.txt", "./"]
 
 #Update the python install based on requirement. No cache to lower image size..
 RUN pip3 install --no-cache-dir -r requirements.txt
-RUN pip3 install --no-cache-dir optuna
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
 COPY --from=builder /lungseg/bins /usr/local/bin
@@ -110,16 +106,12 @@ COPY ["./bronchinet/src/", "./src/"]
 # For default bronchinet, source is ./bronchinet/models
 ARG MODEL_DIR=./imalife_models/imalife
 COPY ["${MODEL_DIR}", "./model/" ]
-COPY ["./util/", "./scripts/util/"]
 COPY ["./run_scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
 
 # Include Airway Analysis Tools
 COPY ["./airway_analysis", "./airway_analysis"]
-
-# Include Phantom Training tools
-COPY ["./phantom_trainer", "./phantom_trainer"]
 
 # Run Launch script when container starts.
 # ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
