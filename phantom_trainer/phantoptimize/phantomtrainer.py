@@ -127,7 +127,7 @@ class PhantomTrainer:
         err_inner, err_outer = calculate_error(phantom)
         logging.info(f"MSE Inner: {err_inner}")
         logging.info(f"MSE Outer: {err_outer}")
-        err_m = err_inner + err_outer / 2
+        err_m = (err_inner + err_outer) / 2
 
         # return the error measure
         logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")
