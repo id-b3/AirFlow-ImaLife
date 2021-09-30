@@ -72,7 +72,12 @@ mkdir -p "$FOLDEROUT"
 echo -e "\nFilling Holes in segmentation:"
 CALL="${BINARY_DIR}/holefiller -i $SEG -o $SEG_FILL"
 echo -e "\n$CALL"
-eval "$CALL"
+
+if ! $CALL
+then
+  echo "Failed to fill holes. Aborting"
+  exit $?
+fi
 
 echo -e "\n6-connecting initial surface:"
 CALL="${BINARY_DIR}/6con $SEG_FILL $SEG_CON6"

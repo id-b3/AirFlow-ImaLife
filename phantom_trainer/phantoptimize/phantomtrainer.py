@@ -54,7 +54,7 @@ class PhantomTrainer:
         """
 
         self.param = {'i': 14, 'I': 9, 'o': 14, 'O': 9, 'b': 0.4, 'k': 0.5, 'r': 0.7, 'c': 17, 'e': 0.7, 'K': -1,
-                      'F': -0.588, 'G': -0.688, 'd': 0.68, 'w': 0.5}
+                      'F': -0.588, 'G': -0.688, 'd': 0.68}
         self.volume = Path(p_vol).resolve()
         self.segmentation = str(Path(p_seg).resolve())
         self.segmentation_iso = str(Path(p_seg_iso).resolve())

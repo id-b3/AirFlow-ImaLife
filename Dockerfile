@@ -36,13 +36,12 @@ RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/scale_branch && \
     make -C /lungseg/playground/src/brh_translator && \
     make -C /lungseg/playground/src/connected_brh && \
-    make -C /lungseg/playground/src/smooth_brh && \
-    make -C /lungseg/playground/src/imgconv && \
     make -C /lungseg/playground/src/gts_ray_measure && \
     make -C /lungseg/playground/src/brh2vol && \
     make -C /lungseg/playground/src/volume_maker && \
     make -C /lungseg/playground/src/measure_volume && \
-    make -C /lungseg/playground/src/histogram
+    make -C /lungseg/playground/src/histogram && \
+    make -C /lungseg/playground/src/thumbnail
 
 # Copy the tool binaries
 RUN mkdir /lungseg/bins && \
@@ -52,13 +51,12 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/scale_branch/scale_branch /lungseg/bins && \
     cp /lungseg/playground/src/gts_ray_measure/gts_ray_measure /lungseg/bins && \
     cp /lungseg/playground/src/connected_brh/connected_brh /lungseg/bins && \
-    cp /lungseg/playground/src/smooth_brh/smooth_brh /lungseg/bins && \
-    cp /lungseg/playground/src/imgconv/imgconv /lungseg/bins && \
     cp /lungseg/playground/src/brh_translator/brh_translator /lungseg/bins && \
     cp /lungseg/playground/src/brh2vol/brh2vol /lungseg/bins && \
     cp /lungseg/playground/src/volume_maker/volume_maker /lungseg/bins && \
     cp /lungseg/playground/src/histogram/histogram /lungseg/bins && \
-    cp /lungseg/playground/src/measure_volume/measure_volume /lungseg/bins
+    cp /lungseg/playground/src/measure_volume/measure_volume /lungseg/bins && \
+    cp /lungseg/playground/src/thumbnail/thumbnail /lungseg/bins
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
@@ -81,10 +79,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy python requirements.
 WORKDIR /bronchinet
-COPY ["./bronchinet/requirements.txt", "./"]
+COPY ["./bronchinet/requirements_torch.txt", "./"]
 
 #Update the python install based on requirement. No cache to lower image size..
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements_torch.txt
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
 COPY --from=builder /lungseg/bins /usr/local/bin

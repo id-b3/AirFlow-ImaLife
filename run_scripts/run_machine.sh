@@ -42,8 +42,15 @@ ln -s /bronchinet/src Code
 ln -s /temp_work/processing BaseData
 
 lung_segmentation --verbose false --source "$INPUTFILE" --savepath $DESTLUNG
-rm $DESTLUNG/*.bmp
-mv $DESTLUNG/*-airways.dcm $DESTAIR/
+if [ $? -eq 0 ]
+then
+  echo "Segmented Lungs"
+  rm $DESTLUNG/*.bmp
+  mv $DESTLUNG/*-airways.dcm $DESTAIR/
+else
+  echo "Could not segment lungs. Terminating."
+  exit $?
+fi
 
 echo 'CONVERTING DICOM TO NIFTY'
 echo '-------------------------'
