@@ -84,7 +84,6 @@ class AirwayTree:
         # Load inner smoothed measurements csvs into dataframes
         inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
 
-
         # Load outer measurements csvr into dataframes
         outer_df = brio.load_csv(self.files['outer'], False)
         outer_df.drop('generation', axis=1, inplace=True)
