@@ -27,13 +27,13 @@ def main(dirs):
                 #       f"input file {input_folder}\n"
                 #       f"output folder... {outdir}")
                 command_array = ["docker", "run", "--gpus", "all", "--rm", "-t", "--entrypoint",
-                                 "scripts/run_local_machine.sh", "-v", f"{input_folder}:/input", "-v",
+                                 "scripts/run_local_machine_for_repeat.sh", "-v", f"{input_folder}:/input", "-v",
                                  f"{outdir}:/output", "airflow:repeat_scan", "/input", vol_name, "/output",
                                  f"/output/{vol_name}.log"]
                 print(command_array)
                 subprocess.run(command_array)
 
-                # subprocess.run(["/bronchinet/scripts/run_local_machine.sh", f"{input_folder}",
+                # subprocess.run(["/bronchinet/scripts/run_local_machine_for_repeat.sh", f"{input_folder}",
                 #                 f"{str(directory.stem)}_{index}.dcm", outdir, f"{main_path}/logfile.log"])
 
 

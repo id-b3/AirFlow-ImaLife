@@ -51,6 +51,7 @@ then
   rm -r $DATADIR
   rm -r $RESDIR
   rm -r $SEGDIR
+  echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   exit $?
 else
   echo "SUCCESS CREATING DICOM VOLUME"
@@ -72,6 +73,7 @@ then
   rm -r $RESDIR
   rm -r $DATADIR
   rm -r $SEGDIR
+  echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   exit $?
 else
   echo "SUCCESS Segmenting Lungs"
@@ -124,15 +126,20 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_one_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 15 -o 15 -I 2 -O 2 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
+/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 17 -o 17 -I 9 -O 9 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
 if [ $? -eq 1 ]
 then
+  echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   echo "Failed opfront"
   rm -r ${DATADIR}
   rm -r ${SEGDIR}
 else
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
-  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}.nii.gz
+  thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
+  mkdir -p ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+  cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+  cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
   python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}"
 fi
 
