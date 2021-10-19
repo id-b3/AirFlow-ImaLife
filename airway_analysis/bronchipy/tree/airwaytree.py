@@ -80,13 +80,18 @@ class AirwayTree:
         inner_df.drop('generation', axis=1, inplace=True)  # Redundant as branch_df already has generations
         # Calculate the area from the radius and insert as new column. Using pi*r^1
         inner_df['inner_global_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 2) * pi, axis=1)
+
+        # Load inner smoothed measurements csvs into dataframes
         inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
+
 
         # Load outer measurements csvr into dataframes
         outer_df = brio.load_csv(self.files['outer'], False)
         outer_df.drop('generation', axis=1, inplace=True)
         # Calculate the area from the radius and insert as new column.
         outer_df['outer_global_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
+
+        # Load outer smoothed measurements csvs into dataframes
         outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
         logging.debug(outer_radius_df.dtypes)
 
