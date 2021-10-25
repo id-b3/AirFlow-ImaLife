@@ -5,7 +5,7 @@ from scipy.spatial import distance
 from sklearn.linear_model import LinearRegression
 
 
-def calc_pi10(wa: list, rad: list, plot: bool = False) -> float:
+def calc_pi10(wa: list, rad: list, plot: bool = False, norm: bool = False) -> float:
 
     # Calculate regression line
     x = np.array(rad).reshape((-1, 1))
@@ -16,7 +16,7 @@ def calc_pi10(wa: list, rad: list, plot: bool = False) -> float:
     logging.debug(f"Square Root Wall Areas {y}")
 
     # Calculate best fit for regression line
-    pi10_model = LinearRegression(n_jobs=-1).fit(x, y)
+    pi10_model = LinearRegression(n_jobs=-1, normalize=norm).fit(x, y)
     logging.info(f"Pi10 R2 value is: {pi10_model.score(x, y)}")
 
     # Get sqrt WA for hypothetical airway of 10mm internal perimeter
