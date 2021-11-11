@@ -5,7 +5,8 @@ def save_pi10_figure(x, y, model, pi10):
 
     fig, ax = plt.subplots()
     ax.scatter(x, y, alpha=0.5)
-    ax.plot(x, model.predict(x), alpha=0.7, color='red', linewidth=2)
+    # ax.plot(x, model.predict(x), alpha=0.7, color='red', linewidth=2)
+    ax.axline((0, model.intercept_), slope=model.coef_[0], alpha=0.7, color='red', linewidth=2)
     ax.vlines(x=10, ymin=0, ymax=pi10, linestyles='--', colors='black', alpha=0.5)
     ax.hlines(y=pi10, xmin=0, xmax=10, linestyles='--', colors='black', alpha=0.5)
 
