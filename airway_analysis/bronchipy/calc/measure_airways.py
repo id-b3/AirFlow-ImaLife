@@ -5,7 +5,7 @@ from scipy.spatial import distance
 from sklearn.linear_model import LinearRegression
 
 
-def calc_pi10(wa: list, rad: list, plot: bool = False) -> tuple:
+def calc_pi10(wa: list, rad: list, plot: bool = False, name: str = "anon", save_dir: str = "./") -> tuple:
 
     # Calculate regression line
     x = np.array(rad).reshape((-1, 1))
@@ -24,9 +24,10 @@ def calc_pi10(wa: list, rad: list, plot: bool = False) -> tuple:
     pi10 = pi10_model.predict([[10]])
 
     if plot:
-        save_pi10_figure(x, y, pi10_model, pi10)
+        save_pi10_figure(x, y, pi10_model, pi10, name=name, savedir=save_dir)
 
     return pi10
+
 
 def calc_branch_length(points: list) -> float:
     """

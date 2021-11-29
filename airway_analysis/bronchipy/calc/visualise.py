@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-
-def save_pi10_figure(x, y, model, pi10):
+def save_pi10_figure(x, y, model, pi10, name, savedir: str, show = False):
 
     fig, ax = plt.subplots()
     ax.scatter(x, y, alpha=0.5)
@@ -23,9 +23,15 @@ def save_pi10_figure(x, y, model, pi10):
     # plt.xticks(())
     # plt.yticks(())
 
-    plt.xlim([2.5, 18])
-    plt.ylim([2.5, 7])
+    plt.xlim([2, 20])
+    plt.ylim([0.5, 4])
     plt.tight_layout()
-    plt.savefig(f'pi10_{pi10[0]:.3f}.png', bbox_inches='tight', dpi=600)
 
-    plt.show()
+    savedir = Path(savedir)
+    savedir.mkdir(parents=True, exist_ok=True)
+    savepath = savedir / f'pi10_{name}_{pi10[0]:.3f}.png'
+    print(savepath)
+    plt.savefig(savepath, bbox_inches='tight', dpi=600)
+
+    if show:
+        plt.show()
