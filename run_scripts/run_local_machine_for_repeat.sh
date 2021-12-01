@@ -127,7 +127,7 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 17 -o 17 -I 9 -O 9 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
+/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 17 -o 17 -I 9 -O 9 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"

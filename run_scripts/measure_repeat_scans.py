@@ -3,8 +3,8 @@ import subprocess
 import argparse
 import logging
 import time
-import datetime
-
+from datetime import date
+import multiprocessing
 
 def main(dirs):
     main_path = Path(dirs.main_dir).resolve()
@@ -33,8 +33,8 @@ def main(dirs):
                 logging.debug(command_array)
                 start_time = time.time()
                 run = subprocess.run(command_array)
-                execution_time = time.time() - start_time
-                logging.info(f"{str(directory.stem)},{run.returncode},{execution_time}")
+                execution_time = (time.time() - start_time)/60
+                logging.info(f",{date.today().strftime('%d-%m-%y')},{str(directory.stem)},{run.returncode},{execution_time:.2f}")
 
 
 if __name__ == "__main__":
