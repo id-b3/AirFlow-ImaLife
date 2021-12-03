@@ -135,7 +135,11 @@ then
   rm -r ${DATADIR}
   rm -r "${SEGDIR}"
 else
-  rm *filled* *.mm *.col *6con*
+  find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
+  find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.col" -delete
+  find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
+  rm ${OUTPUTFOLDER}/${VOL_FILE}
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
   thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp

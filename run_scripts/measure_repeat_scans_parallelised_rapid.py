@@ -67,7 +67,7 @@ def main(dirs):
                    Path(dirs.out_dir) / dir3.stem / vol_names[4].removesuffix(".dcm"), Path(dirs.out_dir) / dir3.stem / vol_names[5].removesuffix(".dcm"),
                    Path(dirs.out_dir) / dir4.stem / vol_names[6].removesuffix(".dcm"), Path(dirs.out_dir) / dir4.stem / vol_names[7].removesuffix(".dcm")]
 
-        timers = [0, 60, 120, 180, 240, 300, 360, 420]
+        timers = [0, 60, 120, 180, 240, 300, 350, 405]
         print(f"TIMERS {timers}")
         pool = Pool(8)
         pool.starmap(process_scan, zip(scan_dirs, outdirs, vol_names, timers))
