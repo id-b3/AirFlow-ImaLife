@@ -5,7 +5,7 @@ import sys
 
 from bronchipy.tree.airwaytree import AirwayTree
 from bronchipy.io import branchio as brio
-
+from bronchipy.calc.measure_airways import calc_pi10
 
 def main(file_list) -> int:
     """
@@ -24,8 +24,10 @@ def main(file_list) -> int:
         airway_tree = AirwayTree(branch_file=file_list.branch_csv, inner_file=file_list.inner_csv,
                                  inner_radius_file=file_list.inner_rad_csv, outer_file=file_list.outer_csv,
                                  outer_radius_file=file_list.outer_rad_csv, volume=file_list.volume_nii)
-        brio.save_summary_csv(airway_tree.tree, f"{file_list.output}/{file_list.name}_airway_tree_summary.csv")
-        brio.save_pickle_tree(airway_tree.tree, f"{file_list.output}/{file_list.name}_airway_tree.pickle")
+        brio.save_summary_csv(airway_tree.tree, f"{file_list.output}/airway_tree_summary.csv")
+        brio.save_pickle_tree(airway_tree.tree, f"{file_list.output}/airway_tree.pickle")
+        calc_pi10(airway_tree.tree['wall_global_area'], airway_tree.tree['inner_radius'], plot=True)
+      
         return sys.exit()
     except (OSError, TypeError) as e:
         print(f"Error: {e}")
