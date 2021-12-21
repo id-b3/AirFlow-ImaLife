@@ -27,7 +27,7 @@ def main(file_list) -> int:
         brio.save_summary_csv(airway_tree.tree, f"{file_list.output}/airway_tree_summary.csv")
         brio.save_pickle_tree(airway_tree.tree, f"{file_list.output}/airway_tree.pickle")
         calc_pi10(airway_tree.tree['wall_global_area'], airway_tree.tree['inner_radius'], plot=True)
-
+      
         return sys.exit()
     except (OSError, TypeError) as e:
         print(f"Error: {e}")
@@ -52,6 +52,7 @@ if __name__ == '__main__':
                         help="Input path for the tree csv file output from the brh_translator tool.")
     aparse.add_argument("--output", type=str, help="Output folder for the airway summary csv and pickle files.",
                         default="/eureka/output")
+    aparse.add_argument("--name", type=str, help="Name for the output summary file.")
 
     if len(sys.argv) == 1:
         aparse.print_help(sys.stderr)

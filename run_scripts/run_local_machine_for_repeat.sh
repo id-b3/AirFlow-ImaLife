@@ -36,21 +36,21 @@ echo "-------------------------------------------------------"
 mkdir -p $DESTAIR
 mkdir -p $DESTLUNG
 mkdir -p $DESTIMG
-mkdir -p $SEGDIR
+mkdir -p "$SEGDIR"
 mkdir -p "${OUTPUTFOLDER}"
 mkdir -p /temp_work/processing/Airways
 
 echo "Converting slices into volume..."
 CALL="volume_maker ${INPUT_DIR} $DESTIMG -manual_name ${VOL_FILE}"
 echo "$CALL"
-eval $CALL
+eval "$CALL"
 
 if [ $? -eq 1 ]
 then
   echo "Failed to create DICOM volume"
   rm -r $DATADIR
   rm -r $RESDIR
-  rm -r $SEGDIR
+  rm -r "$SEGDIR"
   echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   exit $?
 else
@@ -58,13 +58,13 @@ else
 fi
 
 INPUTFILE="${DESTIMG}/${VOL_FILE}"
-cp $INPUTFILE ${OUTPUTFOLDER}
+cp "$INPUTFILE" "${OUTPUTFOLDER}"
 
 cd /temp_work || exit
 ln -s /bronchinet/src Code
 ln -s /temp_work/processing BaseData
 
-CALL="lung_segmentation --verbose false --source $INPUTFILE --savepath $DESTLUNG"
+CALL="lung_segmentation --verbose true --source $INPUTFILE --skip_distance 10 --min_intensity -1048 --airway_threshold -800 --scan bottom --savepath $DESTLUNG"
 echo "$CALL"
 
 if ! $CALL
@@ -72,14 +72,15 @@ then
   echo "Failed to Segment Lungs"
   rm -r $RESDIR
   rm -r $DATADIR
-  rm -r $SEGDIR
+  rm -r "$SEGDIR"
   echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   exit $?
 else
   echo "SUCCESS Segmenting Lungs"
 fi
 
-rm $DESTLUNG/*.bmp
+mkdir -p "${OUTPUTFOLDER}"/"${VOL_NO_EXTENSION}"_initial/
+mv $DESTLUNG/*.bmp "${OUTPUTFOLDER}"/"${VOL_NO_EXTENSION}"_initial/
 mv $DESTLUNG/*-airways.dcm $DESTAIR/
 
 CALL="measure_volume -s $DESTLUNG/*.dcm -v $INPUTFILE >> $OUTPUTFOLDER/lung_volume.txt"
@@ -126,25 +127,30 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 17 -o 17 -I 9 -O 9 -d 6.8 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688"
+/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 17 -o 17 -I 9 -O 9 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.588 -G -0.688 -C 2"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   echo "Failed opfront"
   rm -r ${DATADIR}
-  rm -r ${SEGDIR}
+  rm -r "${SEGDIR}"
 else
+  find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
+  find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.col" -delete
+  find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
+  rm ${OUTPUTFOLDER}/${VOL_FILE}
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
-  mkdir -p ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+  thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp
   cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
-  python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}"
+  python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
 fi
 
 echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'
 rm -r ${DATADIR}
-rm -r ${SEGDIR}
+rm -r "${SEGDIR}"
