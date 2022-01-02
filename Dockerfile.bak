@@ -102,7 +102,7 @@ RUN mkdir ./files && \
 COPY ["./bronchinet/src/", "./src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
 # For default bronchinet, source is ./bronchinet/models
-ARG MODEL_DIR=./imalife_models/imalife_2
+ARG MODEL_DIR=./imalife_models/imalife
 COPY ["${MODEL_DIR}", "./model/" ]
 COPY ["./run_scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
