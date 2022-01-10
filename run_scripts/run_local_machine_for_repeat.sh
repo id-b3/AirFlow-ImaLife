@@ -64,7 +64,7 @@ cd /temp_work || exit
 ln -s /bronchinet/src Code
 ln -s /temp_work/processing BaseData
 
-CALL="lung_segmentation --verbose true --source $INPUTFILE --skip_distance 10 --min_intensity -1048 --airway_threshold -800 --scan bottom --savepath $DESTLUNG"
+CALL="lung_segmentation --verbose false --source $INPUTFILE --skip_distance 10 --min_intensity -1048 --airway_threshold -800 --scan bottom --savepath $DESTLUNG"
 echo "$CALL"
 
 if ! $CALL

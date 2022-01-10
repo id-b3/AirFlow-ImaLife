@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
-from bronchipy.calc.measure_airways import calc_pi10
-from bronchipy.io.branchio import load_pickle_tree
+from airway_analysis.bronchipy.calc.measure_airways import calc_pi10
+from airway_analysis.bronchipy.io.branchio import load_pickle_tree
 from pathlib import Path
 import argparse
 import sys
@@ -69,8 +69,6 @@ def main(dirs):
                     df = pd.DataFrame(list(zip(index_list, param_first_list, param_repeat_list)), columns=['ID', 'Ai_first', 'Ai_repeat'])
                     # wap_summary.to_csv(f'{str(Path(outdir / file_name).resolve())}')
                     df.to_csv(str(Path(outdir / "results_ai.csv").resolve()))
-
-
 
 
 if __name__ == "__main__":
