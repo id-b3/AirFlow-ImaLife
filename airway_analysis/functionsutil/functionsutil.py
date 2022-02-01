@@ -1,4 +1,3 @@
-
 from typing import List, Tuple, Dict, Union, Any
 import glob
 import pickle
@@ -54,14 +53,14 @@ def removefile(filename: str) -> None:
 
 
 def set_dirname_suffix(dirname: str, suffix: str) -> str:
-    if dirname.endswith('/'):
+    if dirname.endswith("/"):
         dirname = dirname[:-1]
-    return '_'.join([dirname, suffix])
+    return "_".join([dirname, suffix])
 
 
 def set_filename_suffix(filename: str, suffix: str) -> str:
     filename_noext, extension = split_filename_extension_recursive(filename)
-    return '_'.join([filename_noext, suffix]) + extension
+    return "_".join([filename_noext, suffix]) + extension
 
 
 def split_filename_extension(filename: str) -> Tuple[str, str]:
@@ -71,10 +70,12 @@ def split_filename_extension(filename: str) -> Tuple[str, str]:
 def split_filename_extension_recursive(filename: str) -> Tuple[str, str]:
     # accounts for extension that are compound: i.e. '.nii.gz'
     filename_noext, extension = os.path.splitext(filename)
-    if extension == '':
+    if extension == "":
         return (filename_noext, extension)
     else:
-        sub_filename_noext, sub_extension = split_filename_extension_recursive(filename_noext)
+        sub_filename_noext, sub_extension = split_filename_extension_recursive(
+            filename_noext
+        )
         return (sub_filename_noext, sub_extension + extension)
 
 
@@ -91,7 +92,11 @@ def is_exist_link(filename: str) -> bool:
 
 
 def is_exist_exec(execname: str) -> bool:
-    return os.path.exists(execname) and os.path.isfile(execname) and os.access(execname, os.X_OK)
+    return (
+        os.path.exists(execname)
+        and os.path.isfile(execname)
+        and os.access(execname, os.X_OK)
+    )
 
 
 def join_path_names(pathname_1: str, pathname_2: str) -> str:
@@ -103,7 +108,7 @@ def basename(pathname: str) -> str:
 
 
 def basenamedir(pathname: str) -> str:
-    if pathname.endswith('/'):
+    if pathname.endswith("/"):
         pathname = pathname[:-1]
     return basename(pathname)
 
@@ -113,7 +118,7 @@ def dirname(pathname: str) -> str:
 
 
 def dirnamedir(pathname: str) -> str:
-    if pathname.endswith('/'):
+    if pathname.endswith("/"):
         pathname = pathname[:-1]
     return dirname(pathname)
 
@@ -140,16 +145,20 @@ def basename_filenoext(filename: str, is_split_recursive: bool = True) -> str:
     return filename_noext(basename(filename), is_split_recursive)
 
 
-def list_files_dir(dirname: str, filename_pattern: str = '*', is_check: bool = True) -> List[str]:
+def list_files_dir(
+    dirname: str, filename_pattern: str = "*", is_check: bool = True
+) -> List[str]:
     listfiles = sorted(glob.glob(join_path_names(dirname, filename_pattern)))
     if is_check:
         if len(listfiles) == 0:
-            message = 'No files found in \'%s\' with \'%s\'' % (dirname, filename_pattern)
+            message = "No files found in '%s' with '%s'" % (dirname, filename_pattern)
             handle_error_message(message)
     return listfiles
 
 
-def list_dirs_dir(dirname: str, dirname_pattern: str = '*', is_check: bool = True) -> List[str]:
+def list_dirs_dir(
+    dirname: str, dirname_pattern: str = "*", is_check: bool = True
+) -> List[str]:
     return list_files_dir(dirname, dirname_pattern, is_check=is_check)
 
 
@@ -177,10 +186,10 @@ def handle_error_message(message: str) -> None:
 
 
 def read_dictionary(filename: str) -> Dict[str, Any]:
-    with open(filename, 'rb') as fin:
+    with open(filename, "rb") as fin:
         return pickle.load(fin)
 
 
 def save_dictionary(filename: str, in_dictionary: Dict[str, Any]) -> None:
-    with open(filename, 'wb') as fout:
+    with open(filename, "wb") as fout:
         pickle.dump(in_dictionary, fout, pickle.HIGHEST_PROTOCOL)

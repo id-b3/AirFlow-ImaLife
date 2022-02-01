@@ -10,7 +10,6 @@ from ..io import branchio as brio
 
 
 class AirwayTree:
-
     def __init__(self, **kwargs):
         """
 
@@ -32,28 +31,35 @@ class AirwayTree:
 
         """
         logging.basicConfig(level=logging.INFO)
-        if 'volume' not in kwargs:
+        if "volume" not in kwargs:
             logging.error("Missing volume file!")
             raise
 
-        vol_header = nib.load(kwargs['volume']).header
+        vol_header = nib.load(kwargs["volume"]).header
         self.vol_dims = vol_header.get_data_shape()
         self.vol_vox_dims = vol_header.get_zooms()
 
-        if 'config' in kwargs:
-            self.config = kwargs.get('config', None)
+        if "config" in kwargs:
+            self.config = kwargs.get("config", None)
         else:
             # TODO: IMPLEMENT CONFIG FILE!!
-            self.config = {'min_length': 5.0}
+            self.config = {"min_length": 5.0}
         logging.debug(f"Ignoring airways smaller than {self.config['min_length']}")
 
-        if 'tree_csv' in kwargs:
-            self.tree = brio.load_tree_csv(kwargs['tree_csv'])
+        if "tree_csv" in kwargs:
+            self.tree = brio.load_tree_csv(kwargs["tree_csv"])
         else:
-            self.files = {'branch': kwargs.get('branch_file', None), 'inner': kwargs.get('inner_file', None),
-                          'inner_rad': kwargs.get('inner_radius_file', None), 'outer': kwargs.get('outer_file', None),
-                          'outer_rad': kwargs.get('outer_radius_file', None), 'vol': kwargs.get('volume', None)}
-            self.tree = self.organise_tree()  #: only necessary if the tree_csv has not been previously made.
+            self.files = {
+                "branch": kwargs.get("branch_file", None),
+                "inner": kwargs.get("inner_file", None),
+                "inner_rad": kwargs.get("inner_radius_file", None),
+                "outer": kwargs.get("outer_file", None),
+                "outer_rad": kwargs.get("outer_radius_file", None),
+                "vol": kwargs.get("volume", None),
+            }
+            self.tree = (
+                self.organise_tree()
+            )  #: only necessary if the tree_csv has not been previously made.
 
     def organise_tree(self) -> pd.DataFrame:
         """
@@ -66,32 +72,42 @@ class AirwayTree:
         A dataframe that is the merged combination of all csvs.
         """
         # Load branches csv into dataframe
-        branch_df = brio.load_branch_csv(self.files['branch'])
+        branch_df = brio.load_branch_csv(self.files["branch"])
         # Apply the voxel dimensions to the points and create a data entry containing the centreline points in mm.
-        branch_df['centreline'] = branch_df.apply(lambda row: [self.vox_to_mm(point) for point in row.points], axis=1)
+        branch_df["centreline"] = branch_df.apply(
+            lambda row: [self.vox_to_mm(point) for point in row.points], axis=1
+        )
         logging.debug(branch_df.columns)
         # Add entry describing the number of points in the airway measurement.
-        branch_df['num_points'] = branch_df.apply(lambda row: len(row.points), axis=1)
+        branch_df["num_points"] = branch_df.apply(lambda row: len(row.points), axis=1)
         # Calculate and add the branch lengths in mm.
-        branch_df['length'] = branch_df.apply(lambda row: calc_branch_length(row.centreline), axis=1)
+        branch_df["length"] = branch_df.apply(
+            lambda row: calc_branch_length(row.centreline), axis=1
+        )
 
         # Load inner measurements csvs into dataframes
-        inner_df = brio.load_csv(self.files['inner'], True)
-        inner_df.drop('generation', axis=1, inplace=True)  # Redundant as branch_df already has generations
+        inner_df = brio.load_csv(self.files["inner"], True)
+        inner_df.drop(
+            "generation", axis=1, inplace=True
+        )  # Redundant as branch_df already has generations
         # Calculate the area from the radius and insert as new column. Using pi*r^1
-        inner_df['inner_global_area'] = inner_df.apply(lambda row: pow(row.inner_radius, 2) * pi, axis=1)
+        inner_df["inner_global_area"] = inner_df.apply(
+            lambda row: pow(row.inner_radius, 2) * pi, axis=1
+        )
 
         # Load inner smoothed measurements csvs into dataframes
-        inner_radius_df = brio.load_local_radius_csv(self.files['inner_rad'], True)
+        inner_radius_df = brio.load_local_radius_csv(self.files["inner_rad"], True)
 
         # Load outer measurements csvr into dataframes
-        outer_df = brio.load_csv(self.files['outer'], False)
-        outer_df.drop('generation', axis=1, inplace=True)
+        outer_df = brio.load_csv(self.files["outer"], False)
+        outer_df.drop("generation", axis=1, inplace=True)
         # Calculate the area from the radius and insert as new column.
-        outer_df['outer_global_area'] = outer_df.apply(lambda row: pow(row.outer_radius, 2) * pi, axis=1)
+        outer_df["outer_global_area"] = outer_df.apply(
+            lambda row: pow(row.outer_radius, 2) * pi, axis=1
+        )
 
         # Load outer smoothed measurements csvs into dataframes
-        outer_radius_df = brio.load_local_radius_csv(self.files['outer_rad'], False)
+        outer_radius_df = brio.load_local_radius_csv(self.files["outer_rad"], False)
         logging.debug(outer_radius_df.dtypes)
 
         # Combine all the loaded data frames based on branches ID.
@@ -99,30 +115,45 @@ class AirwayTree:
         for df in all_dfs:
             logging.debug(df.dtypes)
 
-        organised_tree = reduce(lambda left, right: pd.merge(left, right, on=['branch'], how='outer'), all_dfs)
-        organised_tree.set_index('branch', inplace=True)
+        organised_tree = reduce(
+            lambda left, right: pd.merge(left, right, on=["branch"], how="outer"),
+            all_dfs,
+        )
+        organised_tree.set_index("branch", inplace=True)
 
         # Drop branches with 0 for measurements
         organised_tree = organised_tree[organised_tree.outer_global_area != 0.0]
         # Drop branches smaller than minimum length
-        organised_tree = organised_tree[organised_tree.length > self.config['min_length']]
+        organised_tree = organised_tree[
+            organised_tree.length > self.config["min_length"]
+        ]
 
         # Calculate Global Wall Area and WA%
-        organised_tree['wall_global_area'] = organised_tree.apply(
-            lambda row: row.outer_global_area - row.inner_global_area, axis=1)
-        organised_tree['wall_global_area_perc'] = organised_tree.apply(
-            lambda row: (row.wall_global_area / row.outer_global_area) * 100, axis=1)
+        organised_tree["wall_global_area"] = organised_tree.apply(
+            lambda row: row.outer_global_area - row.inner_global_area, axis=1
+        )
+        organised_tree["wall_global_area_perc"] = organised_tree.apply(
+            lambda row: (row.wall_global_area / row.outer_global_area) * 100, axis=1
+        )
 
         # Calculate Global Wall Thickness and WT%
-        organised_tree['wall_global_thickness'] = organised_tree.apply(
-            lambda row: row.outer_radius - row.inner_radius, axis=1)
-        organised_tree['wall_global_thickness_perc'] = organised_tree.apply(
-            lambda row: (row.wall_global_thickness - row.outer_radius) * 100, axis=1)
+        organised_tree["wall_global_thickness"] = organised_tree.apply(
+            lambda row: row.outer_radius - row.inner_radius, axis=1
+        )
+        organised_tree["wall_global_thickness_perc"] = organised_tree.apply(
+            lambda row: (row.wall_global_thickness - row.outer_radius) * 100, axis=1
+        )
 
         # Get midpoint co-ordinates
-        organised_tree['x'] = organised_tree.apply(lambda row: row.points[int(len(row.points)/2)][0], axis=1)
-        organised_tree['y'] = organised_tree.apply(lambda row: row.points[int(len(row.points)/2)][1], axis=1)
-        organised_tree['z'] = organised_tree.apply(lambda row: row.points[int(len(row.points)/2)][2], axis=1)
+        organised_tree["x"] = organised_tree.apply(
+            lambda row: row.points[int(len(row.points) / 2)][0], axis=1
+        )
+        organised_tree["y"] = organised_tree.apply(
+            lambda row: row.points[int(len(row.points) / 2)][1], axis=1
+        )
+        organised_tree["z"] = organised_tree.apply(
+            lambda row: row.points[int(len(row.points) / 2)][2], axis=1
+        )
 
         return organised_tree
 
@@ -135,7 +166,7 @@ class AirwayTree:
         minlen: float = 5
             Minimum length of a branch in millimeters.
         """
-        self.config['min_length'] = minlen
+        self.config["min_length"] = minlen
 
     def get_airway_count(self) -> int:
         """
@@ -159,7 +190,11 @@ class AirwayTree:
         tuple
             x, y, z coordinates in millimeters
         """
-        return point[0] * self.vol_vox_dims[0], point[1] * self.vol_vox_dims[1], point[2] * self.vol_vox_dims[2]
+        return (
+            point[0] * self.vol_vox_dims[0],
+            point[1] * self.vol_vox_dims[1],
+            point[2] * self.vol_vox_dims[2],
+        )
 
     def get_branch(self, branch_id: int) -> pd.Series:
         """

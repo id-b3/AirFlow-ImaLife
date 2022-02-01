@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
@@ -7,30 +6,39 @@ import argparse
 def main(args):
 
     # SETTINGS
-    pattern_suffix_cases_analyse = 'i[0-9]+_I1_o[0-9]+_O1_M3_N5'
+    pattern_suffix_cases_analyse = "i[0-9]+_I1_o[0-9]+_O1_M3_N5"
     # pattern_suffix_cases_analyse = 'i15_I2_o15_O2_w[0-9]+'
     # pattern_suffix_cases_analyse = 'i15_I2_o15_O2_b[0-9]+'
-    pattern_main_param_suffix = 'i[0-9]+'
+    pattern_main_param_suffix = "i[0-9]+"
 
-    in_reference_filename = join_path_names(args.basedir, './COPDGene_Phantom_Measurements.csv')
-    input_dir_all = join_path_names(args.basedir, './Phantom_Measurements_Regions_All/')
+    in_reference_filename = join_path_names(
+        args.basedir, "./COPDGene_Phantom_Measurements.csv"
+    )
+    input_dir_all = join_path_names(args.basedir, "./Phantom_Measurements_Regions_All/")
 
     # ----------
 
-    list_in_subdirs_all = list_dirs_dir(input_dir_all, '*')
+    list_in_subdirs_all = list_dirs_dir(input_dir_all, "*")
 
-    list_in_subdirs_cases = [isubdir for isubdir in list_in_subdirs_all
-                             if get_substring_filename(isubdir, pattern_suffix_cases_analyse) is not None]
+    list_in_subdirs_cases = [
+        isubdir
+        for isubdir in list_in_subdirs_all
+        if get_substring_filename(isubdir, pattern_suffix_cases_analyse) is not None
+    ]
 
     # sort subdirs in increasing order of the param
-    list_in_subdirs_cases.sort(key=lambda name: int(re.search(pattern_main_param_suffix, name)[0][1:]))
+    list_in_subdirs_cases.sort(
+        key=lambda name: int(re.search(pattern_main_param_suffix, name)[0][1:])
+    )
 
     print("Analyse measures from files in subdirs:")
-    print("%s" % ('\n'.join(list_in_subdirs_cases)))
+    print("%s" % ("\n".join(list_in_subdirs_cases)))
 
     # ----------
 
-    in_data_reference = np.genfromtxt(in_reference_filename, dtype=float, delimiter=',', skip_header=1)
+    in_data_reference = np.genfromtxt(
+        in_reference_filename, dtype=float, delimiter=",", skip_header=1
+    )
 
     # check the location of each tube in Phantom in the file 'COPDGene_Airways.pdf'
     #                       / tube_phantom /        / region_input_measures /
@@ -56,10 +64,12 @@ def main(args):
 
     # read measurements from files
     for icase, in_subdir in enumerate(list_in_subdirs_cases):
-        in_filename = join_path_names(in_subdir, './Opfront_ResultsPerBranch.csv')
+        in_filename = join_path_names(in_subdir, "./Opfront_ResultsPerBranch.csv")
 
         try:
-            in_data = np.genfromtxt(in_filename, dtype=float, delimiter=', ', skip_header=1)
+            in_data = np.genfromtxt(
+                in_filename, dtype=float, delimiter=", ", skip_header=1
+            )
         except:
             continue
 
@@ -79,14 +89,18 @@ def main(args):
     # ----------
 
     # plot erros for measurements of 'inner_diam', 'outer_diam', 'length'
-    list_errors_data_all = [error_inner_diam_regs_all, error_outer_diam_regs_all, error_length_regs_all]
-    list_labels_data_all = ['error_inner_diam', 'error_outer_diam', 'error_length']
+    list_errors_data_all = [
+        error_inner_diam_regs_all,
+        error_outer_diam_regs_all,
+        error_length_regs_all,
+    ]
+    list_labels_data_all = ["error_inner_diam", "error_outer_diam", "error_length"]
 
     # cmap = plt.get_cmap('rainbow')
     # colors = [cmap(float(i) / (num_regions - 1)) for i in range(num_regions)]
 
     for iplot in range(3):
-        print("\n plot error in measurement \'%s\'..." % (list_labels_data_all[iplot]))
+        print("\n plot error in measurement '%s'..." % (list_labels_data_all[iplot]))
 
         fig, axis = plt.subplots(2, 4, figsize=(10, 5))
         iter_axis = axis.flat
@@ -97,19 +111,18 @@ def main(args):
             next_axis = next(iter_axis)
 
             next_axis.plot(xaxis_plot_range, list_errors_data_all[iplot][ireg])
-            next_axis.set_xlabel('index_cases')
-            next_axis.set_ylabel('error_reg%s' % (ireg + 1))
+            next_axis.set_xlabel("index_cases")
+            next_axis.set_ylabel("error_reg%s" % (ireg + 1))
         # endfor
 
-        fig.suptitle('\'%s\', all regions' % (list_labels_data_all[iplot]))
+        fig.suptitle("'%s', all regions" % (list_labels_data_all[iplot]))
         plt.show()
     # endfor
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--basedir', type=str, default='.')
+    parser.add_argument("--basedir", type=str, default=".")
     args = parser.parse_args()
 
     main(args)

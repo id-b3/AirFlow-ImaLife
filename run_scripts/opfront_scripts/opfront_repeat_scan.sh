@@ -95,14 +95,14 @@ echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nConverting inner surface to binary with the original spacing (with subsampling):"
-CALL="${BINARY_DIR}/gts2img -g $INNER_SURFACE -s $INNER_VOL -v $VOL -u 3"
-echo -e "\n$CALL"
-eval "$CALL"
+CALL1="${BINARY_DIR}/gts2img -g $INNER_SURFACE -s $INNER_VOL -v $VOL -u 3"
+echo -e "\n$CALL1"
 
 echo -e "\nConverting outer surface to binary with the original spacing (with subsampling):"
-CALL="${BINARY_DIR}/gts2img -g $OUTER_SURFACE -s $OUTER_VOL -v $VOL -u 3"
-echo -e "\n$CALL"
-eval "$CALL"
+CALL2="${BINARY_DIR}/gts2img -g $OUTER_SURFACE -s $OUTER_VOL -v $VOL -u 3"
+echo -e "\n$CALL2"
+eval "$CALL1" &&
+eval "$CALL2"
 
 echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
 CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5 --is_binary True"
@@ -121,14 +121,14 @@ echo -e "\n$CALL"
 eval "$CALL"
 
 echo -e "\nMeasure inner surface:"
-CALL="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_LOCAL_PANDAS"
-echo -e "\n$CALL"
-eval "$CALL"
+CALL1="${BINARY_DIR}/gts_ray_measure -g $INNER_SURFACE -v $VOL -b $BRANCHES -o $INNER_RESULTS -l $INNER_RESULTS_LOCAL -p $INNER_RESULTS_LOCAL_PANDAS"
+echo -e "\n$CALL1"
 
 echo -e "\nMeasure outer surface:"
-CALL="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_LOCAL_PANDAS"
-echo -e "\n$CALL"
-eval "$CALL"
+CALL2="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_LOCAL_PANDAS"
+echo -e "\n$CALL2"
+eval "$CALL1" &&
+eval "$CALL2"
 
 echo -e "\nConvert branches to volume:"
 CALL="${BINARY_DIR}/brh2vol $BRANCHES -volume $VOL -o $BRANCHES_VOL"

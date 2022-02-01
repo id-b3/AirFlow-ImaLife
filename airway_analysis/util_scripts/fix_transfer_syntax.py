@@ -6,8 +6,10 @@ import sys
 
 def main(in_file, out_file):
     corrupt_scan = pydicom.dcmread(in_file)
-    print(f"Converting Transfer Syntax from \"{corrupt_scan.file_meta.TransferSyntaxUID}\" "
-          f"to \"1.2.840.10008.1.2.4.70\"")
+    print(
+        f'Converting Transfer Syntax from "{corrupt_scan.file_meta.TransferSyntaxUID}" '
+        f'to "1.2.840.10008.1.2.4.70"'
+    )
     corrupt_scan.file_meta.TransferSyntaxUID = "1.2.840.10008.1.2.4.70"
     print("Saving to {}".format(out_file))
     corrupt_scan.save_as(out_file)

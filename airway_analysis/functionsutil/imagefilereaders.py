@@ -1,9 +1,9 @@
-
 from typing import Tuple, Any
 import numpy as np
 import SimpleITK as sitk
 import pydicom
 import warnings
+
 with warnings.catch_warnings():
     # disable FutureWarning: conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated
     warnings.filterwarnings("ignore", category=FutureWarning)
@@ -13,7 +13,6 @@ from functionsutil.functionsutil import fileextension, handle_error_message
 
 
 class ImageFileReader(object):
-
     @classmethod
     def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
         return cls._get_filereader_class(filename).get_image_position(filename)
@@ -29,7 +28,9 @@ class ImageFileReader(object):
     @classmethod
     def update_image_metadata_info(cls, filename: str, **kwargs) -> Any:
         in_metadata = cls.get_image_metadata_info(filename)
-        return cls._get_filereader_class(filename).update_image_metadata_info(in_metadata, **kwargs)
+        return cls._get_filereader_class(filename).update_image_metadata_info(
+            in_metadata, **kwargs
+        )
 
     @classmethod
     def get_image_size(cls, filename: str) -> Tuple[int, int, int]:
@@ -44,11 +45,11 @@ class ImageFileReader(object):
         cls._get_filereader_class(filename).write_image(filename, in_image, **kwargs)
 
     @staticmethod
-    def _get_filereader_class(filename: str) -> 'ImageFileReader':
+    def _get_filereader_class(filename: str) -> "ImageFileReader":
         extension = fileextension(filename)
-        if extension == '.nii' or extension == '.nii.gz':
+        if extension == ".nii" or extension == ".nii.gz":
             return NiftiReader
-        elif extension == '.dcm':
+        elif extension == ".dcm":
             return DicomReader
         else:
             message = f"Not valid file extension: {extension}"
@@ -56,7 +57,6 @@ class ImageFileReader(object):
 
 
 class NiftiReader(ImageFileReader):
-
     @classmethod
     def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
         affine = cls._get_image_affine_matrix(filename)
@@ -83,8 +83,8 @@ class NiftiReader(ImageFileReader):
 
     @classmethod
     def write_image(cls, filename: str, in_image: np.ndarray, **kwargs) -> None:
-        if 'metadata' in kwargs.keys():
-            affine = kwargs['metadata']
+        if "metadata" in kwargs.keys():
+            affine = kwargs["metadata"]
             affine = cls._fix_dims_affine_matrix(affine)
         else:
             affine = None
@@ -111,21 +111,24 @@ class NiftiReader(ImageFileReader):
 
 
 class DicomReader(ImageFileReader):
-
     @classmethod
     def get_image_position(cls, filename: str) -> Tuple[float, float, float]:
         ds = pydicom.read_file(filename)
-        image_position_str = ds[0x0020, 0x0032].value   # Elem 'Image Position (Patient)'
-        return (float(image_position_str[0]),
-                float(image_position_str[1]),
-                float(image_position_str[2]))
+        image_position_str = ds[0x0020, 0x0032].value  # Elem 'Image Position (Patient)'
+        return (
+            float(image_position_str[0]),
+            float(image_position_str[1]),
+            float(image_position_str[2]),
+        )
 
     @classmethod
     def get_image_voxelsize(cls, filename: str) -> Tuple[float, float, float]:
         ds = pydicom.read_file(filename)
-        return (float(ds.SpacingBetweenSlices),
-                float(ds.PixelSpacing[0]),
-                float(ds.PixelSpacing[1]))
+        return (
+            float(ds.SpacingBetweenSlices),
+            float(ds.PixelSpacing[0]),
+            float(ds.PixelSpacing[1]),
+        )
 
     @classmethod
     def get_image_metadata_info(cls, filename: str) -> Any:
@@ -143,8 +146,8 @@ class DicomReader(ImageFileReader):
         if in_image.dtype != np.uint16:
             in_image = in_image.astype(np.uint16)
         image_write = sitk.GetImageFromArray(in_image)
-        if 'metadata' in kwargs.keys():
-            dict_metadata = kwargs['metadata']
+        if "metadata" in kwargs.keys():
+            dict_metadata = kwargs["metadata"]
             for (key, val) in dict_metadata.items():
                 image_write.SetMetaData(key, val)
         sitk.WriteImage(image_write, filename)

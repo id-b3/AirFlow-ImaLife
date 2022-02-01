@@ -5,7 +5,9 @@ from scipy.spatial import distance
 from sklearn.linear_model import LinearRegression
 
 
-def calc_pi10(wa: list, rad: list, plot: bool = False, name: str = "anon", save_dir: str = "./") -> tuple:
+def calc_pi10(
+    wa: list, rad: list, plot: bool = False, name: str = "anon", save_dir: str = "./"
+) -> tuple:
 
     # Calculate regression line
     x = np.array(rad).reshape((-1, 1))
@@ -55,7 +57,9 @@ def calc_branch_length(points: list) -> float:
     return branch_length
 
 
-def calc_smoothing(in_data: np.array, smo_filter: np.array, is_padded: bool = True) -> np.array:
+def calc_smoothing(
+    in_data: np.array, smo_filter: np.array, is_padded: bool = True
+) -> np.array:
     """
     Apply smoothing to data by convolution with a filter
 
@@ -72,16 +76,20 @@ def calc_smoothing(in_data: np.array, smo_filter: np.array, is_padded: bool = Tr
     Data after smoothing
     """
     if len(in_data) < len(smo_filter):
-        logging.info(f"Size of input data {len(in_data)} smaller than filter window {len(smo_filter)}.")
+        logging.info(
+            f"Size of input data {len(in_data)} smaller than filter window {len(smo_filter)}."
+        )
         return in_data
 
     if is_padded:
-        return np.convolve(in_data, smo_filter, 'same')
+        return np.convolve(in_data, smo_filter, "same")
     else:
-        return np.convolve(in_data, smo_filter, 'valid')
+        return np.convolve(in_data, smo_filter, "valid")
 
 
-def calc_smoothing_asAdria(in_data: np.array, smo_filter: np.array, is_padded: bool = True) -> np.array:
+def calc_smoothing_asAdria(
+    in_data: np.array, smo_filter: np.array, is_padded: bool = True
+) -> np.array:
     """
     Apply smoothing to data by convolution with a filter (same as Adria's implementation in MatLab code, for debugging)
 
@@ -101,32 +109,40 @@ def calc_smoothing_asAdria(in_data: np.array, smo_filter: np.array, is_padded: b
     # IMPORTANT: I think Adria's implementation is wrong, in the code to calculate convolved data with padding
     # IF THIS CONFIRMS: delete this function
     if len(in_data) < len(smo_filter):
-        logging.info(f"Size of input data {len(in_data)} smaller than filter window {len(smo_filter)}.")
+        logging.info(
+            f"Size of input data {len(in_data)} smaller than filter window {len(smo_filter)}."
+        )
         return in_data
 
     length_filter = len(smo_filter)
     middle_filter = int((length_filter + 1) / 2)
 
-    out_data = np.convolve(in_data, smo_filter, 'valid')
+    out_data = np.convolve(in_data, smo_filter, "valid")
 
     if is_padded:
         num_data_padded = middle_filter - 1
 
         out_data_left_padded = np.zeros(num_data_padded)
         for i in range(num_data_padded):
-            part_filter = smo_filter[middle_filter - 1 - i:]
-            part_filter = part_filter / np.sum(part_filter)     # I think this is wrong, I don't know why Adria does it
-            part_data = in_data[:middle_filter + i]
+            part_filter = smo_filter[middle_filter - 1 - i :]
+            part_filter = part_filter / np.sum(
+                part_filter
+            )  # I think this is wrong, I don't know why Adria does it
+            part_data = in_data[: middle_filter + i]
             out_data_left_padded[i] = np.dot(part_data, part_filter)
 
         out_data_right_padded = np.zeros(num_data_padded)
         for i in range(num_data_padded):
-            part_filter = smo_filter[:middle_filter + i]
-            part_filter = part_filter / np.sum(part_filter)     # I think this is wrong, I don't know why Adria does it
-            part_data = in_data[-middle_filter - i:]
+            part_filter = smo_filter[: middle_filter + i]
+            part_filter = part_filter / np.sum(
+                part_filter
+            )  # I think this is wrong, I don't know why Adria does it
+            part_data = in_data[-middle_filter - i :]
             out_data_right_padded[-i - 1] = np.dot(part_data, part_filter)
 
-        out_data = np.concatenate((out_data_left_padded, out_data, out_data_right_padded))
+        out_data = np.concatenate(
+            (out_data_left_padded, out_data, out_data_right_padded)
+        )
 
     return out_data
 
@@ -164,10 +180,10 @@ def calc_local_orientations(points: np.array, min_width: float) -> np.array:
             else:
                 ind_l = np.max(indexes_further_width)
 
-        if i == num_points - 1: # special case for last (rightmost) point
+        if i == num_points - 1:  # special case for last (rightmost) point
             ind_r = num_points - 1
         else:
-            points_right = points[i+1:]
+            points_right = points[i + 1 :]
             dists_points_right = distance.cdist([points[i]], points_right)[0]
             indexes_further_width = np.argwhere(dists_points_right > min_width / 2)
             if len(indexes_further_width) == 0:
@@ -244,7 +260,7 @@ def get_kernel(window_width: int, sigma: int) -> list:
     normalised kernel of gaussian window
     """
     x = np.arange(-window_width, window_width + 1)
-    kernel = np.exp(-x**2 / (2 * sigma**2))
+    kernel = np.exp(-(x**2) / (2 * sigma**2))
     kernel = kernel / np.sum(kernel)
 
     return kernel

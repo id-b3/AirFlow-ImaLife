@@ -3,7 +3,10 @@ import argparse
 import numpy as np
 
 from functionsutil.imagefilereaders import ImageFileReader
-from functionsutil.imageoperations import compute_rescaled_image, compute_thresholded_mask
+from functionsutil.imageoperations import (
+    compute_rescaled_image,
+    compute_thresholded_mask,
+)
 from functionsutil.functionsutil import *
 
 
@@ -43,7 +46,9 @@ def rescale_img(in_file: str, out_file: str, resol: tuple, is_binary: bool):
     if args.is_binary:
         # remove noise due to interpolation of binary mask during rescaling
         thres_rm_noise = 0.5
-        logging.debug(f"Binarise the output from rescaling, with threshold:\n {thres_rm_noise}")
+        logging.debug(
+            f"Binarise the output from rescaling, with threshold:\n {thres_rm_noise}"
+        )
 
         out_image = compute_thresholded_mask(out_image, thres_rm_noise)
 
@@ -58,21 +63,25 @@ def rescale_img(in_file: str, out_file: str, resol: tuple, is_binary: bool):
 
 def main(argmts):
     if not is_exist_file(argmts.in_file):
-        message = 'Input file \'%s\' does not exist' % (argmts.in_file)
+        message = "Input file '%s' does not exist" % (argmts.in_file)
         handle_error_message(message)
 
     rescale_img(argmts.in_file, argmts.out_file, args.resol, args.is_binary)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Rescale image to desired resolution')
-    parser.add_argument('-i', '--in_file', type=str, help='Input file', required=True)
-    parser.add_argument('-o', '--out_file', type=str, help='Output file', required=True)
-    parser.add_argument('-r', '--resol', nargs=3, type=float, help='Final resolution', required=True)
-    parser.add_argument('--is_binary', type=bool, help='binarise the rescaled output ?', default=False)
+    parser = argparse.ArgumentParser(description="Rescale image to desired resolution")
+    parser.add_argument("-i", "--in_file", type=str, help="Input file", required=True)
+    parser.add_argument("-o", "--out_file", type=str, help="Output file", required=True)
+    parser.add_argument(
+        "-r", "--resol", nargs=3, type=float, help="Final resolution", required=True
+    )
+    parser.add_argument(
+        "--is_binary", type=bool, help="binarise the rescaled output ?", default=False
+    )
     args = parser.parse_args()
 
     print("Print input arguments...")
     for key, value in vars(args).items():
-        print("\'%s\' = %s" % (key, value))
+        print("'%s' = %s" % (key, value))
     main(args)

@@ -18,11 +18,11 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Rescale image to desired resolution')
-    parser.add_argument('-i', '--in_file', type=str, help='Input file', required=True)
+    parser = argparse.ArgumentParser(description="Rescale image to desired resolution")
+    parser.add_argument("-i", "--in_file", type=str, help="Input file", required=True)
     args = parser.parse_args()
 
     print("Print input arguments...")
     for key, value in vars(args).items():
-        print("\'%s\' = %s" % (key, value))
+        print("'%s' = %s" % (key, value))
     main(args)

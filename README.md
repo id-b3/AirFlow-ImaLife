@@ -2,6 +2,7 @@
 
 [![CodeFactor](https://www.codefactor.io/repository/github/id-b3/air_flow_imalife/badge?s=1dae3aeee26afb253ec4aedd3b702d828daacdf3)](https://www.codefactor.io/repository/github/id-b3/air_flow_imalife)
 [![GitHub Super-Linter](https://github.com/id-b3/air_flow_imalife/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter) [![Docker](https://github.com/id-b3/Air_Flow_ImaLife/actions/workflows/docker-publish.yml/badge.svg?branch=optimise_phantom)](https://github.com/id-b3/Air_Flow_ImaLife/actions/workflows/docker-publish.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 -------------------
 
 ## Introduction

@@ -8,8 +8,16 @@ from bronchipy.tree.airwaytree import AirwayTree
 from bronchipy.io.branchio import save_summary_csv
 
 # Script constants
-opfront_script = str((Path(__file__).parent / "scripts" / "opfront_phantom_complete.sh").resolve())
-measure_file = str((Path(__file__).parent.parent / "copdgene_phantom" / "COPDGene_Phantom_Measurements.csv"))
+opfront_script = str(
+    (Path(__file__).parent / "scripts" / "opfront_phantom_complete.sh").resolve()
+)
+measure_file = str(
+    (
+        Path(__file__).parent.parent
+        / "copdgene_phantom"
+        / "COPDGene_Phantom_Measurements.csv"
+    )
+)
 
 
 def calculate_error(phan_measures) -> tuple:
@@ -20,25 +28,36 @@ def calculate_error(phan_measures) -> tuple:
 
     for i in range(1, 9):
         try:
-            inner_rad_t = (measures.loc[i]["diam_in"]/2)
+            inner_rad_t = measures.loc[i]["diam_in"] / 2
             inner_rad_p = phan_measures.get_branch(i).inner_radius
-            outer_rad_t = (measures.loc[i]["diam_out"]/2)
+            outer_rad_t = measures.loc[i]["diam_out"] / 2
             outer_rad_p = phan_measures.get_branch(i).outer_radius
-            mse_inner += (inner_rad_t - inner_rad_p)**2
-            mse_outer += (outer_rad_t - outer_rad_p)**2
-            logging.debug(f"Branch {i} mse inner {mse_inner}. True rad {inner_rad_t}, Measured rad {inner_rad_p}")
-            logging.debug(f"Branch {i} mse_outer {mse_outer}. True rad {outer_rad_t}, Measured rad {outer_rad_p}")
+            mse_inner += (inner_rad_t - inner_rad_p) ** 2
+            mse_outer += (outer_rad_t - outer_rad_p) ** 2
+            logging.debug(
+                f"Branch {i} mse inner {mse_inner}. True rad {inner_rad_t}, Measured rad {inner_rad_p}"
+            )
+            logging.debug(
+                f"Branch {i} mse_outer {mse_outer}. True rad {outer_rad_t}, Measured rad {outer_rad_p}"
+            )
         except AttributeError as e:
-            logging.error(f"No branch with id {i}: Incomplete semgentation. Continuing to next run...")
+            logging.error(
+                f"No branch with id {i}: Incomplete semgentation. Continuing to next run..."
+            )
             return 10, 10
 
     return mse_inner, mse_outer
 
 
 class PhantomTrainer:
-    def __init__(self, out_dir: str, p_vol: str = "copdgene_phantom/phantom_volume.nii.gz",
-                 p_seg: str = "copdgene_phantom/phantom_lumen.nii.gz",
-                 p_seg_iso: str = "copdgene_phantom/phantom_lumen_iso_05.nii.gz", log_lev: int = logging.INFO):
+    def __init__(
+        self,
+        out_dir: str,
+        p_vol: str = "copdgene_phantom/phantom_volume.nii.gz",
+        p_seg: str = "copdgene_phantom/phantom_lumen.nii.gz",
+        p_seg_iso: str = "copdgene_phantom/phantom_lumen_iso_05.nii.gz",
+        log_lev: int = logging.INFO,
+    ):
         """
         Phantom Trainer class. Contains the information to repeatedly run the process_phantom method, which calculates
         an error meaasure for a given set of parameters.
@@ -53,8 +72,21 @@ class PhantomTrainer:
             Output Directory for this training run.
         """
 
-        self.param = {'i': 14, 'I': 9, 'o': 14, 'O': 9, 'b': 0.4, 'k': 0.5, 'r': 0.7, 'c': 17, 'e': 0.7, 'K': -1,
-                      'F': -0.588, 'G': -0.688, 'd': 0.68}
+        self.param = {
+            "i": 14,
+            "I": 9,
+            "o": 14,
+            "O": 9,
+            "b": 0.4,
+            "k": 0.5,
+            "r": 0.7,
+            "c": 17,
+            "e": 0.7,
+            "K": -1,
+            "F": -0.588,
+            "G": -0.688,
+            "d": 0.68,
+        }
         self.volume = Path(p_vol).resolve()
         self.segmentation = str(Path(p_seg).resolve())
         self.segmentation_iso = str(Path(p_seg_iso).resolve())
@@ -64,11 +96,15 @@ class PhantomTrainer:
         (self.out_dir / "common_files").mkdir()
 
         self.log_dir = str(self.out_dir / "logs" / f"training_log_{datetime.now()}.log")
-        self.bound_box = str(self.out_dir / "common_files" / "boundboxes_split_regions_phantom.pkl")
+        self.bound_box = str(
+            self.out_dir / "common_files" / "boundboxes_split_regions_phantom.pkl"
+        )
 
         # Compute and output the boundinx boxes for splitting.
-        logging.debug(f"Computing the bounding box based on the rescaled initial segmentation..."
-                      f"\n Output to: {self.bound_box}")
+        logging.debug(
+            f"Computing the bounding box based on the rescaled initial segmentation..."
+            f"\n Output to: {self.bound_box}"
+        )
         comp_bound_box(self.segmentation_iso, self.bound_box)
 
         logging.basicConfig(level=log_lev, filename=self.log_dir)
@@ -88,22 +124,36 @@ class PhantomTrainer:
         The error measure for this set of opfront parameters.
         """
 
-        parameters = f"-i {self.param['i']} -I {self.param['I']} -o {self.param['o']} -O {self.param['O']} " \
-                     f"-b {self.param['b']:.2f} -k {self.param['k']:.2f} " \
-                     f"-r {self.param['r']:.2f} -c {self.param['c']:.0f} -e {self.param['e']:.2f} " \
-                     f"-K {self.param['K']:.0f} -F {self.param['F']:.3f} -G {self.param['G']:.3f} " \
-                     f"-d {self.param['d']:.2f} -w {self.param['w']:.2f}"
+        parameters = (
+            f"-i {self.param['i']} -I {self.param['I']} -o {self.param['o']} -O {self.param['O']} "
+            f"-b {self.param['b']:.2f} -k {self.param['k']:.2f} "
+            f"-r {self.param['r']:.2f} -c {self.param['c']:.0f} -e {self.param['e']:.2f} "
+            f"-K {self.param['K']:.0f} -F {self.param['F']:.3f} -G {self.param['G']:.3f} "
+            f"-d {self.param['d']:.2f} -w {self.param['w']:.2f}"
+        )
 
-        run_out_dir = str(self.out_dir / f"run_{run_number}").replace('.', '-')
+        run_out_dir = str(self.out_dir / f"run_{run_number}").replace(".", "-")
 
         logging.info(
             f"Starting Phantom {str(self.volume)} Training Run No.{run_number} with parameters:\n'{parameters}'\n"
             f"Outputdir {run_out_dir} \n"
-            f"----------------------------------------------------------------\n")
+            f"----------------------------------------------------------------\n"
+        )
 
         # 1. run opfront with parameters VOL SEG OUT_DIR OPFRONT_PARAMS
-        logging.debug(f"Launching opfront for {str(self.volume)} number {run_number}...")
-        subprocess.run([opfront_script, str(self.volume), self.segmentation, self.bound_box, run_out_dir, parameters])
+        logging.debug(
+            f"Launching opfront for {str(self.volume)} number {run_number}..."
+        )
+        subprocess.run(
+            [
+                opfront_script,
+                str(self.volume),
+                self.segmentation,
+                self.bound_box,
+                run_out_dir,
+                parameters,
+            ]
+        )
 
         # 5. merge the airways
         logging.info(f"Parsing results for run {run_number}...")
@@ -113,12 +163,18 @@ class PhantomTrainer:
         inner_local = f"{run_out_dir}/phantom_lumen_inner_local_pandas.csv"
         outer_local = f"{run_out_dir}/phantom_lumen_outer_local_pandas.csv"
         branch_file = f"{run_out_dir}/phantom_lumen_airways_centrelines.csv"
-        config = {'min_length': 1.0}
+        config = {"min_length": 1.0}
 
         # 6.  Process using airway analysis tools for summary.
-        phantom = AirwayTree(branch_file=branch_file, inner_file=inner_file, outer_file=outer_file,
-                             inner_radius_file=inner_local, outer_radius_file=outer_local,
-                             volume=self.volume, config=config)
+        phantom = AirwayTree(
+            branch_file=branch_file,
+            inner_file=inner_file,
+            outer_file=outer_file,
+            inner_radius_file=inner_local,
+            outer_radius_file=outer_local,
+            volume=self.volume,
+            config=config,
+        )
 
         save_summary_csv(phantom.tree, f"{run_out_dir}/branch_summary.csv")
 
@@ -130,6 +186,7 @@ class PhantomTrainer:
         err_m = (err_inner + err_outer) / 2
 
         # return the error measure
-        logging.info(f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}")
+        logging.info(
+            f"Error measure for {str(self.volume)} run No. {run_number} is: {err_m}"
+        )
         return err_inner, err_outer, err_m
-

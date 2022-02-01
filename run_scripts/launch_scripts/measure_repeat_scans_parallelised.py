@@ -20,23 +20,41 @@ from multiprocessing import Pool
 #     pass
 #
 
+
 def process_scan(scan_folder, outdir, vol_name, sleep):
     outdir.mkdir(parents=True, exist_ok=True)
     for child in scan_folder.iterdir():
         logging.debug(child.absolute().resolve())
         input_folder = child.resolve()
 
-        command_array = ["docker", "run", "--gpus", "all", "--rm", "-t", "--entrypoint",
-                         "scripts/run_local_machine_for_repeat.sh", "-v", f"{input_folder}:/input", "-v",
-                         f"{outdir}:/output", "airflow:repeat_scan", "/input", vol_name, "/output",
-                         f"/output/{vol_name}.log"]
+        command_array = [
+            "docker",
+            "run",
+            "--gpus",
+            "all",
+            "--rm",
+            "-t",
+            "--entrypoint",
+            "scripts/run_local_machine_for_repeat.sh",
+            "-v",
+            f"{input_folder}:/input",
+            "-v",
+            f"{outdir}:/output",
+            "airflow:repeat_scan",
+            "/input",
+            vol_name,
+            "/output",
+            f"/output/{vol_name}.log",
+        ]
 
         logging.debug(command_array)
         start_time = time.time()
         time.sleep(sleep)
         run = subprocess.run(command_array)
-        execution_time = (time.time() - start_time)/60
-        logging.info(f",{date.today().strftime('%d-%m-%y')},{vol_name},{run.returncode},{execution_time:.2f}")
+        execution_time = (time.time() - start_time) / 60
+        logging.info(
+            f",{date.today().strftime('%d-%m-%y')},{vol_name},{run.returncode},{execution_time:.2f}"
+        )
 
 
 def main(dirs):
@@ -61,8 +79,14 @@ def main(dirs):
     for directory in main_path.iterdir():
         scan_dirs = [f for f in directory.iterdir() if f.is_dir()]
         scan_dirs.sort()
-        vol_names = [f"{str(directory.stem)}_repeat.dcm", f"{str(directory.stem)}_first.dcm"]
-        outdirs = [Path(dirs.out_dir) / directory.stem / vol_names[0].removesuffix(".dcm"), Path(dirs.out_dir) / directory.stem / vol_names[1].removesuffix(".dcm")]
+        vol_names = [
+            f"{str(directory.stem)}_repeat.dcm",
+            f"{str(directory.stem)}_first.dcm",
+        ]
+        outdirs = [
+            Path(dirs.out_dir) / directory.stem / vol_names[0].removesuffix(".dcm"),
+            Path(dirs.out_dir) / directory.stem / vol_names[1].removesuffix(".dcm"),
+        ]
         timers = [1, 120]
         pool = Pool(2)
         pool.starmap(process_scan, zip(scan_dirs, outdirs, vol_names, timers))
@@ -70,10 +94,14 @@ def main(dirs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("main_dir", type=str, help="Main folder containing repeat scans in subfolders.")
+    parser.add_argument(
+        "main_dir", type=str, help="Main folder containing repeat scans in subfolders."
+    )
     parser.add_argument("out_dir", type=str, help="Output folder.")
     args = parser.parse_args()
 
-    logging.basicConfig(filename=f"latest_parallel_run.log", filemode='a', level=logging.INFO)
+    logging.basicConfig(
+        filename=f"latest_parallel_run.log", filemode="a", level=logging.INFO
+    )
 
     main(args)
