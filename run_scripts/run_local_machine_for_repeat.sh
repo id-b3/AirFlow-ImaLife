@@ -134,7 +134,7 @@ mv $DESTLUNG/*-airways.dcm $DESTAIR/
 
 echo 'PRE-PROCESS COARSE AIRWAYS (PRUNING)'
 echo '-----------------------------------'
-/bronchinet/scripts/pre-processing_scripts/prepare_coarse_airway.sh $DESTAIR
+/bronchinet/scripts/processing_scripts/prepare_coarse_airway.sh $DESTAIR
 if [ $? -eq 1 ]
 then
     exit $?
@@ -209,10 +209,17 @@ else
   find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
   find ${OUTPUTFOLDER} -type f -name "*.col" -delete
   find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
+  find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
   rm ${OUTPUTFOLDER}/${VOL_FILE}
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
   thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp
+  gts2stl < ${OUTPUTFOLDER}/*surface0.nii.gz > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.stl
+  gts2stl < ${OUTPUTFOLDER}/*surface1.nii.gz > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.stl
+  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
+  find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
+  python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz

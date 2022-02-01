@@ -73,6 +73,7 @@ LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.8 python3-pip python-is-python3 \
         dcm2niix dcmtk pigz \
+        libgts-bin \
         vim \
         libnifti2 libx11-6 libglib2.0-0 \
         && apt-get clean
