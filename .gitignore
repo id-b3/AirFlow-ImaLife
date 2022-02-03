@@ -135,4 +135,5 @@ temp_test_files/
 imalife_models/
 /phantom_trainer/test_results/
 /phantom_trainer/results/
+/logs
 .log

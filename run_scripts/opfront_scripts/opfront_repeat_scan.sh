@@ -24,7 +24,7 @@ BINARY_DIR="/usr/local/bin"
 FILE=$(basename "${VOL}")
 FILE_NO_EXTENSION="${FILE%%.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
-LOGFILE="${ROOT}.log" # Process Log File
+LOGFILE="${ROOT}_opfront.log" # Process Log File
 
 # Location of python scripts
 PYTHON_SCR="/bronchinet/airway_analysis/util_scripts"

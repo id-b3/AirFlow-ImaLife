@@ -10,7 +10,8 @@ def main(args):
     second_mask = ImageFileReader.get_image(args.mask_2)
     inout_metadata = ImageFileReader.get_image_metadata_info(args.mask_1)
     inout_image = MaskOperator.substract_two_masks(first_mask, second_mask)
-    out_filename = Path(args.out_dir / "airway_wall.nii.gz")
+    out_path = Path(args.out_dir).resolve()
+    out_filename = Path(out_path / "airway_wall.nii.gz")
     ImageFileReader.write_image(out_filename, inout_image, metadata=inout_metadata)
 
 

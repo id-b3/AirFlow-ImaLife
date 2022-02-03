@@ -54,10 +54,17 @@ then
   echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
   exit $?
 else
-  echo "SUCCESS CREATING DICOM VOLUME"
+    INPUTFILE="${DESTIMG}/${VOL_FILE}"
+    vol_size=$(wc -c <"$INPUTFILE")
+    if [ $vol_size -ge 100000000 ]; then
+      echo "SUCCESS CREATING DICOM VOLUME"
+    else
+      echo "CREATED VOLUME TOO SMALL $vol_size"
+      echo "Check if all slices downloaded. Aborting."
+    exit 1
+    fi
 fi
 
-INPUTFILE="${DESTIMG}/${VOL_FILE}"
 cp "$INPUTFILE" "${OUTPUTFOLDER}"
 
 cd /temp_work || exit
@@ -122,6 +129,10 @@ do
 	  echo "************ LUNG_COMPLETE $LUNG_COMPLETE *************"
 	fi
 	if [ "$LUNG_COMPLETE" == 1 ]; then
+        if [ "$L_THRESHOLD" -le 700 ]; then
+            echo "Total failure of scan to segment lungs and coarse airways."
+            exit 1
+        fi
 		((L_THRESHOLD=L_THRESHOLD-10))
 	else
 		echo "Completed lung segmentation at $L_THRESHOLD"
@@ -164,18 +175,23 @@ echo '---------------------------'
 # Check if the gpu is free enough to start launch the next scan.
   free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
 
-  while [ "$free_mem" -lt 7000 ]; do
-    echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
-    sleep $((2 + $RANDOM % 22))
-    free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
-    echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
-  done
-
   echo '-------------------------'
   echo 'Predict Segmentation.....'
   echo '-------------------------'
-  python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
-  echo $?
+  PRED_DONE=1
+  while [ "$PRED_DONE" -eq 1 ]; do
+    while [ "$free_mem" -lt 7800 ]; do
+      echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
+      sleep $((1 + $RANDOM % 15))
+      free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
+    done
+    echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
+    python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
+    PRED_DONE=$?
+    if [ $PRED_DONE -eq 1 ]; then
+        echo "Prediction failed, likely due to GPU not free. Retrying..."
+    fi
+  done
 
   echo '-------------------------'
   echo 'Post-process Segmentation'
@@ -205,25 +221,32 @@ then
   rm -r "${SEGDIR}"
   exit $?
 else
+{
+    echo "\nSuccess with opfront steps. Final computations and cleanup..."
+  thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
+  thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp
+  measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
+  gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.stl
+  gts2stl < ${OUTPUTFOLDER}/*surface1.gts > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.stl
+  #ctmconv ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.stl ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.obj
+  #ctmconv ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.stl ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.obj
+  python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
+  python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
+
   find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
   find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
   find ${OUTPUTFOLDER} -type f -name "*.col" -delete
   find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
   find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
   rm ${OUTPUTFOLDER}/${VOL_FILE}
-  measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
-  thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
-  thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp
-  gts2stl < ${OUTPUTFOLDER}/*surface0.nii.gz > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.stl
-  gts2stl < ${OUTPUTFOLDER}/*surface1.nii.gz > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.stl
   find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
   find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
-  python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
-  python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
+} >> "$LOGFILE"
 fi
 
 echo '-------------------------'

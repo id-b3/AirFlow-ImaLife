@@ -7,9 +7,9 @@ from datetime import date, datetime
 from multiprocessing import Pool
 
 
-def process_scan(scan_folder, outdir, vol_name):
+def process_scan(scan_folder, outdir, vol_name, timer):
 
-    docker_name = "colossali/airflow:v2.2.1"
+    docker_name = "colossali/airflow:v2.2.2"
     outdir.mkdir(parents=True, exist_ok=True)
     for child in scan_folder.iterdir():
         logging.debug(child.absolute().resolve())
@@ -37,10 +37,11 @@ def process_scan(scan_folder, outdir, vol_name):
 
         logging.debug(command_array)
         start_time = time.time()
+        time.sleep(timer)
         run = subprocess.run(command_array)
         execution_time = (time.time() - start_time) / 60
         logging.info(
-            f",{date.today().strftime('%d-%m-%y')},{vol_name},{run.returncode},{execution_time:.2f}"
+            f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{vol_name},{run.returncode},{execution_time:.2f}"
         )
 
 
@@ -49,7 +50,7 @@ def main(dirs):
     main_dirs = [f for f in main_path.iterdir() if f.is_dir()]
     main_dirs.sort()
     iter_dir = iter(main_dirs)
-
+    timers = [0, 15, 30, 45, 60, 75, 90, 105]
     for dir1 in iter_dir:
         dir2 = next(iter_dir)
         dir3 = next(iter_dir)
@@ -85,7 +86,7 @@ def main(dirs):
         ]
 
         pool = Pool(8)
-        pool.starmap(process_scan, zip(scan_dirs, outdirs, vol_names))
+        pool.starmap(process_scan, zip(scan_dirs, outdirs, vol_names, timers))
 
 
 if __name__ == "__main__":
