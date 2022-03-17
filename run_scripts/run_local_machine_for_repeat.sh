@@ -7,6 +7,7 @@ VOL_FILE=${2}
 VOL_NO_EXTENSION="${VOL_FILE%.*}"
 OUTPUTFOLDER=${3}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
+OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
 #mkdir -p /eureka/input/dicom-series-in/
 #CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT_DIR} ${INPUTFILE}"
@@ -55,6 +56,7 @@ then
   exit $?
 else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
+    python /bronchinet/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
     vol_size=$(wc -c <"$INPUTFILE")
     if [ $vol_size -ge 100000000 ]; then
       echo "SUCCESS CREATING DICOM VOLUME"
@@ -97,7 +99,7 @@ check_lung_vol() {
 		    return 1
 	    fi
     else
-        if [ "$AIR_VOL" -gt 25000 ]
+        if [ "$AIR_VOL" -gt 21000 ]
        	then
             echo "$LUNG_VOL" > "$OUTPUTFOLDER"/lung_volume.txt
             echo "$AIR_VOL" > "$OUTPUTFOLDER"/air_volume.txt
@@ -197,6 +199,7 @@ echo '---------------------------'
   echo 'Post-process Segmentation'
   echo '-------------------------'
   python Code/scripts_evalresults/postprocess_predictions.py --basedir=/temp_work --name_input_predictions_relpath=${POSWRKDIR} --name_output_posteriors_relpath=${POSDIR} --name_input_reference_keys_file=${KEYFILE}
+  thumbnail -s ${POSDIR}/*.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.bmp
   python Code/scripts_evalresults/process_predicted_airway_tree.py --basedir=/temp_work --name_input_posteriors_relpath=${POSDIR} --name_output_binary_masks_relpath=${SEGDIR}
   echo $?
 
@@ -212,7 +215,7 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 17 -o 17 -I 7 -O 7 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
+/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.4 -G -0.6 -C 2"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed opfront step." >> "$LOGFILE"
@@ -226,15 +229,22 @@ else
   thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
   thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
-  gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.stl
-  gts2stl < ${OUTPUTFOLDER}/*surface1.gts > ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.stl
-  #ctmconv ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.stl ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_wall.obj
-  #ctmconv ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.stl ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_lumen.obj
+  # Process the GTS files into obj files for easy 3D model use.
+  gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTBASENAME}_lumen.stl
+  gts2stl < ${OUTPUTFOLDER}/*surface1.gts > ${OUTBASENAME}_wall.stl
+  admesh ${OUTBASENAME}_lumen.stl -b ${OUTBASENAME}_lumen.stl
+  admesh ${OUTBASENAME}_wall.stl -b ${OUTBASENAME}_wall.stl
+  ctmconv ${OUTBASENAME}_wall.stl ${OUTBASENAME}_wall.obj
+  ctmconv ${OUTBASENAME}_lumen.stl ${OUTBASENAME}_lumen.obj
+  # Create a mask segmentation
   python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
+  # Measure the bronchial parameters
   python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
 
+  # Delete unnecessary output files
   find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
   find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.col" -delete
   find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
   find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
@@ -246,11 +256,12 @@ else
   cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
-} >> "$LOGFILE"
-fi
-
-echo '-------------------------'
+  echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'
 rm -r ${DATADIR}
 rm -r "${SEGDIR}"
+} >> "$LOGFILE"
+fi
+
+

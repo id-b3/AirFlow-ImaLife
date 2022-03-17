@@ -86,6 +86,7 @@ class PhantomTrainer:
             "F": -0.588,
             "G": -0.688,
             "d": 0.68,
+            "C": 2,
         }
         self.volume = Path(p_vol).resolve()
         self.segmentation = str(Path(p_seg).resolve())

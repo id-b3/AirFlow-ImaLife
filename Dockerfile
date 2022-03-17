@@ -1,5 +1,5 @@
 # Choose the base image in for the compilation environment
-FROM ubuntu:trusty AS builder
+FROM ubuntu:trusty AS playground_builder
 
 # Prepare building tools and libraries
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
@@ -12,12 +12,9 @@ WORKDIR /lungseg
 
 # COPY SOURCECODE
 COPY ["./legacy/", "./legacy/"]
-COPY ["./opfront", "/opfront/"]
 COPY ["./playground/", "./playground/"]
 RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
 RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
-RUN mkdir /opfront/thirdparty && mv ./playground/thirdparty/maxflow-v3.04.src /opfront/thirdparty
-RUN mkdir /opfront/bin && cd /opfront/bin && cmake /opfront/src && make -j install
 
 # 2. ITK - PATCHED VERSION - Pre-compiler mod.
 RUN mkdir -p playground/thirdparty/itkbin && \
@@ -59,23 +56,54 @@ RUN mkdir /lungseg/bins && \
     cp /lungseg/playground/src/thumbnail/thumbnail /lungseg/bins
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# PART 2: OPFRONT COMPILATION
+FROM ubuntu:focal as opfront_builder
+
+# Prepare cmake
+ENV TZ=Europe/Amsterdam
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt-get update && apt-get install -y cmake build-essential
+WORKDIR /opfront
+
+# -----------------------------------------
+# DEPENDENCIES
+# 2. Prepare NiftiCLib, GTS, CImg
+RUN apt-get install -y --no-install-recommends libboost-all-dev libgts-dev libnifti-dev libsdl2-dev libsdl2-2.0 wget unzip
+
+# CIMG
+RUN wget -nv https://github.com/dtschump/CImg/archive/refs/tags/v.179.zip && \
+        unzip -d /opfront/thirdparty v.179.zip && \
+        mv /opfront/thirdparty/CImg-v.179/CImg.h /usr/include/CImg.h
+
+# ----------------------------------------
+# Copy source and compile
+
+COPY ./opfront/src /opfront/src
+COPY ./opfront/thirdparty /opfront/thirdparty
+WORKDIR /opfront/bin
+RUN cmake /opfront/src
+RUN make -j install
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
 
 # Use the nvidia cuda image as the base
 FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 
 # This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="0.9.2"
+LABEL version="2.4.0"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
-
+LABEL model="24_ImaLife"
+LABEL descrption="Version 3: Using Bronchinet model trained on 24 ImaLife scans with large airway masking. Updated Opfront"
 
 # Update apt and install RUNTIME dependencies (lower size etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.8 python3-pip python-is-python3 \
         dcm2niix dcmtk pigz \
+        openctm-tools admesh \
         libgts-bin \
-        vim \
         libnifti2 libx11-6 libglib2.0-0 \
+        libboost-program-options1.71.0 \
         && apt-get clean
 
 # Copy python requirements.
@@ -86,8 +114,8 @@ COPY ["./bronchinet/requirements_torch.txt", "./"]
 RUN pip3 install --no-cache-dir -r requirements_torch.txt
 
 # Copy binaries and libraries for the opfront and pre/post-processing tools.
-COPY --from=builder /lungseg/bins /usr/local/bin
-COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=playground_builder /lungseg/bins /usr/local/bin
+COPY --from=opfront_builder /usr/local/bin /usr/local/bin
 ADD ["airflow_libs.tar.gz", "."]
 RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
