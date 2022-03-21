@@ -136,4 +136,5 @@ imalife_models/
 /phantom_trainer/test_results/
 /phantom_trainer/results/
 /logs
+/summary
 .log
