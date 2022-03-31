@@ -9,7 +9,7 @@ OUTPUTFOLDER=${3}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
-#mkdir -p /eureka/input/dicom-series-in/
+#mkdir -p /eureka/input/series-in/
 #CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT_DIR} ${INPUTFILE}"
 #eval "$CALL"
 
@@ -253,10 +253,9 @@ else
   find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
   find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
-  cp -r ${DESTLUNG}/* ${OUTBASENAME}_initial/
-  cp -r ${DESTAIR}/* ${OUTBASENAME}_initial/
-  cp ${NIFTIIMG}/*.nii.gz ${OUTBASENAME}_initial/${VOL_NO_EXTENSION}.nii.gz
-  rm -r ${OUTBASENAME}_initial/
+  cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+  cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
   echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'

@@ -5,9 +5,8 @@ FROM ubuntu:trusty AS playground_builder
 RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev libgmp-dev libmpfr-dev libnifti-dev libx11-dev libboost-all-dev
 RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
-
-# OPFRONT and PLAYGROUND
-# -----------------------------------------
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# PLAYGROUND Tools
 WORKDIR /lungseg
 
 # COPY SOURCECODE
@@ -84,27 +83,27 @@ WORKDIR /opfront/bin
 RUN cmake /opfront/src
 RUN make -j install
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# PART 2: ELECTRIC BOOGALOO - I.E. Try to get this all working with Ubuntu 20.04 and CUDA
 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# PART 3: Move compiled bins to cuda image. Port libraries.
 # Use the nvidia cuda image as the base
 FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 
 # This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="2.4.0"
+LABEL version="1.0.0"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
-LABEL model="24_ImaLife"
-LABEL descrption="Version 3: Using Bronchinet model trained on 24 ImaLife scans with large airway masking. Updated Opfront"
+LABEL model="24_ImaLife_Masked"
+LABEL descrption="Version 1: Using Bronchinet model trained on 24 ImaLife scans with large airway masking."
 
 # Update apt and install RUNTIME dependencies (lower size etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        python3.8 python3-pip python-is-python3 \
-        dcm2niix dcmtk pigz \
-        openctm-tools admesh \
-        libgts-bin \
-        libnifti2 libx11-6 libglib2.0-0 \
-        libboost-program-options1.71.0 \
-        && apt-get clean
+    python3.8 python3-pip python-is-python3 \
+    dcm2niix dcmtk pigz \
+    openctm-tools admesh \
+    libgts-bin \
+    libnifti2 libx11-6 libglib2.0-0 \
+    libboost-program-options1.71.0 \
+    && apt-get clean
 
 # Copy python requirements.
 WORKDIR /bronchinet
@@ -119,29 +118,34 @@ COPY --from=opfront_builder /usr/local/bin /usr/local/bin
 ADD ["airflow_libs.tar.gz", "."]
 RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
+## Install segmentation conversion tools dcmqi
+#RUN wget -nv https://github.com/QIICR/dcmqi/releases/download/v1.2.4/dcmqi-1.2.4-linux.tar.gz && \
+#    tar xf dcmqi-1.2.4-linux.tar.gz && \
+#    mv ./dcmqi-1.2.4-linux/bin/itkimage2segimage.xml ./dcmqi-1.2.4-linux/bin/itkimage2segimage /usr/local/bin && \
+#    rm dcmqi-1.2.4-linux.tar.gz && \
+#    rm -r ./dcmqi-1.2.4-linux
+
 # Set up the file structure for CT scan processing.
 ENV PYTHONPATH "/bronchinet/src:/bronchinet/airway_analysis"
 RUN mkdir ./files && \
-        ln -s ./src Code && \
-        mkdir -p ./temp_work/files && \
-        ln -s ./files ./temp_work/BaseData && \
-        ln -s ./temp_work/files BaseData
+    ln -s ./src Code && \
+    mkdir -p ./temp_work/files && \
+    ln -s ./files ./temp_work/BaseData && \
+    ln -s ./temp_work/files BaseData
 
 # Copy the source code to the working directory
 COPY ["./bronchinet/src/", "./src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
 # For default bronchinet, source is ./bronchinet/models
 ARG MODEL_DIR=./imalife_models/imalife_2
-COPY ["${MODEL_DIR}", "./model/" ]
+COPY ["${MODEL_DIR}", "./model/"]
 COPY ["./run_scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
-
 # Include Airway Analysis Tools
 COPY ["./airway_analysis", "./airway_analysis"]
-
 # Run Launch script when container starts.
-# ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bronchinet/scripts/run_terarecon_machine.sh"]
+#ENTRYPOINT ["/bin/bash"]
 # Arguments to pass to launch script.
-# CMD ["/eureka/input/*.dcm", "/eureka/output/nifti-series-out"]
+CMD ["/eureka/input/series-in/", "bronchial_tree", "/eureka/output/"]

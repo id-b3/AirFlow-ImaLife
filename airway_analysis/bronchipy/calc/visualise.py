@@ -36,7 +36,8 @@ def save_pi10_figure(x, y, model, pi10, name, savedir: str, show=False):
 
     savedir = Path(savedir)
     savedir.mkdir(parents=True, exist_ok=True)
-    savepath = savedir / f"pi10_{name}_{pi10[0]:.3f}.png"
+    # savepath = savedir / f"pi10_{name}_{pi10[0]:.3f}.png"
+    savepath = savedir / f"{name}.jpg"
     print(savepath)
     plt.savefig(savepath, bbox_inches="tight", dpi=600)
 

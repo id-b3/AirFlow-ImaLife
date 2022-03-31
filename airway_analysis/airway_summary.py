@@ -31,15 +31,19 @@ def main(file_list) -> int:
             volume=file_list.volume_nii,
         )
         brio.save_summary_csv(
-            airway_tree.tree, f"{file_list.output}/airway_tree_summary.csv"
+            airway_tree.tree, f"{file_list.output}/airway-tree.csv"
         )
         brio.save_pickle_tree(
-            airway_tree.tree, f"{file_list.output}/airway_tree.pickle"
+            airway_tree.tree, f"{file_list.output}/airway-tree.pickle"
         )
+        pi10_tree = airway_tree.tree[airway_tree.tree.generation > 1]
+        pi10_tree = pi10_tree[pi10_tree.generation <= 6]
         calc_pi10(
-            airway_tree.tree["wall_global_area"],
-            airway_tree.tree["inner_radius"],
-            plot=True,
+            pi10_tree["wall_global_area"],
+            pi10_tree["inner_radius"],
+            name="pi10_graph",
+            save_dir=file_list.output,
+            plot=True
         )
 
         return sys.exit()
