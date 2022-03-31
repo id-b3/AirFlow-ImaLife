@@ -148,4 +148,4 @@ COPY ["./airway_analysis", "./airway_analysis"]
 ENTRYPOINT ["/bronchinet/scripts/run_terarecon_machine.sh"]
 #ENTRYPOINT ["/bin/bash"]
 # Arguments to pass to launch script.
-CMD ["/eureka/input/series-in/", "bronchial_tree", "/eureka/output/"]
+CMD ["/eureka/input/series-in", "bronchial_tree", "/eureka/output"]

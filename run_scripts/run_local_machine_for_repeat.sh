@@ -9,7 +9,7 @@ OUTPUTFOLDER=${3}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
-#mkdir -p /eureka/input/dicom-series-in/
+mkdir -p /eureka/input/series-in/
 #CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT_DIR} ${INPUTFILE}"
 #eval "$CALL"
 
@@ -257,6 +257,7 @@ else
   cp -r ${DESTAIR}/* ${OUTBASENAME}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTBASENAME}_initial/${VOL_NO_EXTENSION}.nii.gz
   rm -r ${OUTBASENAME}_initial/
+  tar cszf intermediate-files.tar.gz *.obj *.csv *.nii.gz *.log
   echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'

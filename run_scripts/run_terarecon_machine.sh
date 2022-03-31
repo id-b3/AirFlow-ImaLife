@@ -9,7 +9,7 @@ OUTPUTFOLDER=${3}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
-#mkdir -p /eureka/input/series-in/
+mkdir -p /eureka/input/series-in/
 #CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT_DIR} ${INPUTFILE}"
 #eval "$CALL"
 
@@ -56,7 +56,7 @@ then
   exit $?
 else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
-    python /bronchinet/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
+#    python /bronchinet/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
     vol_size=$(wc -c <"$INPUTFILE")
     if [ $vol_size -ge 100000000 ]; then
       echo "SUCCESS CREATING DICOM VOLUME"
