@@ -24,7 +24,9 @@ def agg_param(tree: pd.DataFrame, gens: list, param: str) -> float:
     param
     """
 
-    return tree[(tree.generation >= gens[0]) & (tree.generation <= gens[1])][param].mean()
+    return tree[(tree.generation >= gens[0]) & (tree.generation <= gens[1])][
+        param
+    ].mean()
 
 
 def total_count(tree: pd.DataFrame) -> int:

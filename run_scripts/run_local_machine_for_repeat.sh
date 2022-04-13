@@ -249,7 +249,7 @@ else
   find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
   find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
   rm ${OUTPUTFOLDER}/${VOL_FILE}
-  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
+#  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
   find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
   find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete

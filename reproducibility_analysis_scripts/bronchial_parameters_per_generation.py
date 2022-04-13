@@ -7,6 +7,7 @@ import argparse
 import statsmodels.api as sm
 from sklearn import metrics
 import seaborn as sns
+
 # import pingouin
 from multiprocessing import Pool
 import sys
@@ -124,7 +125,9 @@ def calculate_parameters(m_dir: Path, param, outdir, gen=0):
                     try:
                         res = tree.index.max()
                     except (KeyError, TypeError) as e:
-                        logging.error(f"Error processing total count for {res_name}\n {e}")
+                        logging.error(
+                            f"Error processing total count for {res_name}\n {e}"
+                        )
 
             elif "lung_volume.txt" in file_str:
                 num_lines = sum(1 for line in open(file_str))

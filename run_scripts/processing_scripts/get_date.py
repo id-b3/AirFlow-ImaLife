@@ -5,7 +5,7 @@ import argparse
 def main(args):
     image = dcmread(args.image, force=True)
     date = image.AcquisitionDate
-    with open(args.date_file, 'w') as f:
+    with open(args.date_file, "w") as f:
         f.write(date)
 
 

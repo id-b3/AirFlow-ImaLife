@@ -240,7 +240,8 @@ else
   python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   # Measure the bronchial parameters
   python /bronchinet/airway_analysis/airway_summary.py ${NIFTIIMG}/*.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
-
+  # Flag segmentation as complete
+  python /bronchinet/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.csv ${OUTPUTFOLDER}/airway_tree.pickle
   # Delete unnecessary output files
   find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
   find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
@@ -249,13 +250,16 @@ else
   find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
   find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
   rm ${OUTPUTFOLDER}/${VOL_FILE}
-  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
+#  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
   find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
   find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
   cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
+  rm -r ${OUTBASENAME}_initial/
+  tar cszf intermediate-files.tar.gz *.gts *.csv *.nii.gz *.loc
+  tar cszf 3d-models.tar.gz *.obj
   echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'

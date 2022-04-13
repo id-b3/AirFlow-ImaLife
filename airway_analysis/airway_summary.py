@@ -31,21 +31,21 @@ def main(file_list) -> int:
             outer_radius_file=file_list.outer_rad_csv,
             volume=file_list.volume_nii,
         )
-        brio.save_summary_csv(
-            airway_tree.tree, f"{file_list.output}/airway-tree.csv"
-        )
+        brio.save_summary_csv(airway_tree.tree, f"{file_list.output}/airway_tree.csv")
         brio.save_pickle_tree(
-            airway_tree.tree, f"{file_list.output}/airway-tree.pickle"
+            airway_tree.tree, f"{file_list.output}/airway_tree.pickle"
         )
 
         # Calculate bronchial parameters
-        pi10_tree = airway_tree.tree[(airway_tree.tree.generation > 1) & (airway_tree.tree.generation <= 6)]
+        pi10_tree = airway_tree.tree[
+            (airway_tree.tree.generation > 1) & (airway_tree.tree.generation <= 6)
+        ]
         pi10 = calc_pi10(
             pi10_tree["wall_global_area"],
             pi10_tree["inner_radius"],
             name="pi10_graph",
             save_dir=file_list.output,
-            plot=True
+            plot=True,
         )
         wap3 = param_by_gen(airway_tree.tree, 3, "wall_global_area_perc")
         la3 = param_by_gen(airway_tree.tree, 3, "inner_global_area")
@@ -56,8 +56,19 @@ def main(file_list) -> int:
         tcount = total_count(airway_tree.tree)
 
         # Save bronchial parameters to file.
-        bp_head = ["bp_wap3", "bp_wap35", "bp_la3", "bp_la35", "bp_wt3", "bp_wt35", "bp_tcount", "bp_pi10"]
-        bp_list = [wap3, wap35, la3, la35, wt3, wt35, tcount, pi10]
+        bp_head = [
+            "bp_wap3",
+            "bp_wap35",
+            "bp_la3",
+            "bp_la35",
+            "bp_wt3",
+            "bp_wt35",
+            "bp_tcount",
+            "bp_pi10",
+            "bp_seg_complete",
+            "bp_seg_error"
+        ]
+        bp_list = [wap3, wap35, la3, la35, wt3, wt35, tcount, pi10, 1, 0]
         with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(bp_head)
