@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 
 def calc_pi10(
     wa: list, rad: list, plot: bool = False, name: str = "anon", save_dir: str = "./"
-) -> tuple:
+) -> float:
 
     # Calculate regression line
     x = np.array(rad).reshape((-1, 1))
@@ -87,66 +87,6 @@ def calc_smoothing(
         return np.convolve(in_data, smo_filter, "valid")
 
 
-def calc_smoothing_asAdria(
-    in_data: np.array, smo_filter: np.array, is_padded: bool = True
-) -> np.array:
-    """
-    Apply smoothing to data by convolution with a filter (same as Adria's implementation in MatLab code, for debugging)
-
-    Parameters
-    ----------
-    in_data: np.array
-        Input data (radii) to be smoothed
-    smo_filter: np.array
-        Smoothing filter (from Adria's code: needs to contain odd num. elements)
-    is_padded: bool
-        Option to add zero padding at the ends of input data, to have output data with same dimension as input
-    Returns
-    -------
-    Data after smoothing
-    """
-
-    # IMPORTANT: I think Adria's implementation is wrong, in the code to calculate convolved data with padding
-    # IF THIS CONFIRMS: delete this function
-    if len(in_data) < len(smo_filter):
-        logging.info(
-            f"Size of input data {len(in_data)} smaller than filter window {len(smo_filter)}."
-        )
-        return in_data
-
-    length_filter = len(smo_filter)
-    middle_filter = int((length_filter + 1) / 2)
-
-    out_data = np.convolve(in_data, smo_filter, "valid")
-
-    if is_padded:
-        num_data_padded = middle_filter - 1
-
-        out_data_left_padded = np.zeros(num_data_padded)
-        for i in range(num_data_padded):
-            part_filter = smo_filter[middle_filter - 1 - i :]
-            part_filter = part_filter / np.sum(
-                part_filter
-            )  # I think this is wrong, I don't know why Adria does it
-            part_data = in_data[: middle_filter + i]
-            out_data_left_padded[i] = np.dot(part_data, part_filter)
-
-        out_data_right_padded = np.zeros(num_data_padded)
-        for i in range(num_data_padded):
-            part_filter = smo_filter[: middle_filter + i]
-            part_filter = part_filter / np.sum(
-                part_filter
-            )  # I think this is wrong, I don't know why Adria does it
-            part_data = in_data[-middle_filter - i :]
-            out_data_right_padded[-i - 1] = np.dot(part_data, part_filter)
-
-        out_data = np.concatenate(
-            (out_data_left_padded, out_data, out_data_right_padded)
-        )
-
-    return out_data
-
-
 def calc_local_orientations(points: np.array, min_width: float) -> np.array:
     """
     Compute the local orientations at every point of centerline
@@ -197,52 +137,14 @@ def calc_local_orientations(points: np.array, min_width: float) -> np.array:
     return orientations
 
 
-def calc_local_orientations_asAdria(points: np.array, min_width: float) -> np.array:
-    """
-    Compute the local orientations at every point of centerline
+# TODO - port from MatLab code
+# https://github.com/id-b3/Air_Flow_ImaLife/blob/03b0fd73c5fe87dae835caf67ed5b91edce079d0/airway_analysis/src_matlab/functions/measureAirways.m
+def calc_tapering(yData, centreline_pos, use_robust):
+    if len(yData) < 2:
+        logging.warning(f"Not enough data for extraction of tapering info.")
+        return None
 
-    Parameters
-    ----------
-    points: np.array
-        Input list of points of centerline
-    min_width: float
-        Minimum distance between the two points to compute the orientation
-        (I guess to avoid large "jumps" due to local oscillations in centerline points)
-
-    Returns
-    -------
-    Orientations at every point of centerline
-    """
-    num_points = points.shape[0]
-    orientations = np.zeros((num_points, 3))
-
-    for i in range(num_points):
-        # need to look for points at left / right of "i", at distance more than "width / 2", to compute the orientation
-
-        ind_l = i
-        runsum_length = 0.0
-        while ind_l > 0 and runsum_length < min_width / 2:
-            local_dist = np.linalg.norm(points[ind_l, :] - points[ind_l - 1, :])
-            runsum_length += local_dist
-            ind_l -= 1
-
-        ind_r = i
-        runsum_length = 0.0
-        while ind_r < (num_points - 1) and runsum_length < min_width / 2:
-            local_dist = np.linalg.norm(points[ind_r, :] - points[ind_r + 1, :])
-            runsum_length += local_dist
-            ind_r += 1
-
-        orientation_this = points[ind_r, :] - points[ind_l, :]
-        orientations[i, :] = orientation_this / np.linalg.norm(orientation_this)
-
-    return orientations
-
-
-def calc_tapering() -> list:
-    tapering = []
-
-    return tapering
+    # Accumulated distance between centreline points.
 
 
 def get_kernel(window_width: int, sigma: int) -> list:

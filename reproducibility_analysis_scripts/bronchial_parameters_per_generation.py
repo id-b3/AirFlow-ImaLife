@@ -13,8 +13,8 @@ import sys
 from rich import print
 
 # sys.path.append("/home/ivan/AirSeg/Air_Flow_ImaLife")
-# sys.path.append("C:\\Users\\Ivan\\PyCharm\\AirFlow")
-sys.path.append("C:\\Users\\Ivan\\PycharmProjects\\Air_Flow_ImaLife")
+sys.path.append("C:\\Users\\Ivan\\Programming\\Air_Flow_ImaLife")
+# sys.path.append("C:\\Users\\Ivan\\PycharmProjects\\Air_Flow_ImaLife")
 from airway_analysis.bronchipy.calc.measure_airways import calc_pi10
 from airway_analysis.bronchipy.io.branchio import load_pickle_tree
 
@@ -122,7 +122,7 @@ def calculate_parameters(m_dir: Path, param, outdir, gen=0):
                         )
                 elif param == "total_count":
                     try:
-                        res = len(tree.index)
+                        res = tree.index.max()
                     except (KeyError, TypeError) as e:
                         logging.error(f"Error processing total count for {res_name}\n {e}")
 
@@ -169,7 +169,7 @@ def main():
             f"{param}\n"
             f"{str(outdir)}"
         )
-        iter_dir = iter(main_drs)
+        iter_dir = iter(main_dirs)
         for dir_1 in iter_dir:
             dir_2 = next(iter_dir)
             dir_3 = next(iter_dir)

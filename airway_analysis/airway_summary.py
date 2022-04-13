@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
+import sys, csv
 
 from bronchipy.tree.airwaytree import AirwayTree
 from bronchipy.io import branchio as brio
 from bronchipy.calc.measure_airways import calc_pi10
+from bronchipy.calc.summary_stats import param_by_gen, agg_param, total_count
 
 
 def main(file_list) -> int:
@@ -36,15 +37,31 @@ def main(file_list) -> int:
         brio.save_pickle_tree(
             airway_tree.tree, f"{file_list.output}/airway-tree.pickle"
         )
-        pi10_tree = airway_tree.tree[airway_tree.tree.generation > 1]
-        pi10_tree = pi10_tree[pi10_tree.generation <= 6]
-        calc_pi10(
+
+        # Calculate bronchial parameters
+        pi10_tree = airway_tree.tree[(airway_tree.tree.generation > 1) & (airway_tree.tree.generation <= 6)]
+        pi10 = calc_pi10(
             pi10_tree["wall_global_area"],
             pi10_tree["inner_radius"],
             name="pi10_graph",
             save_dir=file_list.output,
             plot=True
         )
+        wap3 = param_by_gen(airway_tree.tree, 3, "wall_global_area_perc")
+        la3 = param_by_gen(airway_tree.tree, 3, "inner_global_area")
+        wt3 = param_by_gen(airway_tree.tree, 3, "wall_global_thickness")
+        wap35 = agg_param(airway_tree.tree, [3, 5], "wall_global_area_perc")
+        la35 = agg_param(airway_tree.tree, [3, 5], "inner_global_area")
+        wt35 = agg_param(airway_tree.tree, [3, 5], "wall_global_thickness")
+        tcount = total_count(airway_tree.tree)
+
+        # Save bronchial parameters to file.
+        bp_head = ["bp_wap3", "bp_wap35", "bp_la3", "bp_la35", "bp_wt3", "bp_wt35", "bp_tcount", "bp_pi10"]
+        bp_list = [wap3, wap35, la3, la35, wt3, wt35, tcount, pi10]
+        with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(bp_head)
+            writer.writerow(bp_list)
 
         return sys.exit()
     except (OSError, TypeError) as e:
