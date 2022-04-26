@@ -118,13 +118,6 @@ COPY --from=opfront_builder /usr/local/bin /usr/local/bin
 ADD ["airflow_libs.tar.gz", "."]
 RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
-## Install segmentation conversion tools dcmqi
-#RUN wget -nv https://github.com/QIICR/dcmqi/releases/download/v1.2.4/dcmqi-1.2.4-linux.tar.gz && \
-#    tar xf dcmqi-1.2.4-linux.tar.gz && \
-#    mv ./dcmqi-1.2.4-linux/bin/itkimage2segimage.xml ./dcmqi-1.2.4-linux/bin/itkimage2segimage /usr/local/bin && \
-#    rm dcmqi-1.2.4-linux.tar.gz && \
-#    rm -r ./dcmqi-1.2.4-linux
-
 # Set up the file structure for CT scan processing.
 ENV PYTHONPATH "/bronchinet/src:/bronchinet/airway_analysis"
 RUN mkdir ./files && \
@@ -146,6 +139,5 @@ RUN rm -rf /var/lib/apt/lists/*
 COPY ["./airway_analysis", "./airway_analysis"]
 # Run Launch script when container starts.
 ENTRYPOINT ["/bronchinet/scripts/run_terarecon_machine.sh"]
-#ENTRYPOINT ["/bin/bash"]
 # Arguments to pass to launch script.
-CMD ["/eureka/input/series-in", "bronchial_tree", "/eureka/output"]
+CMD ["/eureka/input/series-in", "imalife_vol.dcm", "/eureka/output"]

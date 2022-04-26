@@ -215,7 +215,7 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.4 -G -0.6 -C 2"
+/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed opfront step." >> "$LOGFILE"
@@ -227,7 +227,7 @@ else
 {
     echo "\nSuccess with opfront steps. Final computations and cleanup..."
   thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
-  thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail_iso.bmp
+  thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.bmp
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   # Process the GTS files into obj files for easy 3D model use.
   gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTBASENAME}_lumen.stl
@@ -250,7 +250,6 @@ else
   find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
   find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
   rm ${OUTPUTFOLDER}/${VOL_FILE}
-#  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
   find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
   find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
@@ -258,8 +257,9 @@ else
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
   rm -r ${OUTBASENAME}_initial/
-  tar cszf intermediate-files.tar.gz *.gts *.csv *.nii.gz *.loc
-  tar cszf 3d-models.tar.gz *.obj
+  cd ${OUTPUTFOLDER}
+  tar czf intermediate-files-bronchi.tar.gz *.gts *.csv *.nii.gz *.log
+  tar czf 3d-models-airway.tar.gz *.obj
   echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'

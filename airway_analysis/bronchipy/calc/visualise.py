@@ -30,8 +30,8 @@ def save_pi10_figure(x, y, model, pi10, name, savedir: str, show=False):
     ax.set_ylabel("Square Root of Wall Area")
     ax.set_title("Pi10")
 
-    plt.xlim([2, 20])
-    plt.ylim([2, 5])
+    plt.xlim([5, 25])
+    plt.ylim([2.5, 5.5])
     plt.tight_layout()
 
     savedir = Path(savedir)

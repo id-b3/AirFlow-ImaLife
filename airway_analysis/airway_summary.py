@@ -57,6 +57,8 @@ def main(file_list) -> int:
 
         # Save bronchial parameters to file.
         bp_head = [
+            "bp_tlv",
+            "bp_airvol",
             "bp_wap3",
             "bp_wap35",
             "bp_la3",
@@ -68,7 +70,7 @@ def main(file_list) -> int:
             "bp_seg_complete",
             "bp_seg_error"
         ]
-        bp_list = [wap3, wap35, la3, la35, wt3, wt35, tcount, pi10, 1, 0]
+        bp_list = [0, 0, wap3, wap35, la3, la35, wt3, wt35, tcount, pi10, 1, 0]
         with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(bp_head)

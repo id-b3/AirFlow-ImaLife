@@ -28,7 +28,7 @@ def calc_pi10(
     if plot:
         save_pi10_figure(x, y, pi10_model, pi10, name=name, savedir=save_dir)
 
-    return pi10
+    return pi10[0]
 
 
 def calc_branch_length(points: list) -> float:
