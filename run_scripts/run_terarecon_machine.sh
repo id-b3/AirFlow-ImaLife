@@ -256,8 +256,8 @@ else
   cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
   cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
-  rm -r ${OUTBASENAME}_initial/
-  cd ${OUTPUTFOLDER}
+#  rm -r "${OUTBASENAME}"_initial/
+  cd "${OUTPUTFOLDER}" || exit
   tar czf intermediate-files-bronchi.tar.gz *.gts *.csv *.nii.gz *.log
   tar czf 3d-models-airway.tar.gz *.obj
   echo '-------------------------'

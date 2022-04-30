@@ -19,6 +19,7 @@ def main(args):
         bp_df["bp_seg_error"] = 1
         bp_df.to_csv(args.bp_file)
     else:
+        bp_df.to_csv(args.bp_file)
         print("Segmentation Complete.")
 
 
