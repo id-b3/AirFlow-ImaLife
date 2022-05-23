@@ -11,3 +11,6 @@
 [submodule "legacy"]
 	path = legacy
 	url = git@bitbucket.org:id-b3/legacy.git
+[submodule "AirMorph"]
+	path = AirMorph
+	url = https://github.com/id-b3/AirMorph
