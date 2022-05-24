@@ -1,0 +1,2 @@
+antspyx==0.3.2
+tensorflow-gpu==2.4.1

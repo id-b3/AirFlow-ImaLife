@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys, csv
+import csv
+import sys
 
-from bronchipy.tree.airwaytree import AirwayTree
-from bronchipy.io import branchio as brio
 from bronchipy.calc.measure_airways import calc_pi10
-from bronchipy.calc.summary_stats import param_by_gen, agg_param, total_count
+from bronchipy.calc.summary_stats import param_by_gen, total_count
+from bronchipy.io import branchio as brio
+from bronchipy.tree.airwaytree import AirwayTree
 
 
 def main(file_list) -> int:
@@ -47,30 +48,36 @@ def main(file_list) -> int:
             save_dir=file_list.output,
             plot=True,
         )
-        wap3 = param_by_gen(airway_tree.tree, 3, "wall_global_area_perc")
-        la3 = param_by_gen(airway_tree.tree, 3, "inner_global_area")
-        wt3 = param_by_gen(airway_tree.tree, 3, "wall_global_thickness")
-        wap35 = agg_param(airway_tree.tree, [3, 5], "wall_global_area_perc")
-        la35 = agg_param(airway_tree.tree, [3, 5], "inner_global_area")
-        wt35 = agg_param(airway_tree.tree, [3, 5], "wall_global_thickness")
+
+        wap = []
+        la = []
+        wt = []
+        inr = []
+        outr = []
+
+        for gen in range(0,9):
+            wap.append(param_by_gen(airway_tree.tree, gen, "wall_global_area_perc"))
+            la.append(param_by_gen(airway_tree.tree, gen, "inner_global_area"))
+            wt.append(param_by_gen(airway_tree.tree, gen, "wall_global_thickness"))
+            inr.append(param_by_gen(airway_tree.tree, gen, "inner_radius"))
+            outr.append(param_by_gen(airway_tree.tree, gen, "outer_radius"))
         tcount = total_count(airway_tree.tree)
 
         # Save bronchial parameters to file.
         bp_head = [
             "bp_tlv",
             "bp_airvol",
-            "bp_wap3",
-            "bp_wap35",
-            "bp_la3",
-            "bp_la35",
-            "bp_wt3",
-            "bp_wt35",
+            "bp_wap",
+            "bp_la",
+            "bp_wt",
+            "bp_ir",
+            "bp_or",
             "bp_tcount",
             "bp_pi10",
             "bp_seg_complete",
             "bp_seg_error"
         ]
-        bp_list = [0, 0, wap3, wap35, la3, la35, wt3, wt35, tcount, pi10, 1, 0]
+        bp_list = [0, 0, wap, la, wt, inr, outr, tcount, pi10, 1, 0]
         with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(bp_head)

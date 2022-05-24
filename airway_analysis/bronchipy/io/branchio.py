@@ -2,8 +2,6 @@ from pathlib import Path
 import pandas as pd
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
 
 def load_branch_csv(in_file: str) -> pd.DataFrame:
     """
@@ -190,6 +188,8 @@ def save_summary_csv(tree: pd.DataFrame, filename: str = "./airway_summary.csv")
             "z",
         ]
     ]
+    if "lobes" in tree.columns:
+        tree_sum["lobes"] = tree["lobes"]
     tree_sum.to_csv(save_path)
 
 
