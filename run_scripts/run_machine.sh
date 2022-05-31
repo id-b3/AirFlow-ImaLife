@@ -152,7 +152,7 @@ if [ $? -eq 1 ]
 then
     exit $?
 fi
-python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.bmp
+python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.png
 echo 'DONE PRUNING COARSE AIRWAYS'
 echo '---------------------------'
 
@@ -199,7 +199,7 @@ echo '---------------------------'
   echo 'Post-process Segmentation'
   echo '-------------------------'
   python Code/scripts_evalresults/postprocess_predictions.py --basedir=/temp_work --name_input_predictions_relpath=${POSWRKDIR} --name_output_posteriors_relpath=${POSDIR} --name_input_reference_keys_file=${KEYFILE}
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${POSDIR}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.bmp
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${POSDIR}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.png
   python Code/scripts_evalresults/process_predicted_airway_tree.py --basedir=/temp_work --name_input_posteriors_relpath=${POSDIR} --name_output_binary_masks_relpath=${SEGDIR}
   echo $?
 
@@ -226,8 +226,8 @@ then
 else
 {
     echo "\nSuccess with opfront steps. Final computations and cleanup..."
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*_surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.bmp
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*_surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.png
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.png
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   # Process the GTS files into obj files for easy 3D model use.
   gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTBASENAME}_lumen.stl
