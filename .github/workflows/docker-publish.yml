@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUBS }}
 
       - name: Checkout ImaLife models
         uses: actions/checkout@v2
