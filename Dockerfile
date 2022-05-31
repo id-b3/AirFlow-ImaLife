@@ -143,6 +143,6 @@ RUN rm -rf /var/lib/apt/lists/*
 COPY ["./airway_analysis", "./airway_analysis"]
 COPY ["./AirMorph", "./AirMorph"]
 # Run Launch script when container starts.
-ENTRYPOINT ["/bronchinet/scripts/run_terarecon_machine.sh"]
+ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
 # Arguments to pass to launch script.
 CMD ["/eureka/input/series-in", "imalife_vol.dcm", "/eureka/output"]

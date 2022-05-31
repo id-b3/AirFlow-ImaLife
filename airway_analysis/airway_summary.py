@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import logging
 import sys
 
 from bronchipy.calc.measure_airways import calc_pi10
@@ -41,6 +42,7 @@ def main(file_list) -> int:
         pi10_tree = airway_tree.tree[
             (airway_tree.tree.generation > 1) & (airway_tree.tree.generation <= 6)
         ]
+        logging.info(f"Calculating Pi10 for generations {pi10_tree.generation.unique()}")
         pi10 = calc_pi10(
             pi10_tree["wall_global_area"],
             pi10_tree["inner_radius"],
@@ -54,14 +56,27 @@ def main(file_list) -> int:
         wt = []
         inr = []
         outr = []
+        air_seg_error = 0
 
-        for gen in range(0,9):
-            wap.append(param_by_gen(airway_tree.tree, gen, "wall_global_area_perc"))
-            la.append(param_by_gen(airway_tree.tree, gen, "inner_global_area"))
-            wt.append(param_by_gen(airway_tree.tree, gen, "wall_global_thickness"))
-            inr.append(param_by_gen(airway_tree.tree, gen, "inner_radius"))
-            outr.append(param_by_gen(airway_tree.tree, gen, "outer_radius"))
+        for gen in range(0, 9):
+            try:
+                wap.append(param_by_gen(airway_tree.tree, gen, "wall_global_area_perc"))
+                la.append(param_by_gen(airway_tree.tree, gen, "inner_global_area"))
+                wt.append(param_by_gen(airway_tree.tree, gen, "wall_global_thickness"))
+                inr.append(param_by_gen(airway_tree.tree, gen, "inner_radius"))
+                outr.append(param_by_gen(airway_tree.tree, gen, "outer_radius"))
+            except(KeyError) as e:
+                print(f"No more generations: {gen}\n{e}")
+                air_seg_error = 1
         tcount = total_count(airway_tree.tree)
+        if tcount <= 100:
+            air_seg_error = 1
+
+        wap_str = ";".join(list(map(str, wap)))
+        la_str = ";".join(list(map(str, la)))
+        wt_str = ";".join(list(map(str, wt)))
+        inr_str = ";".join(list(map(str, inr)))
+        outr_str = ";".join(list(map(str, outr)))
 
         # Save bronchial parameters to file.
         bp_head = [
@@ -74,10 +89,10 @@ def main(file_list) -> int:
             "bp_or",
             "bp_tcount",
             "bp_pi10",
-            "bp_seg_complete",
+            "bp_seg_performed",
             "bp_seg_error"
         ]
-        bp_list = [0, 0, wap, la, wt, inr, outr, tcount, pi10, 1, 0]
+        bp_list = [0, 0, wap_str, la_str, wt_str, inr_str, outr_str, tcount, pi10, 1, air_seg_error]
         with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(bp_head)

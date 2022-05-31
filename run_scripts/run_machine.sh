@@ -31,9 +31,9 @@ POSWRKDIR=${RESDIR}/PosteriorsWorkData
 POSDIR=${RESDIR}/Posteriors
 KEYFILE=${RESDIR}/referenceKeys_posteriors.npy
 
+SECONDS=0
 echo "Running Lung Segmentation. Destination folder $DESTLUNG"
 echo "-------------------------------------------------------"
-
 mkdir -p $DESTAIR
 mkdir -p $DESTLUNG
 mkdir -p $DESTIMG
@@ -152,7 +152,7 @@ if [ $? -eq 1 ]
 then
     exit $?
 fi
-thumbnail -s $DESTAIR/*nii.gz -o "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.bmp
+python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.bmp
 echo 'DONE PRUNING COARSE AIRWAYS'
 echo '---------------------------'
 
@@ -199,7 +199,7 @@ echo '---------------------------'
   echo 'Post-process Segmentation'
   echo '-------------------------'
   python Code/scripts_evalresults/postprocess_predictions.py --basedir=/temp_work --name_input_predictions_relpath=${POSWRKDIR} --name_output_posteriors_relpath=${POSDIR} --name_input_reference_keys_file=${KEYFILE}
-  thumbnail -s ${POSDIR}/*.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.bmp
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${POSDIR}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.bmp
   python Code/scripts_evalresults/process_predicted_airway_tree.py --basedir=/temp_work --name_input_posteriors_relpath=${POSDIR} --name_output_binary_masks_relpath=${SEGDIR}
   echo $?
 
@@ -215,7 +215,7 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_repeat_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
+/bronchinet/scripts/opfront_scripts/opfront_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 0 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed opfront step." >> "$LOGFILE"
@@ -226,8 +226,8 @@ then
 else
 {
     echo "\nSuccess with opfront steps. Final computations and cleanup..."
-  thumbnail -s ${OUTPUTFOLDER}/*_surface0.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
-  thumbnail -s ${OUTPUTFOLDER}/*nii-branch.nii.gz -o ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.bmp
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*_surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.bmp
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.bmp
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   # Process the GTS files into obj files for easy 3D model use.
   gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTBASENAME}_lumen.stl
@@ -258,18 +258,22 @@ else
   find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
   find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
   find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
-  cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
-  cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
-  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
-  rm -r "${OUTBASENAME}"_initial/
+#  cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+#  cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
+#  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
+#  rm -r "${OUTBASENAME}"_initial/
   cd "${OUTPUTFOLDER}" || exit
   tar czf intermediate-files-bronchi.tar.gz *.gts *.csv *.nii.gz *.log
   tar czf 3d-models-airway.tar.gz *.obj
+  find ${OUTPUTFOLDER} -type f -name "*.obj" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
   echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'
 rm -r ${DATADIR}
 rm -r "${SEGDIR}"
+DURATION=$(($SECONDS/60))
+echo "PROCESS TOOK $DURATION MINUTES"
 } >> "$LOGFILE"
 fi
 

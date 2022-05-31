@@ -9,7 +9,7 @@ from multiprocessing import Pool
 
 def process_scan(scan_folder, outdir, vol_name, timer):
 
-    docker_name = "colossali/airflow:v2.4.3"
+    docker_name = "colossali/airflow:eureka_1.1"
     outdir.mkdir(parents=True, exist_ok=True)
     for child in scan_folder.iterdir():
         logging.debug(child.absolute().resolve())
@@ -22,8 +22,6 @@ def process_scan(scan_folder, outdir, vol_name, timer):
             "all",
             "--rm",
             "-t",
-            "--entrypoint",
-            "scripts/run_local_machine_for_repeat.sh",
             "-v",
             f"{input_folder}:/input",
             "-v",

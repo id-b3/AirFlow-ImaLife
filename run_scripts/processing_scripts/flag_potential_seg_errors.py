@@ -13,13 +13,18 @@ def main(args):
     max_rad = tree[tree.generation > 5]["inner_radius"].max()
     bp_df["bp_tlv"] = lung_vol
     bp_df["bp_airvol"] = air_vol
+    print(f"{lung_vol}, {air_vol}, {tcount}, {max_rad}")
 
-    if 3.0 > lung_vol > 8.0 or 0.1 > air_vol > 0.5 or 150 > tcount > 400 or max_rad > 4:
+    lungs = lung_vol > 8.0 or lung_vol < 3.0
+    airs = air_vol > 0.5 or air_vol < 0.25
+    counts = tcount > 400 or tcount < 100
+    rads = max_rad > 4
+    if lungs or airs or counts or rads:
         print("Segmentation Potentially Incomplete.")
         bp_df["bp_seg_error"] = 1
-        bp_df.to_csv(args.bp_file)
+        bp_df.to_csv(args.bp_file, index=False)
     else:
-        bp_df.to_csv(args.bp_file)
+        bp_df.to_csv(args.bp_file, index=False)
         print("Segmentation Complete.")
 
 
