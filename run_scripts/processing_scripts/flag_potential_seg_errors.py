@@ -16,8 +16,8 @@ def main(args):
     print(f"{lung_vol}, {air_vol}, {tcount}, {max_rad}")
 
     lungs = lung_vol > 8.0 or lung_vol < 3.0
-    airs = air_vol > 0.5 or air_vol < 0.25
-    counts = tcount > 400 or tcount < 100
+    airs = air_vol > 0.5 or air_vol < 0.15
+    counts = tcount > 400 or tcount < 150
     rads = max_rad > 4
     if lungs or airs or counts or rads:
         print("Segmentation Potentially Incomplete.")
