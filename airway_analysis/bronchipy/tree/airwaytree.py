@@ -5,7 +5,7 @@ import nibabel as nib
 import pandas as pd
 import logging
 
-from ..calc.measure_airways import calc_branch_length
+from ..calc.measure_airways import calc_branch_length, calc_tapering
 from ..io import branchio as brio
 
 
@@ -142,6 +142,21 @@ class AirwayTree:
         )
         organised_tree["wall_global_thickness_perc"] = organised_tree.apply(
             lambda row: (row.wall_global_thickness - row.outer_radius) * 100, axis=1
+        )
+
+        # Calculate Area Tapering
+        organised_tree["lumen_tapering"] = organised_tree.apply(
+            lambda row: calc_tapering(row.inner_global_area, row.centreline, perc=False)
+        )
+        organised_tree["lumen_tapering_perc"] = organised_.apply(
+            lambda row: calc_tapering(row.inner_global_area, row.centreline, perc=True)
+        )
+
+        organised_tree["total_tapering"] =  organised_tree.apply(
+            lambda row: calc_tapering(row.outer_global_area, row.centreline, perc=False)
+        )
+        organised_tree["total_tapering_perc"] =  organised_tree.apply(
+            lambda row: calc_tapering(row.outer_global_area, row.centreline, perc=True)
         )
 
         # Get midpoint co-ordinates
