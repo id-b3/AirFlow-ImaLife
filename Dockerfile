@@ -10,8 +10,8 @@ RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.
 WORKDIR /lungseg
 
 # COPY SOURCECODE
-COPY ["./legacy/", "./legacy/"]
-COPY ["./playground/", "./playground/"]
+COPY ["./airflow_legacy/legacy/", "./legacy/"]
+COPY ["./airflow_legacy/playground/", "./playground/"]
 RUN tar xf ./playground/thirdparty.tar.gz -C ./playground
 RUN mv ./playground/thirdparty/CImg.h /usr/include/CImg.h
 

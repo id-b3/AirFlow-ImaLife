@@ -5,12 +5,9 @@
 [submodule "opfront"]
 	path = opfront
 	url = https://bitbucket.org/id-b3/opfront.git
-[submodule "playground"]
-	path = playground
-	url = git@bitbucket.org:id-b3/playground.git
-[submodule "legacy"]
-	path = legacy
-	url = git@bitbucket.org:id-b3/legacy.git
 [submodule "AirMorph"]
 	path = AirMorph
 	url = https://github.com/id-b3/AirMorph
+[submodule "airflow_legacy"]
+	path = airflow_legacy
+	url = https://github.com/id-b3/airflow_legacy.git
