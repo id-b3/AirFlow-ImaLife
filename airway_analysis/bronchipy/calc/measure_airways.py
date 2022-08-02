@@ -151,9 +151,10 @@ def calc_tapering(yData: list, centreline_pos: list, perc: bool=False):
         logging.warning(f"Not enough data for extraction of tapering info.")
         return None
 
-    xx = distance.pdist(carr, metric='euclidian')  # Calculate the euclidian distance between points along centreline.
+    # xx = distance.pdist(carr, metric='euclidean')  # Calculate the euclidian distance between points along centreline.
+    xx = np.zeros(carr.shape[0])
     for i in range(1, len(xx)):
-        xx[i] = xx[i-1] + xx[i]  # Convert from relative distance to absolute distance.
+        xx[i] = distance.euclidean(carr[i-1], carr[i]) + xx[i-1]  # Convert from relative distance to absolute distance.
 
     brfit = np.polyfit(xx, yarr, deg=1)  # Fit a linear polynomial to the points
     tapering = -brfit[0]
