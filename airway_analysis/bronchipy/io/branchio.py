@@ -183,6 +183,8 @@ def save_summary_csv(tree: pd.DataFrame, filename: str = "./airway_summary.csv")
             "wall_global_area_perc",
             "wall_global_thickness",
             "wall_global_thickness_perc",
+            "lumen_tapering",
+            "lumen_tapering_perc",
             "x",
             "y",
             "z",

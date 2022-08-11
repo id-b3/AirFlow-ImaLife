@@ -5,7 +5,7 @@ import nibabel as nib
 import pandas as pd
 import logging
 
-from ..calc.measure_airways import calc_branch_length
+from ..calc.measure_airways import calc_branch_length, calc_tapering
 from ..io import branchio as brio
 
 
@@ -144,6 +144,21 @@ class AirwayTree:
             lambda row: (row.wall_global_thickness - row.outer_radius) * 100, axis=1
         )
 
+        # Calculate Area Tapering
+        organised_tree["lumen_tapering"] = organised_tree.apply(
+            lambda row: calc_tapering(row.inner_radii, row.centreline, perc=False), axis=1
+        )
+        organised_tree["lumen_tapering_perc"] = organised_tree.apply(
+            lambda row: calc_tapering(row.inner_radii, row.centreline, perc=True), axis=1
+        )
+
+        organised_tree["total_tapering"] =  organised_tree.apply(
+            lambda row: calc_tapering(row.outer_radii, row.centreline, perc=False), axis=1
+        )
+        organised_tree["total_tapering_perc"] =  organised_tree.apply(
+            lambda row: calc_tapering(row.outer_radii, row.centreline, perc=True), axis=1
+        )
+
         # Get midpoint co-ordinates
         organised_tree["x"] = organised_tree.apply(
             lambda row: row.points[int(len(row.points) / 2)][0], axis=1
@@ -230,6 +245,10 @@ class AirwayTree:
         wall_global_area_perc: Global WA% of the branch
         wall_global_thickness: Global Wall Thickness of the branch
         wall_global_thickness_perc: Global WT% of the branch
+        lumen_tapering: Luminal tapering from start to end of branch
+        lumen_tapering_perc: Luminal tapering as a percentage of starting lumen diameter.
+        total_tapering: Total airway (wall+lumen) tapering
+        total_tapering_perc: Total airway tapering as percentage of starting total diameter.
         x: X voxel at midpoint of branch
         y: Y voxel at midpoint of branch
         z: Z voxel at midpoint of branch
