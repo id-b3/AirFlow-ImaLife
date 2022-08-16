@@ -7,11 +7,10 @@ import sys
 
 import nibabel as nib
 
-from bronchipy.calc.measure_airways import calc_pi10
 from bronchipy.calc.summary_stats import param_by_gen,\
-        total_count, fractal_dimension
+        total_count, fractal_dimension, calc_pi10
 from bronchipy.io import branchio as brio
-from bronchipy.tree.airwaytree import AirwayTree
+from bronchipy.airwaytree import AirwayTree
 
 
 def main(file_list) -> int:

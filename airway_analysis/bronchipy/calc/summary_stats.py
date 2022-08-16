@@ -82,6 +82,32 @@ def fractal_dimension(
     return coeffs[0]
 
 
+def calc_pi10(
+    wa: list, rad: list, plot: bool = False, name: str = "anon", save_dir: str = "./"
+) -> float:
+
+    # Calculate regression line
+    x = np.array(rad).reshape((-1, 1))
+    x = (2 * np.pi) * x
+    logging.debug(f"Radii {rad}\nPerimeters {x}")
+    y = np.array(wa)
+    y = np.sqrt(y)
+    logging.debug(f"Square Root Wall Areas {y}")
+
+    # Calculate best fit for regression line
+    pi10_model = LinearRegression(n_jobs=-1).fit(x, y)
+    logging.info(f"Pi10 R2 value is: {pi10_model.score(x, y)}")
+    logging.info(f"Slope {pi10_model.coef_} and intercept {pi10_model.intercept_}")
+
+    # Get sqrt WA for hypothetical airway of 10mm internal perimeter
+    pi10 = pi10_model.predict([[10]])
+
+    if plot:
+        save_pi10_figure(x, y, pi10_model, pi10, name=name, savedir=save_dir)
+
+    return pi10[0]
+
+
 def param_by_gen(air_tree: pd.DataFrame, gen: int, param: str) -> float:
     """
 
