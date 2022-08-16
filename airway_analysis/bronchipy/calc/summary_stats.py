@@ -1,6 +1,9 @@
+import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from .visualise import save_pi10_figure
+from sklearn.linear_model import LinearRegression
 
 
 def fractal_dimension(

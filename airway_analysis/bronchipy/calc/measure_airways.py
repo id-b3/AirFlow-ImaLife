@@ -1,8 +1,6 @@
 import logging
-from .visualise import save_pi10_figure
 import numpy as np
 from scipy.spatial import distance
-from sklearn.linear_model import LinearRegression
 
 
 def calc_branch_length(points: list) -> float:
