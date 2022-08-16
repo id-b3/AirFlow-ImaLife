@@ -146,17 +146,21 @@ class AirwayTree:
 
         # Calculate Area Tapering
         organised_tree["lumen_tapering"] = organised_tree.apply(
-            lambda row: calc_tapering(row.inner_radii, row.centreline, perc=False), axis=1
+            lambda row: calc_tapering(row.inner_radii, row.centreline, perc=False),
+            axis=1,
         )
         organised_tree["lumen_tapering_perc"] = organised_tree.apply(
-            lambda row: calc_tapering(row.inner_radii, row.centreline, perc=True), axis=1
+            lambda row: calc_tapering(row.inner_radii, row.centreline, perc=True),
+            axis=1,
         )
 
-        organised_tree["total_tapering"] =  organised_tree.apply(
-            lambda row: calc_tapering(row.outer_radii, row.centreline, perc=False), axis=1
+        organised_tree["total_tapering"] = organised_tree.apply(
+            lambda row: calc_tapering(row.outer_radii, row.centreline, perc=False),
+            axis=1,
         )
-        organised_tree["total_tapering_perc"] =  organised_tree.apply(
-            lambda row: calc_tapering(row.outer_radii, row.centreline, perc=True), axis=1
+        organised_tree["total_tapering_perc"] = organised_tree.apply(
+            lambda row: calc_tapering(row.outer_radii, row.centreline, perc=True),
+            axis=1,
         )
 
         # Get midpoint co-ordinates

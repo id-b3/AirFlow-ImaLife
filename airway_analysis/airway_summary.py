@@ -5,8 +5,11 @@ import csv
 import logging
 import sys
 
+import nibabel as nib
+
 from bronchipy.calc.measure_airways import calc_pi10
-from bronchipy.calc.summary_stats import param_by_gen, total_count
+from bronchipy.calc.summary_stats import param_by_gen,\
+        total_count, fractal_dimension
 from bronchipy.io import branchio as brio
 from bronchipy.tree.airwaytree import AirwayTree
 
@@ -38,11 +41,13 @@ def main(file_list) -> int:
             airway_tree.tree, f"{file_list.output}/airway_tree.pickle"
         )
 
-        # Calculate bronchial parameters
+        # Calculate summary bronchial parameters
         pi10_tree = airway_tree.tree[
             (airway_tree.tree.generation > 1) & (airway_tree.tree.generation <= 6)
         ]
-        logging.info(f"Calculating Pi10 for generations {pi10_tree.generation.unique()}")
+        logging.info(
+            f"Calculating Pi10 for generations {pi10_tree.generation.unique()}"
+        )
         pi10 = calc_pi10(
             pi10_tree["wall_global_area"],
             pi10_tree["inner_radius"],
@@ -50,6 +55,11 @@ def main(file_list) -> int:
             save_dir=file_list.output,
             plot=True,
         )
+
+        logging.info("Calculating fractal dimension...")
+        segarr = nib.load(file_list.volume_nii).get_fdata()
+        fd = fractal_dimension(segarr, n_offsets=10)
+        logging.info(f"Fractal Dimension is {fd}")
 
         wap = []
         la = []
@@ -65,7 +75,7 @@ def main(file_list) -> int:
                 wt.append(param_by_gen(airway_tree.tree, gen, "wall_global_thickness"))
                 inr.append(param_by_gen(airway_tree.tree, gen, "inner_radius"))
                 outr.append(param_by_gen(airway_tree.tree, gen, "outer_radius"))
-            except(KeyError) as e:
+            except (KeyError) as e:
                 print(f"No more generations: {gen}\n{e}")
                 air_seg_error = 1
         tcount = total_count(airway_tree.tree)
@@ -89,10 +99,24 @@ def main(file_list) -> int:
             "bp_or",
             "bp_tcount",
             "bp_pi10",
+            "bp_fractaldim",
             "bp_seg_performed",
-            "bp_seg_error"
+            "bp_seg_error",
         ]
-        bp_list = [0, 0, wap_str, la_str, wt_str, inr_str, outr_str, tcount, pi10, 1, air_seg_error]
+        bp_list = [
+            0,
+            0,
+            wap_str,
+            la_str,
+            wt_str,
+            inr_str,
+            outr_str,
+            tcount,
+            pi10,
+            fd,
+            1,
+            air_seg_error,
+        ]
         with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(bp_head)
@@ -132,7 +156,7 @@ if __name__ == "__main__":
         help="Input path for the branches csv file output from the brh_translator tool.",
     )
     aparse.add_argument(
-        "volume_nii", type=str, help="Input path for the NIFTI format volume."
+        "volume_nii", type=str, help="Input path for the NIFTI segmentation of the lumen."
     )
     aparse.add_argument(
         "--tree_csv",
