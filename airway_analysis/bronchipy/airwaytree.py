@@ -6,7 +6,7 @@ import pandas as pd
 import logging
 
 from .calc.measure_airways import calc_branch_length, calc_tapering
-from io import branchio as brio
+from .io import branchio as brio
 
 
 class AirwayTree:
