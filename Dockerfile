@@ -90,10 +90,10 @@ RUN make -j install
 FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 
 # This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="1.1"
+LABEL version="1.2"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
 LABEL model="24_ImaLife_Masked"
-LABEL descrption="Version 1: Using Bronchinet model trained on 24 ImaLife scans with large airway masking."
+LABEL descrption="Version 1.2: Using Bronchinet model trained on 24 ImaLife scans with large airway masking."
 
 # Get latest key from nvidia
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
