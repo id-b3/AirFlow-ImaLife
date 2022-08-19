@@ -7,7 +7,8 @@ from sklearn.linear_model import LinearRegression
 
 
 def fractal_dimension(
-    array, max_box_size=None, min_box_size=1, n_samples=20, n_offsets=0, plot=False
+    array, max_box_size=None, min_box_size=1, n_samples=20, n_offsets=0, plot=False,
+    binarize=True
 ):
     """Calculates the fractal dimension of a 3D numpy array.
 
@@ -25,6 +26,9 @@ def fractal_dimension(
 
 
     """
+    if binarize:
+        array = np.where(array > 0.3, array, 1)
+
     # determine the scales to measure on
     if max_box_size is None:
         # default max size is the largest power of 2 that fits in the smallest dimension of the array:
