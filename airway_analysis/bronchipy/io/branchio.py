@@ -22,7 +22,10 @@ def load_branch_csv(in_file: str) -> pd.DataFrame:
         in_file,
         header=0,
         names=headers,
-        converters={"children": eval, "points": eval},
+        converters={
+            "children": eval,
+            "points": eval
+        },
         delimiter=";",
     )
     logging.info("Success!")
@@ -92,7 +95,10 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
 
     df = pd.read_csv(
         in_file,
-        converters={"inner_radii": eval, "outer_radii": eval},
+        converters={
+            "inner_radii": eval,
+            "outer_radii": eval
+        },
         header=0,
         names=headers,
         delimiter=";",
@@ -101,7 +107,9 @@ def load_local_radius_csv(in_file: str, inner: bool) -> pd.DataFrame:
     return df
 
 
-def save_as_csv(dataframe: pd.DataFrame, out_path: str = "./airway_tree.csv") -> None:
+def save_full_tree(dataframe: pd.DataFrame,
+                   out_path: str,
+                   json: bool = False) -> None:
     """
     Save the current airway tree dataframe as csv using pandas. Allows quicker loading and processing in the future.
 
@@ -115,12 +123,18 @@ def save_as_csv(dataframe: pd.DataFrame, out_path: str = "./airway_tree.csv") ->
     parent_dir = Path(Path.cwd(), out_path).resolve()
     try:
         logging.info(f"Saving {Path(out_path).stem} to {parent_dir}")
-        dataframe.to_csv(parent_dir, sep=";")
+        if json:
+            dataframe.to_json(parent_dir)
+        else:
+            dataframe.to_csv(parent_dir, sep=";")
     except OSError:
         logging.info(f"Creating folder {parent_dir}")
         logging.info(f"Saving {Path(out_path).stem} to {parent_dir}")
         Path.mkdir(parent_dir.parent)
-        dataframe.to_csv(parent_dir)
+        if json:
+            dataframe.to_csv(parent_dir)
+        else:
+            dataframe.to_csv(parent_dir)
 
 
 def load_tree_csv(tree_csv: str) -> pd.DataFrame:
@@ -153,7 +167,8 @@ def load_tree_csv(tree_csv: str) -> pd.DataFrame:
         logging.error("Error loading the airway tree csv.")
 
 
-def save_summary_csv(tree: pd.DataFrame, filename: str = "./airway_summary.csv"):
+def save_summary_csv(tree: pd.DataFrame,
+                     filename: str = "./airway_summary.csv"):
     """
     Saves a summary CSV with bronchial parameters per branch.
 
@@ -169,33 +184,32 @@ def save_summary_csv(tree: pd.DataFrame, filename: str = "./airway_summary.csv")
     logging.info(f"Saving summary to {save_path}")
     if not Path.exists(parent_path):
         Path.mkdir(parent_path)
-    tree_sum = tree[
-        [
-            "generation",
-            "parent",
-            "length",
-            "inner_radius",
-            "inner_intensity",
-            "inner_global_area",
-            "outer_radius",
-            "outer_intensity",
-            "wall_global_area",
-            "wall_global_area_perc",
-            "wall_global_thickness",
-            "wall_global_thickness_perc",
-            "lumen_tapering",
-            "lumen_tapering_perc",
-            "x",
-            "y",
-            "z",
-        ]
-    ]
+    tree_sum = tree[[
+        "generation",
+        "parent",
+        "length",
+        "inner_radius",
+        "inner_intensity",
+        "inner_global_area",
+        "outer_radius",
+        "outer_intensity",
+        "wall_global_area",
+        "wall_global_area_perc",
+        "wall_global_thickness",
+        "wall_global_thickness_perc",
+        "lumen_tapering",
+        "lumen_tapering_perc",
+        "x",
+        "y",
+        "z",
+    ]]
     if "lobes" in tree.columns:
         tree_sum["lobes"] = tree["lobes"]
     tree_sum.to_csv(save_path)
 
 
-def save_pickle_tree(dataframe: pd.DataFrame, savepath: str = "./airway_tree.pickle"):
+def save_pickle_tree(dataframe: pd.DataFrame,
+                     savepath: str = "./airway_tree.pickle"):
     try:
         dataframe.to_pickle(savepath)
     except IOError as e:

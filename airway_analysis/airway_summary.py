@@ -35,8 +35,11 @@ def main(file_list) -> int:
             outer_radius_file=file_list.outer_rad_csv,
             volume=file_list.volume_nii,
         )
-        brio.save_summary_csv(airway_tree.tree,
-                              f"{file_list.output}/airway_tree.csv")
+        brio.save_full_tree(airway_tree.tree,
+                            f"{file_list.output}/airway_tree.csv")
+        brio.save_full_tree(airway_tree.tree,
+                            f"{file_list.output}/airway_tree.json",
+                            json=True)
         brio.save_pickle_tree(airway_tree.tree,
                               f"{file_list.output}/airway_tree.pickle")
 
