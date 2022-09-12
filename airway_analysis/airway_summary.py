@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import csv
+import json
 import logging
 import sys
 
@@ -35,15 +35,14 @@ def main(file_list) -> int:
             outer_radius_file=file_list.outer_rad_csv,
             volume=file_list.volume_nii,
         )
-        brio.save_summary_csv(airway_tree.tree, f"{file_list.output}/airway_tree.csv")
-        brio.save_pickle_tree(
-            airway_tree.tree, f"{file_list.output}/airway_tree.pickle"
-        )
+        brio.save_summary_csv(airway_tree.tree,
+                              f"{file_list.output}/airway_tree.csv")
+        brio.save_pickle_tree(airway_tree.tree,
+                              f"{file_list.output}/airway_tree.pickle")
 
         # Calculate summary bronchial parameters
-        pi10_tree = airway_tree.tree[
-            (airway_tree.tree.generation > 1) & (airway_tree.tree.generation <= 6)
-        ]
+        pi10_tree = airway_tree.tree[(airway_tree.tree.generation > 1)
+                                     & (airway_tree.tree.generation <= 6)]
         logging.info(
             f"Calculating Pi10 for generations {pi10_tree.generation.unique()}"
         )
@@ -69,11 +68,17 @@ def main(file_list) -> int:
 
         for gen in range(0, 9):
             try:
-                wap.append(param_by_gen(airway_tree.tree, gen, "wall_global_area_perc"))
-                la.append(param_by_gen(airway_tree.tree, gen, "inner_global_area"))
-                wt.append(param_by_gen(airway_tree.tree, gen, "wall_global_thickness"))
+                wap.append(
+                    param_by_gen(airway_tree.tree, gen,
+                                 "wall_global_area_perc"))
+                la.append(
+                    param_by_gen(airway_tree.tree, gen, "inner_global_area"))
+                wt.append(
+                    param_by_gen(airway_tree.tree, gen,
+                                 "wall_global_thickness"))
                 inr.append(param_by_gen(airway_tree.tree, gen, "inner_radius"))
-                outr.append(param_by_gen(airway_tree.tree, gen, "outer_radius"))
+                outr.append(param_by_gen(airway_tree.tree, gen,
+                                         "outer_radius"))
             except (KeyError) as e:
                 print(f"No more generations: {gen}\n{e}")
                 air_seg_error = 1
@@ -88,38 +93,22 @@ def main(file_list) -> int:
         outr_str = ";".join(list(map(str, outr)))
 
         # Save bronchial parameters to file.
-        bp_head = [
-            "bp_tlv",
-            "bp_airvol",
-            "bp_wap",
-            "bp_la",
-            "bp_wt",
-            "bp_ir",
-            "bp_or",
-            "bp_tcount",
-            "bp_pi10",
-            "bp_fractaldim",
-            "bp_seg_performed",
-            "bp_seg_error",
-        ]
-        bp_list = [
-            0,
-            0,
-            wap_str,
-            la_str,
-            wt_str,
-            inr_str,
-            outr_str,
-            tcount,
-            pi10,
-            fd,
-            1,
-            air_seg_error,
-        ]
-        with open(f"{file_list.output}/bp_summary_redcap.csv", "w") as f:
-            writer = csv.writer(f)
-            writer.writerow(bp_head)
-            writer.writerow(bp_list)
+        bp_summary = {
+            "bp_tlv": 0,
+            "bp_airvol": 0,
+            "bp_wap": wap_str,
+            "bp_la": la_str,
+            "bp_wt": wt_str,
+            "bp_ir": inr_str,
+            "bp_or": outr_str,
+            "bp_tcount": tcount,
+            "bp_pi10": pi10,
+            "bp_fractaldim": fd,
+            "bp_seg_performed": 1,
+            "bp_seg_error": air_seg_error,
+        }
+        with open(f"{file_list.output}/bp_summary_redcap.json", "w") as f:
+            json.dump(bp_summary, f, indent=4)
 
         return sys.exit()
     except (OSError, TypeError) as e:
@@ -132,7 +121,8 @@ if __name__ == "__main__":
     aparse.add_argument(
         "--inner_csv",
         type=str,
-        help="Input path for the inner csv file output from the gts_ray_measure tool.",
+        help=
+        "Input path for the inner csv file output from the gts_ray_measure tool.",
     )
     aparse.add_argument(
         "--inner_rad_csv",
@@ -142,7 +132,8 @@ if __name__ == "__main__":
     aparse.add_argument(
         "--outer_csv",
         type=str,
-        help="Input path for the outer csv file output from the gts_ray_measure tool.",
+        help=
+        "Input path for the outer csv file output from the gts_ray_measure tool.",
     )
     aparse.add_argument(
         "--outer_rad_csv",
@@ -152,16 +143,19 @@ if __name__ == "__main__":
     aparse.add_argument(
         "--branch_csv",
         type=str,
-        help="Input path for the branches csv file output from the brh_translator tool.",
+        help=
+        "Input path for the branches csv file output from the brh_translator tool.",
     )
     aparse.add_argument(
-        "volume_nii", type=str, help="Input path for the NIFTI segmentation of the lumen."
-    )
+        "volume_nii",
+        type=str,
+        help="Input path for the NIFTI segmentation of the lumen.")
     aparse.add_argument(
         "--tree_csv",
         type=str,
         required=False,
-        help="Input path for the tree csv file output from the brh_translator tool.",
+        help=
+        "Input path for the tree csv file output from the brh_translator tool.",
     )
     aparse.add_argument(
         "--output",
@@ -169,7 +163,9 @@ if __name__ == "__main__":
         help="Output folder for the airway summary csv and pickle files.",
         default="/eureka/output",
     )
-    aparse.add_argument("--name", type=str, help="Name for the output summary file.")
+    aparse.add_argument("--name",
+                        type=str,
+                        help="Name for the output summary file.")
 
     if len(sys.argv) == 1:
         aparse.print_help(sys.stderr)
