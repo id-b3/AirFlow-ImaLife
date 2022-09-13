@@ -227,7 +227,7 @@ else
 {
     echo "\nSuccess with opfront steps. Final computations and cleanup..."
   python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*_surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.png
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.png
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.dcm -d
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   # Process the GTS files into obj files for easy 3D model use.
   gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTBASENAME}_lumen.stl
