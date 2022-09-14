@@ -7,8 +7,8 @@ def main(args):
         lung_vol = float(f.readline().strip()) / 1000000
     with open(args.air_vol, "r") as f:
         air_vol = float(f.readline().strip()) / 1000000
-    bp_df = pd.read_csv(args.bp_file)
-    tcount = bp_df["bp_tcount"].max()
+    bp_df = pd.read_json(args.bp_file, typ="series")
+    tcount = bp_df["bp_tcount"]
     tree = pd.read_pickle(args.tree_pickle)
     max_rad = tree[tree.generation > 5]["inner_radius"].max()
     bp_df["bp_tlv"] = lung_vol
@@ -22,9 +22,9 @@ def main(args):
     if lungs or airs or counts or rads:
         print("Segmentation Potentially Incomplete.")
         bp_df["bp_seg_error"] = 1
-        bp_df.to_csv(args.bp_file, index=False)
+        bp_df.to_json(args.bp_file, index=False)
     else:
-        bp_df.to_csv(args.bp_file, index=False)
+        bp_df.to_json(args.bp_file, index=False)
         print("Segmentation Complete.")
 
 
