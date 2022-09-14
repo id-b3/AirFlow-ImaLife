@@ -4,7 +4,7 @@ import argparse
 import nibabel as nib
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.sequence import Sequence
-from pydicom.encaps import encapsulate
+from pydicom.uid import RLELossless
 
 
 def conv_to_dicom(arr):
@@ -117,10 +117,11 @@ def conv_to_dicom(arr):
     ds.StudyStatusID = 'STARTED'
     ds.StudyPriorityID = 'LOW'
     ds.RequestedProcedureDescription = ''
-    ds.PixelData = encapsulate([arr.tobytes()])
+    # ds.PixelData = encapsulate([arr.tobytes()])
     ds.file_meta = file_meta
     ds.is_implicit_VR = False
     ds.is_little_endian = True
+    ds.compress(RLELossless, arr)
     return ds
 
 

@@ -46,7 +46,7 @@ def main(file_list) -> int:
         # Calculate summary bronchial parameters
         pi10_tree = airway_tree.tree[(airway_tree.tree.generation > 1)
                                      & (airway_tree.tree.generation <= 6)]
-        logging.info(
+        print(
             f"Calculating Pi10 for generations {pi10_tree.generation.unique()}"
         )
         pi10 = calc_pi10(
@@ -57,10 +57,10 @@ def main(file_list) -> int:
             plot=True,
         )
 
-        logging.info("Calculating fractal dimension...")
+        print("Calculating fractal dimension...")
         segarr = nib.load(file_list.volume_nii).get_fdata()
-        fd = fractal_dimension(segarr, n_offsets=10)
-        logging.info(f"Fractal Dimension is {fd}")
+        fd = fractal_dimension(segarr, n_offsets=2)
+        print(f"Fractal Dimension is {fd}")
 
         wap = []
         la = []
@@ -104,7 +104,7 @@ def main(file_list) -> int:
             "bp_wt": wt_str,
             "bp_ir": inr_str,
             "bp_or": outr_str,
-            "bp_tcount": tcount,
+            "bp_tcount": int(tcount),
             "bp_pi10": pi10,
             "bp_fractaldim": fd,
             "bp_seg_performed": 1,

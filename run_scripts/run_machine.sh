@@ -226,7 +226,7 @@ then
 else
 {
     echo "\nSuccess with opfront steps. Final computations and cleanup..."
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*_surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.png
+  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.png
   python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.dcm -d
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   # Process the GTS files into obj files for easy 3D model use.
@@ -239,7 +239,7 @@ else
   # Create a mask segmentation
   python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   # Measure the bronchial parameters
-  python /bronchinet/airway_analysis/airway_summary.py ${OUTBASENAME}/*_surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
+  python /bronchinet/airway_analysis/airway_summary.py ${OUTBASENAME}_*surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
   # Label the branches with lobes
   python /bronchinet/AirMorph/label_branch_lobes.py ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/airway_tree.pickle ${OUTPUTFOLDER}
   # Get the scan date
