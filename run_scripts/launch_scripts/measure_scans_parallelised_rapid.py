@@ -37,12 +37,12 @@ def process_scan(scan_folder, outdir):
         f"/output/{vol_name}.log",
     ]
 
-    logging.info(command_array)
+    logging.debug(command_array)
     start_time = time.time()
     run = subprocess.run(command_array)
     execution_time = (time.time() - start_time) / 60
     logging.info(
-        f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{vol_name},{execution_time:.2f}"
+        f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{vol_name},{run},{execution_time:.2f}"
     )
 
 
@@ -51,9 +51,10 @@ def main(dirs):
     main_dirs = [d for d in main_path.iterdir() if d.is_dir()]
     out_path = Path(dirs.out_dir).resolve()
     main_dirs.sort()
-    p = mp.Pool(8)
-    list(tqdm(p.starmap(process_scan, zip(main_dirs, repeat(out_path))),
-              total=len(main_dirs)))
+    p = mp.Pool(4)
+    list(
+        tqdm(p.starmap(process_scan, zip(main_dirs, repeat(out_path))),
+             total=len(main_dirs)))
     p.close()
     p.join()
 
