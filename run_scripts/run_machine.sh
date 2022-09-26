@@ -267,8 +267,13 @@ fi
   # Get the scan date
   python /bronchinet/scripts/processing_scripts/get_date.py $INPUTFILE ${OUTPUTFOLDER}/scan_date.txt
   # Flag segmentation as complete
-  python /bronchinet/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.csv ${OUTPUTFOLDER}/airway_tree.pickle
+  python /bronchinet/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.json ${OUTPUTFOLDER}/airway_tree.pickle
   # Delete unnecessary output files
+if [ $? -eq 1 ]
+then
+    echo "Failed to check summary file."
+    execution_status 3
+fi
   find ${OUTPUTFOLDER} -type f -name "*nii-branch.nii.gz" -exec mv {} "${OUTBASENAME}"_labelled_tree.nii.gz \;
   find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
   find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
