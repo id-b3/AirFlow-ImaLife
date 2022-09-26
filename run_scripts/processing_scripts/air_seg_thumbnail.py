@@ -129,7 +129,7 @@ def main(args):
     print(f"Making Segmentation Thumbnail:\n{args.in_seg}\n{args.out_img}")
     air_seg = nib.load(args.in_seg).get_fdata()
 
-    if args.dicom is not None:
+    if args.dicom:
         slices = air_seg
         slices = slices * 100
         slices = slices.astype("uint8")
@@ -161,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument("--dicom",
                         "-d",
                         action="store_true",
+                        default=False,
                         help="If flag, will save as DICOM file.")
     in_args = parser.parse_args()
     main(in_args)
