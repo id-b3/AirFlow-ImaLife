@@ -42,7 +42,7 @@ def process_scan(scan_folder, outdir):
     run = subprocess.run(command_array)
     execution_time = (time.time() - start_time) / 60
     logging.info(
-        f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{vol_name},{run},{execution_time:.2f}"
+        f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{vol_name},{execution_time:.2f}"
     )
 
 

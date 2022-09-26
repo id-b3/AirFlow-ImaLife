@@ -2,17 +2,18 @@
 
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
-INPUT_DIR=${1:/eureka/input/series-in}
+INPUT_DIR=${1:-/eureka/input/series-in}
 VOL_FILE=${2}
 VOL_NO_EXTENSION="${VOL_FILE%.*}"
-OUTPUTFOLDER=${3:/eureka/output/airways}
+OUTPUTFOLDER=${3:-/eureka/output}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
-mkdir -p /eureka/input/series-in/
+mkdir -p ${INPUT_DIR}
 #CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT_DIR} ${INPUTFILE}"
 #eval "$CALL"
 
+echo "Input Dir: ${INPUT_DIR}"
 echo "Input File: ${VOL_FILE}"
 echo "Output Folder: ${3}"
 
@@ -41,6 +42,10 @@ mkdir -p "$SEGDIR"
 mkdir -p "${OUTPUTFOLDER}"
 mkdir -p /temp_work/processing/Airways
 
+execution_status() {
+    echo "{execution_status: $1}" > ${OUTPUTFOLDER}/status.json
+}
+
 echo "Converting slices into volume..."
 CALL="volume_maker ${INPUT_DIR} $DESTIMG -manual_name ${VOL_FILE}"
 echo "$CALL"
@@ -53,6 +58,7 @@ then
   rm -r $RESDIR
   rm -r "$SEGDIR"
   echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
+  execution_status 3
   exit $?
 else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
@@ -63,6 +69,7 @@ else
     else
       echo "CREATED VOLUME TOO SMALL $vol_size"
       echo "Check if all slices downloaded. Aborting."
+    execution_status 2
     exit 1
     fi
 fi
@@ -96,6 +103,7 @@ check_lung_vol() {
             return 0
 	    else
 		    echo "Airway volume too small for Large Lungs, retrying..."
+            execution_status 6
 		    return 1
 	    fi
     else
@@ -107,6 +115,7 @@ check_lung_vol() {
             return 0
 	    else
 		    echo "Airway volume too small for Small Lungs, retrying..."
+            execution_status 6
 		    return 1
 	    fi
     fi
@@ -123,6 +132,7 @@ do
 	  echo "Failed to Segment Lungs. Retrying"
 	  echo "${VOL_NO_EXTENSION} failed at $L_THRESHOLD threshold." >> "$LOGFILE"
 	  echo "Failed to Segment Lungs at $L_THRESHOLD threshold."
+      execution_status 6
 	else
 	  echo "SUCCESS Segmenting Lungs at $L_THRESHOLD"
 	  echo "Checking volumes..."
@@ -133,6 +143,7 @@ do
 	if [ "$LUNG_COMPLETE" == 1 ]; then
         if [ "$L_THRESHOLD" -le 700 ]; then
             echo "Total failure of scan to segment lungs and coarse airways."
+            execution_status 3
             exit 1
         fi
 		((L_THRESHOLD=L_THRESHOLD-10))
@@ -150,6 +161,7 @@ echo '-----------------------------------'
 /bronchinet/scripts/processing_scripts/prepare_coarse_airway.sh $DESTAIR
 if [ $? -eq 1 ]
 then
+    execution_status 3
     exit $?
 fi
 python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.jpeg
@@ -186,12 +198,14 @@ echo '---------------------------'
       echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
       sleep $((1 + $RANDOM % 15))
       free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
+      execution_status 6
     done
     echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
     python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
     PRED_DONE=$?
     if [ $PRED_DONE -eq 1 ]; then
         echo "Prediction failed, likely due to GPU not free. Retrying..."
+        execution_status 6
     fi
   done
 
@@ -222,10 +236,12 @@ then
   echo "Failed opfront"
   rm -r ${DATADIR}
   rm -r "${SEGDIR}"
+  execution_status 3
   exit $?
-else
+fi
+
 {
-    echo "\nSuccess with opfront steps. Final computations and cleanup..."
+  echo "\nSuccess with opfront steps. Final computations and cleanup..."
   python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.jpeg
   python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.dcm -d
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
@@ -239,7 +255,13 @@ else
   # Create a mask segmentation
   python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   # Measure the bronchial parameters
+  echo "Measuring Bronchial Parameters..."
   python /bronchinet/airway_analysis/airway_summary.py ${OUTBASENAME}_*surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
+if [ $? -eq 1 ]
+then
+    echo "Failed to measure bronchial parameters"
+    execution_status 3
+fi
   # Label the branches with lobes
   python /bronchinet/AirMorph/label_branch_lobes.py ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/airway_tree.pickle ${OUTPUTFOLDER}
   # Get the scan date
@@ -274,7 +296,5 @@ rm -r ${DATADIR}
 rm -r "${SEGDIR}"
 DURATION=$(($SECONDS/60))
 echo "PROCESS TOOK $DURATION MINUTES"
+execution_status 0
 } >> "$LOGFILE"
-fi
-
-

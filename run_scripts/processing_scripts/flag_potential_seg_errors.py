@@ -22,9 +22,9 @@ def main(args):
     if lungs or airs or counts or rads:
         print("Segmentation Potentially Incomplete.")
         bp_df["bp_seg_error"] = 1
-        bp_df.to_json(args.bp_file, index=False)
+        bp_df.to_json(args.bp_file)
     else:
-        bp_df.to_json(args.bp_file, index=False)
+        bp_df.to_json(args.bp_file)
         print("Segmentation Complete.")
 
 
