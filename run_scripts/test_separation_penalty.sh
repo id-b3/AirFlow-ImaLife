@@ -7,6 +7,7 @@ VOL_FILE=${2}
 VOL_NO_EXTENSION="${VOL_FILE%.*}"
 OUTPUTFOLDER=${3:-/eureka/output}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
+OPFRONT_PARAMS=${*:5:$#}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
 mkdir -p ${INPUT_DIR}
@@ -229,7 +230,7 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 1.3 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
+/bronchinet/scripts/opfront_scripts/opfront_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "${OPFRONT_PARAMS}"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed opfront step." >> "$LOGFILE"
