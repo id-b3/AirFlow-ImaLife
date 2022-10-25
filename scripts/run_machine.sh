@@ -10,8 +10,6 @@ LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
 mkdir -p ${INPUT_DIR}
-#CALL="python /bronchinet/airway_analysis/util_scripts/fix_transfer_syntax.py ${INPUT_DIR} ${INPUTFILE}"
-#eval "$CALL"
 
 echo "Input Dir: ${INPUT_DIR}"
 echo "Input File: ${VOL_FILE}"
@@ -23,7 +21,7 @@ DESTLUNG=${DATADIR}/Lungs
 DESTIMG=${DATADIR}/RAW/DICOM
 NIFTIIMG=${DATADIR}/Images
 
-MODELFILE=/bronchinet/model/model_imalife.pt
+MODELFILE=/airflow/model/model_imalife.pt
 
 # RESULTS DIRS
 RESDIR=/temp_work/results
@@ -62,7 +60,7 @@ then
   exit $?
 else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
-#    python /bronchinet/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
+#    python /airflow/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
     vol_size=$(wc -c <"$INPUTFILE")
     if [ $vol_size -ge 100000000 ]; then
       echo "SUCCESS CREATING DICOM VOLUME"
@@ -77,7 +75,7 @@ fi
 cp "$INPUTFILE" "${OUTPUTFOLDER}"
 
 cd /temp_work || exit
-ln -s /bronchinet/src Code
+ln -s /airflow/bronchinet/src Code
 ln -s /temp_work/processing BaseData
 
 segment_lungs() {
@@ -158,13 +156,13 @@ mv $DESTLUNG/*-airways.dcm $DESTAIR/
 
 echo 'PRE-PROCESS COARSE AIRWAYS (PRUNING)'
 echo '-----------------------------------'
-/bronchinet/scripts/processing_scripts/prepare_coarse_airway.sh $DESTAIR
+/airflow/scripts/processing_scripts/prepare_coarse_airway.sh $DESTAIR
 if [ $? -eq 1 ]
 then
     execution_status 3
     exit $?
 fi
-python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.jpeg
+python /airflow/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.jpeg
 echo 'DONE PRUNING COARSE AIRWAYS'
 echo '---------------------------'
 
@@ -213,7 +211,7 @@ echo '---------------------------'
   echo 'Post-process Segmentation'
   echo '-------------------------'
   python Code/scripts_evalresults/postprocess_predictions.py --basedir=/temp_work --name_input_predictions_relpath=${POSWRKDIR} --name_output_posteriors_relpath=${POSDIR} --name_input_reference_keys_file=${KEYFILE}
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${POSDIR}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.jpeg
+  python /airflow/scripts/processing_scripts/air_seg_thumbnail.py ${POSDIR}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_unet_thumbnail.jpeg
   python Code/scripts_evalresults/process_predicted_airway_tree.py --basedir=/temp_work --name_input_posteriors_relpath=${POSDIR} --name_output_binary_masks_relpath=${SEGDIR}
   echo $?
 
@@ -229,7 +227,7 @@ echo '-------------------------'
 echo 'RUNNING OPFRONT..........'
 echo '-------------------------'
 
-/bronchinet/scripts/opfront_scripts/opfront_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 1.3 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
+/airflow/scripts/opfront_scripts/opfront_scan.sh ${NIFTIIMG}/*.nii.gz ${SEGDIR}/*.nii.gz "${OUTPUTFOLDER}" "-i 50 -o 50 -I 7 -O 7 -d 1.2 -b 0.4 -k 0.5 -r 0.7 -c 17 -e 0.7 -K 0 -F -0.58 -G -0.68 -C 2"
 if [ $? -eq 1 ]
 then
   echo "${VOL_NO_EXTENSION} failed opfront step." >> "$LOGFILE"
@@ -242,8 +240,8 @@ fi
 
 {
   echo "\nSuccess with opfront steps. Final computations and cleanup..."
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_thumbnail.jpeg
-  python /bronchinet/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg.dcm -d
+  python /airflow/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_check_segmentation.jpeg
+  python /airflow/scripts/processing_scripts/air_seg_thumbnail.py ${OUTPUTFOLDER}/*nii-branch.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_airwayseg_branchids.dcm -d
   measure_volume -s ${OUTPUTFOLDER}/*_surface1.nii.gz -v ${NIFTIIMG}/*.nii.gz >> ${OUTPUTFOLDER}/airway_volume.txt
   # Process the GTS files into obj files for easy 3D model use.
   gts2stl < ${OUTPUTFOLDER}/*surface0.gts > ${OUTBASENAME}_lumen.stl
@@ -253,21 +251,21 @@ fi
   ctmconv ${OUTBASENAME}_wall.stl ${OUTBASENAME}_wall.obj
   ctmconv ${OUTBASENAME}_lumen.stl ${OUTBASENAME}_lumen.obj
   # Create a mask segmentation
-  python /bronchinet/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
+  python /airflow/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   # Measure the bronchial parameters
   echo "Measuring Bronchial Parameters..."
-  python /bronchinet/airway_analysis/airway_summary.py ${OUTBASENAME}_*surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
+  python /airflow/scripts/processing_scripts/airway_summary.py ${OUTBASENAME}_*surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
 if [ $? -eq 1 ]
 then
     echo "Failed to measure bronchial parameters"
     execution_status 3
 fi
   # Label the branches with lobes
-  python /bronchinet/AirMorph/label_branch_lobes.py ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/airway_tree.pickle ${OUTPUTFOLDER}
+  python /airflow/AirMorph/label_branch_lobes.py ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/airway_tree.pickle ${OUTPUTFOLDER}
   # Get the scan date
-  python /bronchinet/scripts/processing_scripts/get_date.py $INPUTFILE ${OUTPUTFOLDER}/scan_date.txt
+  python /airflow/scripts/processing_scripts/get_date.py $INPUTFILE ${OUTPUTFOLDER}/scan_date.txt
   # Flag segmentation as complete
-  python /bronchinet/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.json ${OUTPUTFOLDER}/airway_tree.pickle
+  python /airflow/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.json ${OUTPUTFOLDER}/airway_tree.pickle
   # Delete unnecessary output files
 if [ $? -eq 1 ]
 then

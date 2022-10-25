@@ -27,7 +27,7 @@ ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
 LOGFILE="${ROOT}_opfront.log" # Process Log File
 
 # Location of python scripts
-PYTHON_SCR="/bronchinet/airway_analysis/util_scripts"
+PYTHON_SCR="/airflow/scripts/processing_scripts"
 
 # NAMES for all generated files
 

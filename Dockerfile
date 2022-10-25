@@ -90,10 +90,10 @@ RUN make -j install
 FROM nvidia/cuda:11.2.2-base-ubuntu20.04 AS runtime
 
 # This is where you can change the image information, or force a build to update the cached temporary build images.
-LABEL version="1.2"
+LABEL version="0.1"
 LABEL maintainer="i.dudurych@rug.nl" location="Groningen" type="Hospital" role="Airway Segmentation Tool"
 LABEL model="24_ImaLife_Masked"
-LABEL descrption="Version 1.2: Using Bronchinet model trained on 24 ImaLife scans with large airway masking."
+LABEL descrption="Version 0.1: Using Bronchinet model trained on 24 ImaLife scans with large airway masking."
 
 # Get latest key from nvidia
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
@@ -109,7 +109,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # Copy python requirements.
-WORKDIR /bronchinet
+WORKDIR /airflow
 COPY ["./bronchinet/requirements_torch.txt", "./requirements.txt", "./"]
 
 #Update the python install based on requirement. No cache to lower image size..
@@ -123,7 +123,7 @@ ADD ["airflow_libs.tar.gz", "."]
 RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 
 # Set up the file structure for CT scan processing.
-ENV PYTHONPATH "/bronchinet/src:/bronchinet/airway_analysis:/bronchinet/AirMorph"
+ENV PYTHONPATH "/airflow/bronchinet/src:/airflow/AirMorph"
 RUN mkdir ./files && \
     ln -s ./src Code && \
     mkdir -p ./temp_work/files && \
@@ -131,18 +131,16 @@ RUN mkdir ./files && \
     ln -s ./temp_work/files BaseData
 
 # Copy the source code to the working directory
-COPY ["./bronchinet/src/", "./src/"]
+COPY ["./bronchinet/src/", "./bronchinet/src/"]
 # TODO: Place your own version of the U-Net model into /model_to_dockerise or point to correct folder.
 # For default bronchinet, source is ./bronchinet/models
 ARG MODEL_DIR=./imalife_models/imalife_2
 COPY ["${MODEL_DIR}", "./model/"]
-COPY ["./run_scripts/", "./scripts/"]
+COPY ["./scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
-# Include Airway Analysis Tools
-COPY ["./airway_analysis", "./airway_analysis"]
 COPY ["./AirMorph", "./AirMorph"]
 # Run Launch script when container starts.
-ENTRYPOINT ["/bronchinet/scripts/run_machine.sh"]
+ENTRYPOINT ["/airflow/scripts/run_machine.sh"]
 # Arguments to pass to launch script.
 CMD ["/eureka/input/series-in", "imalife_vol.dcm", "/eureka/output"]

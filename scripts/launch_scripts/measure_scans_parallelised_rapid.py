@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
 import re
 from itertools import repeat
@@ -12,8 +14,8 @@ from tqdm import tqdm
 
 def process_scan(scan_folder, outdir):
 
-    docker_name = "colossali/airflow:eureka_v2"
-    input_dir = next(scan_folder.glob(r"**/*INSP*/"))
+    docker_name = "colossali/airflow:v0.1"
+    input_dir = next(scan_folder.glob(r"**/*Qr59/"))
     vol_name = re.findall(r'\d\d\d\d\d\d', str(scan_folder))[0]
     outdir = outdir / vol_name
     outdir.mkdir(parents=True, exist_ok=True)
@@ -51,7 +53,7 @@ def main(dirs):
     main_dirs = [d for d in main_path.iterdir() if d.is_dir()]
     out_path = Path(dirs.out_dir).resolve()
     main_dirs.sort()
-    p = mp.Pool(4)
+    p = mp.Pool(8)
     list(
         tqdm(p.starmap(process_scan, zip(main_dirs, repeat(out_path))),
              total=len(main_dirs)))

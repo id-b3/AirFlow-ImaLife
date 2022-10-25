@@ -2,13 +2,10 @@
 
 import argparse
 import json
-import logging
 import sys
 
-import nibabel as nib
-
 from bronchipy.calc.summary_stats import param_by_gen,\
-        total_count, fractal_dimension, calc_pi10
+        total_count, calc_pi10
 from bronchipy.io import branchio as brio
 from bronchipy.airwaytree import AirwayTree
 
@@ -35,17 +32,15 @@ def main(file_list) -> int:
             outer_radius_file=file_list.outer_rad_csv,
             volume=file_list.volume_nii,
         )
-        brio.save_full_tree(airway_tree.tree,
-                            f"{file_list.output}/airway_tree.csv")
-        brio.save_full_tree(airway_tree.tree,
-                            f"{file_list.output}/airway_tree.json",
-                            json=True)
+
+        airway_tree.tree = airway_tree.tree.round(3)
+        brio.save_summary_csv(airway_tree.tree,
+                              f"{file_list.output}/airway_tree.csv")
         brio.save_pickle_tree(airway_tree.tree,
                               f"{file_list.output}/airway_tree.pickle")
 
         # Calculate summary bronchial parameters
-        pi10_tree = airway_tree.tree[(airway_tree.tree.generation > 1)
-                                     & (airway_tree.tree.generation <= 6)]
+        pi10_tree = airway_tree.tree[(airway_tree.tree.generation <= 5)]
         print(
             f"Calculating Pi10 for generations {pi10_tree.generation.unique()}"
         )
@@ -57,11 +52,6 @@ def main(file_list) -> int:
             plot=True,
         )
 
-        print("Calculating fractal dimension...")
-        segarr = nib.load(file_list.volume_nii).get_fdata()
-        fd = fractal_dimension(segarr, n_offsets=2)
-        print(f"Fractal Dimension is {fd}")
-
         wap = []
         la = []
         wt = []
@@ -72,16 +62,23 @@ def main(file_list) -> int:
         for gen in range(0, 9):
             try:
                 wap.append(
-                    param_by_gen(airway_tree.tree, gen,
-                                 "wall_global_area_perc"))
+                    round(
+                        param_by_gen(airway_tree.tree, gen,
+                                     "wall_global_area_perc"), 3))
                 la.append(
-                    param_by_gen(airway_tree.tree, gen, "inner_global_area"))
+                    round(
+                        param_by_gen(airway_tree.tree, gen,
+                                     "inner_global_area"), 3))
                 wt.append(
-                    param_by_gen(airway_tree.tree, gen,
-                                 "wall_global_thickness"))
-                inr.append(param_by_gen(airway_tree.tree, gen, "inner_radius"))
-                outr.append(param_by_gen(airway_tree.tree, gen,
-                                         "outer_radius"))
+                    round(
+                        param_by_gen(airway_tree.tree, gen,
+                                     "wall_global_thickness"), 3))
+                inr.append(
+                    round(param_by_gen(airway_tree.tree, gen, "inner_radius"),
+                          3))
+                outr.append(
+                    round(param_by_gen(airway_tree.tree, gen, "outer_radius"),
+                          3))
             except (KeyError) as e:
                 print(f"No more generations: {gen}\n{e}")
                 air_seg_error = 1
@@ -105,14 +102,12 @@ def main(file_list) -> int:
             "bp_ir": inr_str,
             "bp_or": outr_str,
             "bp_tcount": int(tcount),
-            "bp_pi10": pi10,
-            "bp_fractaldim": fd,
+            "bp_pi10": round(pi10, 3),
             "bp_seg_performed": 1,
             "bp_seg_error": air_seg_error,
         }
         with open(f"{file_list.output}/bp_summary_redcap.json", "w") as f:
             json.dump(bp_summary, f, indent=4)
-
         return sys.exit()
     except (OSError, TypeError) as e:
         print(f"Error: {e}")
@@ -125,7 +120,7 @@ if __name__ == "__main__":
         "--inner_csv",
         type=str,
         help=
-        "Input path for the inner csv file output from the gts_ray_measure tool.",
+        "Input path for the inner csv file output from the gts_ray_measure tool."
     )
     aparse.add_argument(
         "--inner_rad_csv",

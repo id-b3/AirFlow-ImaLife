@@ -2,18 +2,14 @@ import logging
 import argparse
 import numpy as np
 
-from functionsutil.imagefilereaders import ImageFileReader
-from functionsutil.imageoperations import (
-    compute_rescaled_image,
-    compute_thresholded_mask,
-)
-from functionsutil.functionsutil import *
+from bronchipy.util import ImageFileReader
+from bronchipy.util import compute_rescaled_image, compute_thresholded_mask
+from bronchipy.util import is_exist_file, handle_error_message
 
 
 def rescale_img(in_file: str, out_file: str, resol: tuple, is_binary: bool):
     """
     Rescale the image to the desired resolution (voxel size)
-
     Parameters
     ----------
     in_file: str
