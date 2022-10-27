@@ -105,7 +105,7 @@ eval "$CALL1" &&
 eval "$CALL2"
 
 echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
-CALL="python ${PYTHON_SCR}/rescale_image.py -i $INNER_VOL -o $INNER_VOL_ISO -r 0.5 0.5 0.5 --is_binary True"
+CALL="python ${PYTHON_SCR}/rescale_low_mem.py -i $INNER_VOL -o $INNER_VOL_ISO"
 echo -e "\n$CALL"
 eval "$CALL"
 

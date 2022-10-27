@@ -66,6 +66,7 @@ def main(argmts):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser(description="Rescale image to desired resolution")
     parser.add_argument("-i", "--in_file", type=str, help="Input file", required=True)
     parser.add_argument("-o", "--out_file", type=str, help="Output file", required=True)
