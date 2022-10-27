@@ -14,12 +14,11 @@ from tqdm import tqdm
 
 def process_scan(scan_folder, outdir):
 
-    docker_name = "colossali/airflow:v0.1"
+    docker_name = "colossali/airflow:ima_1.0"
     input_dir = next(scan_folder.glob(r"**/*Qr59/"))
     vol_name = re.findall(r'\d\d\d\d\d\d', str(scan_folder))[0]
     outdir = outdir / vol_name
     outdir.mkdir(parents=True, exist_ok=True)
-    vol_name = vol_name + ".dcm"
 
     command_array = [
         "docker",

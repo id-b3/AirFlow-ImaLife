@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-import json
 import sys
+
+import pandas as pd
 
 from bronchipy.calc.summary_stats import param_by_gen,\
         total_count, calc_pi10
@@ -47,7 +48,7 @@ def main(file_list) -> int:
         pi10 = calc_pi10(
             pi10_tree["wall_global_area"],
             pi10_tree["inner_radius"],
-            name="pi10_graph",
+            name=f"{file_list.name}_pi10_graph",
             save_dir=file_list.output,
             plot=True,
         )
@@ -82,7 +83,7 @@ def main(file_list) -> int:
             except (KeyError) as e:
                 print(f"No more generations: {gen}\n{e}")
                 air_seg_error = 1
-        tcount = total_count(airway_tree.tree)
+        tcount = int(total_count(airway_tree.tree))
         if tcount <= 100:
             air_seg_error = 1
 
@@ -94,20 +95,21 @@ def main(file_list) -> int:
 
         # Save bronchial parameters to file.
         bp_summary = {
-            "bp_tlv": 0,
-            "bp_airvol": 0,
-            "bp_wap": wap_str,
-            "bp_la": la_str,
-            "bp_wt": wt_str,
-            "bp_ir": inr_str,
-            "bp_or": outr_str,
-            "bp_tcount": int(tcount),
-            "bp_pi10": round(pi10, 3),
-            "bp_seg_performed": 1,
-            "bp_seg_error": air_seg_error,
+            "participant_id": [file_list.name],
+            "bp_tlv": [0],
+            "bp_airvol": [0],
+            "bp_wap": [wap_str],
+            "bp_la": [la_str],
+            "bp_wt": [wt_str],
+            "bp_ir": [inr_str],
+            "bp_or": [outr_str],
+            "bp_tcount": [tcount],
+            "bp_pi10": [round(pi10, 3)],
+            "bp_seg_performed": [1],
+            "bp_seg_error": [air_seg_error],
         }
-        with open(f"{file_list.output}/bp_summary_redcap.json", "w") as f:
-            json.dump(bp_summary, f, indent=4)
+        pd.DataFrame(bp_summary).to_csv(f"{file_list.output}/bp_summary_redcap.csv", index=False)
+
         return sys.exit()
     except (OSError, TypeError) as e:
         print(f"Error: {e}")

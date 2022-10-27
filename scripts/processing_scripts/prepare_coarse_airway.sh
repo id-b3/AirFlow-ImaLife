@@ -27,7 +27,7 @@ holefiller -i $FILLED_DIR/*.nii.gz -o $FILLED_FILE
 be $FILLED_FILE -o $FILLED_DIR
 mv $BRANCH_OUT_FILE $BRANCH_VOL
 # 5. Mask labels
-python Code/scripts_util/apply_operation_images.py $MASKED_DIR $FINAL_DIR --type masklabels --in_mask_labels 1 2 3 4 5 6 7 8 9 10
+python Code/scripts_util/apply_operation_images.py $MASKED_DIR $FINAL_DIR --type masklabels --in_mask_labels 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 mv $FINAL_DIR/*.nii.gz "$AIR_NO_EXT".nii.gz
 # 6. Clean up
 rm -r $TEMP_AIR_DIR

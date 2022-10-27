@@ -3,8 +3,8 @@
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
 INPUT_DIR=${1:-/eureka/input/series-in}
-VOL_FILE=${2}
-VOL_NO_EXTENSION="${VOL_FILE%.*}"
+VOL_NO_EXTENSION="${2}"
+VOL_FILE="${VOL_NO_EXTENSION}.dcm"
 OUTPUTFOLDER=${3:-/eureka/output}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
@@ -250,8 +250,6 @@ fi
   admesh ${OUTBASENAME}_wall.stl -b ${OUTBASENAME}_wall.stl
   ctmconv ${OUTBASENAME}_wall.stl ${OUTBASENAME}_wall.obj
   ctmconv ${OUTBASENAME}_lumen.stl ${OUTBASENAME}_lumen.obj
-  # Create a mask segmentation
-  python /airflow/scripts/processing_scripts/subtract_masks.py ${OUTPUTFOLDER}/*surface1.nii.gz ${OUTPUTFOLDER}/*surface0.nii.gz ${OUTPUTFOLDER}
   # Measure the bronchial parameters
   echo "Measuring Bronchial Parameters..."
   python /airflow/scripts/processing_scripts/airway_summary.py ${OUTBASENAME}_*surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
@@ -265,7 +263,7 @@ fi
   # Get the scan date
   python /airflow/scripts/processing_scripts/get_date.py $INPUTFILE ${OUTPUTFOLDER}/scan_date.txt
   # Flag segmentation as complete
-  python /airflow/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.json ${OUTPUTFOLDER}/airway_tree.pickle
+  python /airflow/scripts/processing_scripts/flag_potential_seg_errors.py ${OUTPUTFOLDER}/lung_volume.txt ${OUTPUTFOLDER}/airway_volume.txt ${OUTPUTFOLDER}/bp_summary_redcap.csv ${OUTPUTFOLDER}/airway_tree.pickle
   # Delete unnecessary output files
 if [ $? -eq 1 ]
 then
@@ -288,10 +286,20 @@ fi
 #  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
 #  rm -r "${OUTBASENAME}"_initial/
   cd "${OUTPUTFOLDER}" || exit
-  tar czf intermediate-files-bronchi.tar.gz *.gts *.csv *.nii.gz *.log
+  tar czf intermediate-files-bronchi.tar.gz *.gts *.csv *.nii.gz *.log *.pickle
   tar czf 3d-models-airway.tar.gz *.obj
+  tar czf airway_results.tar.gz airway_tree.pickle airway_tree.csv *_surface0.nii.gz *_surface1.nii.gz lung_metrics.csv lung_seg_lobes.nii.gz
   find ${OUTPUTFOLDER} -type f -name "*.obj" -delete
   find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.txt" -delete
+  find ${OUTPUTFOLDER} -type f -name "*.log" -delete
+  find ${OUTPUTFOLDER} -type f -name "*inner*" -delete
+  find ${OUTPUTFOLDER} -type f -name "*outer*" -delete
+  find ${OUTPUTFOLDER} -type f -name "*nii.gz" -delete
+  find ${OUTPUTFOLDER} -type f -name "*centrelines.csv" -delete
+  find ${OUTPUTFOLDER} -type f -name "*centrelines.nii.gz" -delete
+  find ${OUTPUTFOLDER} -type d -name "*_initial" -exec rm -rv {} \;
+
   echo '-------------------------'
 echo 'CLEANING UP..............'
 echo '-------------------------'
