@@ -125,7 +125,7 @@ RUN mv ./airflow_libs/* /usr/local/lib && ldconfig
 # Set up the file structure for CT scan processing.
 ENV PYTHONPATH "/airflow/bronchinet/src:/airflow/AirMorph"
 RUN mkdir ./files && \
-    ln -s ./src Code && \
+    ln -s /airflow/bronchinet/src Code && \
     mkdir -p ./temp_work/files && \
     ln -s ./files ./temp_work/BaseData && \
     ln -s ./temp_work/files BaseData
