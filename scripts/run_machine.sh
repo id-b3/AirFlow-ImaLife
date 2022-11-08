@@ -298,7 +298,6 @@ fi
   find ${OUTPUTFOLDER} -type f -name "*nii.gz" -delete
   find ${OUTPUTFOLDER} -type f -name "*centrelines.csv" -delete
   find ${OUTPUTFOLDER} -type f -name "*centrelines.nii.gz" -delete
-  find ${OUTPUTFOLDER} -type d -name "*_initial" -exec rm -rv {} \;
 
   echo '-------------------------'
 echo 'CLEANING UP..............'
@@ -308,4 +307,4 @@ rm -r "${SEGDIR}"
 DURATION=$(($SECONDS/60))
 echo "PROCESS TOOK $DURATION MINUTES"
 execution_status 0
-} >> "$LOGFILE"
+} | tee "$LOGFILE"
