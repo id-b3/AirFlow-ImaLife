@@ -2,14 +2,14 @@
 
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
-INPUT_DIR=${1:-/eureka/input/series-in}
+INPUT_DIR=${1}
 VOL_NO_EXTENSION="${2}"
 VOL_FILE="${VOL_NO_EXTENSION}.dcm"
-OUTPUTFOLDER=${3:-/eureka/output}
+OUTPUTFOLDER=${3}
 LOGFILE=${4:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 
-mkdir -p ${INPUT_DIR}
+#mkdir -p ${INPUT_DIR}
 
 echo "Input Dir: ${INPUT_DIR}"
 echo "Input File: ${VOL_FILE}"
@@ -191,8 +191,9 @@ echo '---------------------------'
   echo 'Predict Segmentation.....'
   echo '-------------------------'
   PRED_DONE=1
+  ATTEMPTS=0
   while [ "$PRED_DONE" -eq 1 ]; do
-    while [ "$free_mem" -lt 7800 ]; do
+    while [ "$free_mem" -lt 7600 ]; do
       echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
       sleep $((1 + $RANDOM % 15))
       free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
@@ -202,8 +203,14 @@ echo '---------------------------'
     python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
     PRED_DONE=$?
     if [ $PRED_DONE -eq 1 ]; then
-        echo "Prediction failed, likely due to GPU not free. Retrying..."
+        echo "Prediction failed, likely due to GPU not free. Attempt $ATTEMPTS. Retrying..."
         execution_status 6
+        ((ATTEMPTS++))
+        if [ ATTEMPTS -gt 15 ]; then
+            echo "Too many attempts trying to use GPU, exiting..."
+            execution_status 3
+            exit $PRED_DONE
+        fi
     fi
   done
 
@@ -292,13 +299,12 @@ fi
   find ${OUTPUTFOLDER} -type f -name "*.obj" -delete
   find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
   find ${OUTPUTFOLDER} -type f -name "*.txt" -delete
-  find ${OUTPUTFOLDER} -type f -name "*.log" -delete
+ #  find ${OUTPUTFOLDER} -type f -name "*.log" -delete
   find ${OUTPUTFOLDER} -type f -name "*inner*" -delete
   find ${OUTPUTFOLDER} -type f -name "*outer*" -delete
   find ${OUTPUTFOLDER} -type f -name "*nii.gz" -delete
   find ${OUTPUTFOLDER} -type f -name "*centrelines.csv" -delete
   find ${OUTPUTFOLDER} -type f -name "*centrelines.nii.gz" -delete
-  find ${OUTPUTFOLDER} -type d -name "*_initial" -exec rm -rv {} \;
 
   echo '-------------------------'
 echo 'CLEANING UP..............'
@@ -308,4 +314,4 @@ rm -r "${SEGDIR}"
 DURATION=$(($SECONDS/60))
 echo "PROCESS TOOK $DURATION MINUTES"
 execution_status 0
-} >> "$LOGFILE"
+} | tee "$LOGFILE"
