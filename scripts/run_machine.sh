@@ -43,7 +43,6 @@ KEYFILE=${RESDIR}/referenceKeys_posteriors.npy
 
 echo "Running Lung Segmentation. Destination folder $DESTLUNG"
 echo "-------------------------------------------------------"
-mkdir -p ${OUTPUTFOLDER}
 mkdir -p $DESTAIR
 mkdir -p $DESTLUNG
 mkdir -p $DESTIMG
