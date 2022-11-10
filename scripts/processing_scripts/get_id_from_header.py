@@ -6,7 +6,6 @@ import argparse
 def main(args):
     in_dir = Path(args.in_dir)
     slice = next(in_dir.glob("*.dcm"))
-    print(slice)
 
     participant_id = pydicom.dcmread(str(slice)).PatientID
     with open("./participant_id.txt", "w") as f:

@@ -1,9 +1,8 @@
 #!/bin/bash
-
 # Pipe through a DICOM volume and obtain the airway segmentation from it.
 
 INPUT_DIR=${1}
-OUTPUTFOLDER=${2}
+GENOUTPUTDIR=${2}
 
 CALL="python /airflow/scripts/processing_scripts/get_id_from_header.py ${INPUT_DIR}"
 echo "Getting participant ID"
@@ -12,12 +11,14 @@ VOL_NO_EXTENSION=$(head -n 1 participant_id.txt)
 VOL_NO_EXTENSION="$(echo -e "${VOL_NO_EXTENSION}" | tr -d '[:space:]')"
 VOL_FILE="${VOL_NO_EXTENSION}.dcm"
 
-OUTPUTFOLDER=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
+OUTPUTFOLDER=${GENOUTPUTDIR}/${VOL_NO_EXTENSION}
+echo "Output Folder: ${OUTPUTFOLDER}"
 OUTBASENAME=${OUTPUTFOLDER}/${VOL_NO_EXTENSION}
 LOGFILE=${3:-${OUTPUTFOLDER}/PROCESS_LOG.log}
 
+mkdir -p "${OUTPUTFOLDER}"
 echo -n "Progress: ${VOL_NO_EXTENSION} [--------------------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Volume Creation (~1min)"
 {
     echo "Input Dir: ${INPUT_DIR}"
     echo "Input File: ${VOL_FILE}"
@@ -47,7 +48,6 @@ mkdir -p $DESTAIR
 mkdir -p $DESTLUNG
 mkdir -p $DESTIMG
 mkdir -p "$SEGDIR"
-mkdir -p "${OUTPUTFOLDER}"
 mkdir -p /temp_work/processing/Airways
 
 
@@ -69,6 +69,7 @@ then
     rm -r "$SEGDIR"
     echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
     execution_status 3
+    echo "${VOL_NO_EXTENSION},${DURATION},FAILED_VOLUME_CREATION" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
     exit $?
 else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
@@ -80,6 +81,7 @@ else
         echo "CREATED VOLUME TOO SMALL $vol_size"
         echo "Check if all slices downloaded. Aborting."
         execution_status 2
+        echo "${VOL_NO_EXTENSION},${DURATION},FAILED_VOLUME_SMALL" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
         exit 1
         fi
     fi
@@ -87,7 +89,7 @@ else
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [##------------------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Coarse Lung and Airway Segmentation (~3-5min)"
 
 {
 
@@ -161,6 +163,7 @@ echo " Elapsed Time: $((SECONDS/60))min"
             if [ "$L_THRESHOLD" -le 700 ]; then
                 echo "Total failure of scan to segment lungs and coarse airways."
                 execution_status 3
+                echo "${VOL_NO_EXTENSION},${DURATION},FAILED_COARSE_SEGMENTATION" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
                 exit 1
             fi
             ((L_THRESHOLD=L_THRESHOLD-10))
@@ -172,7 +175,7 @@ echo " Elapsed Time: $((SECONDS/60))min"
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [####----------------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Pruning Coarse Airway Segmentation (~2min)"
 
 {
     now=$(date +"%T")
@@ -189,6 +192,7 @@ echo " Elapsed Time: $((SECONDS/60))min"
     if [ $? -eq 1 ]
     then
         execution_status 3
+        echo "${VOL_NO_EXTENSION},${DURATION},FAILED_AIRWAYPRUNING" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
         exit $?
     fi
     python /airflow/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.jpeg
@@ -197,7 +201,7 @@ echo " Elapsed Time: $((SECONDS/60))min"
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [######--------------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5-10min)"
 
 {
     now=$(date +"%T")
@@ -246,6 +250,7 @@ while [ "$PRED_DONE" -eq 1 ]; do
         if [ $ATTEMPTS -gt 15 ]; then
             echo "Too many attempts trying to use GPU, exiting..."
             execution_status 3
+            echo "${VOL_NO_EXTENSION},${DURATION},FAILED_GPU" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
             exit $PRED_DONE
         fi
     fi
@@ -253,7 +258,7 @@ done
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [########------------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Post-processing Fine Airway Segmentation (~1min)"
 
 {
     echo '-------------------------'
@@ -273,7 +278,7 @@ echo " Elapsed Time: $((SECONDS/60))min"
 } &>> "$$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [##########----------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Wall Segmentation (~15-25min)"
 
 {
     now=$(date +"%T")
@@ -292,12 +297,13 @@ echo " Elapsed Time: $((SECONDS/60))min"
         rm -r ${DATADIR}
         rm -r "${SEGDIR}"
         execution_status 3
+        echo "${VOL_NO_EXTENSION},${DURATION},FAILED_OPFRONT" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
         exit $?
     fi
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [############--------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Post-processing Segmentations (~1min)"
 
 {
     now=$(date +"%T")
@@ -318,7 +324,7 @@ echo " Elapsed Time: $((SECONDS/60))min"
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [##############------]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Measuring Bronchial Parameters (~2min)"
 
 {
 
@@ -346,7 +352,7 @@ fi
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [##################--]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Cleaning Up (~1min)"
 
 {
     find ${OUTPUTFOLDER} -type f -name "*nii-branch.nii.gz" -exec mv {} "${OUTBASENAME}"_labelled_tree.nii.gz \;
@@ -387,7 +393,8 @@ echo " Elapsed Time: $((SECONDS/60))min"
     echo "PROCESS TOOK $DURATION MINUTES"
     execution_status 0
 } &>> "$LOGFILE"
+echo "${VOL_NO_EXTENSION},${DURATION},COMPLETED" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
 
 echo -n "Progress: $VOL_NO_EXTENSION [####################]"
-echo " Elapsed Time: $((SECONDS/60))min"
+echo " Elapsed Time: $((SECONDS/60))min - Completed"
 echo "********** ${VOL_NO_EXTENSION} DONE **********"

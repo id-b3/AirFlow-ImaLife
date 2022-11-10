@@ -145,4 +145,4 @@ ENTRYPOINT ["/airflow/scripts/run_machine.sh"]
 # Arguments to pass to launch script.
 
 
-CMD ["/input", "imalife_vol", "/output"]
+CMD ["/input", "/output"]
