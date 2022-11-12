@@ -13,7 +13,13 @@ from tqdm import tqdm
 
 def process_scan(scan_folder, outdir, completedir):
 
-    docker_name = "airflow:ima_1.6"
+    if scan_folder == completedir:
+        print("Skipping completed_scans folder...")
+        return
+
+    docker_name = "airflow:ima_1.6_cached"
+    # Change this to the local ~/.nv/ComputeCache absolute value
+    nvidia_cache_dir = "/home/ivan/.nv/ComputeCache"
 
     command_array = [
         "docker",
@@ -26,6 +32,8 @@ def process_scan(scan_folder, outdir, completedir):
         f"{scan_folder}:/input",
         "-v",
         f"{outdir}:/output",
+        "-v",
+        f"{nvidia_cache_dir}:/airflow/nvidia/ComputeCache",
         docker_name,
         "/input",
         "/output",
