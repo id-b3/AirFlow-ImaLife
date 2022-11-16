@@ -11,10 +11,13 @@ import multiprocessing.dummy as mp
 from tqdm import tqdm
 
 
-def process_scan(scan_folder, outdir, completedir):
+def process_scan(scan_folder, outdir, completedir, faileddir):
 
     if scan_folder == completedir:
         print("Skipping completed_scans folder...")
+        return
+    elif scan_folder == faileddir:
+        print("Skipping failed_scans folder...")
         return
 
     docker_name = "airflow:ima_1.7"
@@ -48,6 +51,12 @@ def process_scan(scan_folder, outdir, completedir):
         final_path.mkdir(parents=True, exist_ok=True)
         scan_folder.rename(final_path)
         print(f"Moved Folder from {scan_folder} to {final_path}")
+    else:
+        final_path = faileddir / scan_folder.stem
+        final_path.mkdir(parents=True, exist_ok=True)
+        scan_folder.rename(final_path)
+        print(f"Moved Folder from {scan_folder} to {final_path}")
+
     execution_time = (time.time() - start_time) / 60
     logging.info(
         f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{scan_folder.stem},{execution_time:.2f},{run.returncode}"
@@ -57,12 +66,13 @@ def process_scan(scan_folder, outdir, completedir):
 def main(dirs):
     main_path = Path(dirs.main_dir).resolve()
     completed_path = main_path / "completed_scans"
+    failed_path = main_path / "failed_scans"
     main_dirs = [d for d in main_path.iterdir() if d.is_dir()]
     out_path = Path(dirs.out_dir).resolve()
     main_dirs.sort()
     p = mp.Pool(dirs.number)
     list(
-        tqdm(p.starmap(process_scan, zip(main_dirs, repeat(out_path), repeat(completed_path))),
+        tqdm(p.starmap(process_scan, zip(main_dirs, repeat(out_path), repeat(completed_path), repeat(failed_path))),
              total=len(main_dirs)))
     p.close()
     p.join()
