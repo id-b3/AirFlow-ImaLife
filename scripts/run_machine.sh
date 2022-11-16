@@ -70,7 +70,7 @@ then
     echo "${VOL_NO_EXTENSION} failed." >> "$LOGFILE"
     execution_status 3
     echo "${VOL_NO_EXTENSION},${DURATION},FAILED_VOLUME_CREATION" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
-    exit $?
+    exit 1
 else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
     #    python /airflow/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
@@ -193,7 +193,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Pruning Coarse Airway Segmentation (~2
     then
         execution_status 3
         echo "${VOL_NO_EXTENSION},${DURATION},FAILED_AIRWAYPRUNING" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
-        exit $?
+        exit 1
     fi
     python /airflow/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.jpeg
     echo 'DONE PRUNING COARSE AIRWAYS'
@@ -312,7 +312,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Wall Segmentation (~15-25min)"
         rm -r "${SEGDIR}"
         execution_status 3
         echo "${VOL_NO_EXTENSION},${DURATION},FAILED_OPFRONT" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
-        exit $?
+        exit 1
     fi
 } &>> "$LOGFILE"
 
