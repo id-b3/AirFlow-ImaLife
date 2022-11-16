@@ -233,7 +233,6 @@ echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (
 
 # Check if the gpu is free enough to start launch the next scan.
 free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
-GPU_RUNNING_SCRIPT=$(nvidia-smi --q | grep -Eo python)
 
 echo '-------------------------'
 echo 'Predict Segmentation.....'
@@ -242,16 +241,18 @@ PRED_DONE=1
 ATTEMPTS=1
 while [ "$PRED_DONE" -eq 1 ]; do
 
-    while [ "$GPU_RUNNING_SCRIPT" == "python" ]; do
-        echo "Another scan got the GPU spot before this one. Waiting..."
-        while [ "$free_mem" -lt 7600 ]; do
-            echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
-            sleep $((1 + $RANDOM % 20))
-            free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
-            execution_status 6
-        done
+    while [ "$free_mem" -lt 7600 ]; do
+        echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
+        sleep $((1 + $RANDOM % 20))
+        free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
+        GPU_RUNNING_SCRIPT=$(nvidia-smi -q | grep -Eo python)
         echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
-        GPU_RUNNING_SCRIPT=$(nvidia-smi --q | grep -Eo python)
+        while [ "$GPU_RUNNING_SCRIPT" == "python" ]; do
+            echo "Another scan got the GPU spot before this one. Waiting..."
+            sleep $((1 + $RANDOM % 5))
+            GPU_RUNNING_SCRIPT=$(nvidia-smi -q | grep -Eo python)
+        done
+        execution_status 6
     done
 
     python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}

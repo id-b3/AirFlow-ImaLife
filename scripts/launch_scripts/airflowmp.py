@@ -17,7 +17,7 @@ def process_scan(scan_folder, outdir, completedir):
         print("Skipping completed_scans folder...")
         return
 
-    docker_name = "airflow:ima_1.6_cached"
+    docker_name = "airflow:ima_1.7"
     # Change this to the local ~/.nv/ComputeCache absolute value
     nvidia_cache_dir = "/home/ivan/.nv/ComputeCache"
 
