@@ -20,6 +20,7 @@ mkdir -p "${OUTPUTFOLDER}"
 echo -n "Progress: ${VOL_NO_EXTENSION} [--------------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Volume Creation (~1min)"
 {
+echo " Elapsed Time: $((SECONDS/60))min - Volume Creation (~1min)"
     echo "Input Dir: ${INPUT_DIR}"
     echo "Input File: ${VOL_FILE}"
     echo "Output Folder: ${OUTPUTFOLDER}"
@@ -93,6 +94,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Coarse Lung and Airway Segmentation (~
 
 {
 
+echo " Elapsed Time: $((SECONDS/60))min - Coarse Lung and Airway Segmentation (~3-5min)"
     segment_lungs() {
         CALL="lung_segmentation --verbose false --source $INPUTFILE --skip_distance 30 --min_intensity -1048 --airway_threshold -${1} --scan bottom --savepath $DESTLUNG"
         echo "$CALL"
@@ -178,6 +180,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [####----------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Pruning Coarse Airway Segmentation (~2min)"
 
 {
+echo " Elapsed Time: $((SECONDS/60))min - Pruning Coarse Airway Segmentation (~2min)"
     now=$(date +"%T")
     echo "Elapsed Time: $((SECONDS/60))min"
     echo "Current Time: $now"
@@ -204,6 +207,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [######--------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Pre-processing (~5min)"
 
 {
+echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Pre-processing (~5min)"
     now=$(date +"%T")
     echo "Elapsed Time: $((SECONDS/60))min"
     echo "Current Time: $now"
@@ -230,31 +234,26 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [#######-------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5min)"
 
 {
-
-# Check if the gpu is free enough to start launch the next scan.
-free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
-
+echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5min)"
 echo '-------------------------'
 echo 'Predict Segmentation.....'
 echo '-------------------------'
 PRED_DONE=1
 ATTEMPTS=1
+# Check if the gpu is free enough to start launch the next scan.
+free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
+gpu_running=$(nvidia-smi -q | grep -Eo python | head -1)
 while [ "$PRED_DONE" -eq 1 ]; do
-
-    while [ "$free_mem" -lt 7600 ]; do
-        echo '*-*-*-*-*-* Waiting for GPU to be free... *-*-*-*-*-*'
+    while [ "$free_mem" -lt 7600 ] || [ "$gpu_running" == "python" ]; do
+        echo '*-*-*-*-*-* Not Enough Memory or GPU busy...   *-*-*-*-*-*'
+        echo "*-*-*-*-*-* GPU Script: $gpu_running *-*-*-*-*-*"
         sleep $((1 + $RANDOM % 20))
         free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
-        GPU_RUNNING_SCRIPT=$(nvidia-smi -q | grep -Eo python)
-        echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
-        while [ "$GPU_RUNNING_SCRIPT" == "python" ]; do
-            echo "Another scan got the GPU spot before this one. Waiting..."
-            sleep $((1 + $RANDOM % 5))
-            GPU_RUNNING_SCRIPT=$(nvidia-smi -q | grep -Eo python)
-        done
+        gpu_running=$(nvidia-smi -q | grep -Eo python | head -1)
         execution_status 6
     done
 
+    echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
     python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
     PRED_DONE=$?
     if [ $PRED_DONE -eq 1 ]; then
@@ -275,6 +274,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [########------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Post-processing Fine Airway Segmentation (~1min)"
 
 {
+echo " Elapsed Time: $((SECONDS/60))min - Post-processing Fine Airway Segmentation (~1min)"
     echo '-------------------------'
     echo 'Post-process Segmentation'
     echo '-------------------------'
@@ -295,6 +295,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [##########----------]"
 echo " Elapsed Time: $((SECONDS/60))min - Wall Segmentation (~15-25min)"
 
 {
+echo " Elapsed Time: $((SECONDS/60))min - Wall Segmentation (~15-25min)"
     now=$(date +"%T")
     echo "Elapsed Time: $((SECONDS/60))min"
     echo "Current Time: $now"
@@ -320,6 +321,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [############--------]"
 echo " Elapsed Time: $((SECONDS/60))min - Post-processing Segmentations (~1min)"
 
 {
+echo " Elapsed Time: $((SECONDS/60))min - Post-processing Segmentations (~1min)"
     now=$(date +"%T")
     echo "Elapsed Time: $((SECONDS/60))min"
     echo "Current Time: $now"
@@ -341,8 +343,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [##############------]"
 echo " Elapsed Time: $((SECONDS/60))min - Measuring Bronchial Parameters (~2min)"
 
 {
-
-
+echo " Elapsed Time: $((SECONDS/60))min - Measuring Bronchial Parameters (~2min)"
 # Measure the bronchial parameters
 echo "Measuring Bronchial Parameters..."
 python /airflow/scripts/processing_scripts/airway_summary.py ${OUTBASENAME}_*surface0.nii.gz --inner_csv "${OUTPUTFOLDER}"/*_inner.csv --inner_rad_csv "${OUTPUTFOLDER}"/*_inner_localRadius_pandas.csv --outer_csv "${OUTPUTFOLDER}"/*_outer.csv --outer_rad_csv "${OUTPUTFOLDER}"/*_outer_localRadius_pandas.csv --branch_csv "${OUTPUTFOLDER}"/*_airways_centrelines.csv --output "${OUTPUTFOLDER}" --name "${VOL_NO_EXTENSION}"
@@ -369,6 +370,7 @@ echo -n "Progress: ${VOL_NO_EXTENSION} [##################--]"
 echo " Elapsed Time: $((SECONDS/60))min - Cleaning Up (~1min)"
 
 {
+echo " Elapsed Time: $((SECONDS/60))min - Cleaning Up (~1min)"
     find ${OUTPUTFOLDER} -type f -name "*nii-branch.nii.gz" -exec mv {} "${OUTBASENAME}"_labelled_tree.nii.gz \;
     find ${OUTPUTFOLDER} -type f -name "*.mm" -delete
     find ${OUTPUTFOLDER} -type f -name "*-seg*" -delete
