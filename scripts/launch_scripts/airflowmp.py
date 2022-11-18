@@ -8,6 +8,7 @@ import logging
 import time
 from datetime import date, datetime
 import multiprocessing.dummy as mp
+
 from tqdm import tqdm
 
 
@@ -20,7 +21,7 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
         print("Skipping failed_scans folder...")
         return
 
-    docker_name = "airflow:ima_1.7"
+    docker_name = "airflow:ima_1.9"
     # Change this to the local ~/.nv/ComputeCache absolute value
     nvidia_cache_dir = "/home/ivan/.nv/ComputeCache"
 
@@ -30,6 +31,8 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
         "--gpus",
         "all",
         "--rm",
+        "--pid",
+        "host",
         "-t",
         "-v",
         f"{scan_folder}:/input",

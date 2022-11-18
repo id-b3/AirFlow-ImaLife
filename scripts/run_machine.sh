@@ -268,6 +268,7 @@ while [ "$PRED_DONE" -eq 1 ]; do
         fi
     fi
 done
+
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [########------------]"
