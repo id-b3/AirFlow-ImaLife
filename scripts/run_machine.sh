@@ -233,7 +233,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Pre-process
 echo -n "Progress: ${VOL_NO_EXTENSION} [#######-------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5min)"
 
-{
+#{
 echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5min)"
 echo '-------------------------'
 echo 'Predict Segmentation.....'
@@ -244,32 +244,39 @@ ATTEMPTS=1
 free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
 gpu_running=$(nvidia-smi -q | grep -Eo python | head -1)
 while [ "$PRED_DONE" -eq 1 ]; do
-    while [ "$free_mem" -lt 7600 ] || [ "$gpu_running" == "python" ]; do
+
+    while [ "$free_mem" -lt 7600 ] || [ -e ${GENOUTPUTDIR}/GPU_BUSY ]; do
         echo '*-*-*-*-*-* Not Enough Memory or GPU busy...   *-*-*-*-*-*'
-        echo "*-*-*-*-*-* GPU Script: $gpu_running *-*-*-*-*-*"
+        [ -e ${GENOUTPUTDIR}/GPU_BUSY ] && gpu_flag=true || gpu_flag=false
+        echo "GPU memory: $free_mem. GPU busy: $gpu_flag" 
         sleep $((1 + $RANDOM % 20))
         free_mem=$(nvidia-smi --query-gpu=memory.free --format=csv | grep -Eo [0-9]+)
-        gpu_running=$(nvidia-smi -q | grep -Eo python | head -1)
         execution_status 6
     done
+
+    touch "${GENOUTPUTDIR}/GPU_BUSY"
 
     echo "*-*-*-*-*-* GPU is free with ${free_mem} *-*-*-*-*-*"
     python Code/scripts_experiments/predict_model.py --basedir=/temp_work --testing_datadir=TestingData --is_backward_compat=False --name_output_predictions_relpath=${POSWRKDIR} --name_output_reference_keys_file=${KEYFILE} ${MODELFILE}
     PRED_DONE=$?
     if [ $PRED_DONE -eq 1 ]; then
         echo "Prediction failed, likely due to GPU not free. Attempt $ATTEMPTS. Retrying..."
+        rm -f "${GENOUTPUTDIR}/GPU_BUSY"
         execution_status 6
         ((++ATTEMPTS))
         if [ $ATTEMPTS -gt 15 ]; then
             echo "Too many attempts trying to use GPU, exiting..."
             execution_status 3
             echo "${VOL_NO_EXTENSION},${DURATION},FAILED_GPU" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
+            rm -f "${GENOUTPUTDIR}/GPU_BUSY"
             exit $PRED_DONE
         fi
     fi
+    echo "Done using GPU."
+    rm -f "${GENOUTPUTDIR}/GPU_BUSY"
 done
 
-} &>> "$LOGFILE"
+#} &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [########------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Post-processing Fine Airway Segmentation (~1min)"

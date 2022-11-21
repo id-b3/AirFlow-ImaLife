@@ -23,7 +23,7 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
 
     docker_name = "airflow:ima_1.9"
     # Change this to the local ~/.nv/ComputeCache absolute value
-    nvidia_cache_dir = "/home/ivan/.nv/ComputeCache"
+    nvidia_cache_dir = "/home/martin/.nv/ComputeCache"
 
     command_array = [
         "docker",
