@@ -233,7 +233,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Pre-process
 echo -n "Progress: ${VOL_NO_EXTENSION} [#######-------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5min)"
 
-#{
+{
 echo " Elapsed Time: $((SECONDS/60))min - Fine Airway Segmentation - Using GPU (~5min)"
 echo '-------------------------'
 echo 'Predict Segmentation.....'
@@ -276,7 +276,7 @@ while [ "$PRED_DONE" -eq 1 ]; do
     rm -f "${GENOUTPUTDIR}/GPU_BUSY"
 done
 
-#} &>> "$LOGFILE"
+} &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [########------------]"
 echo " Elapsed Time: $((SECONDS/60))min - Post-processing Fine Airway Segmentation (~1min)"
@@ -387,26 +387,20 @@ echo " Elapsed Time: $((SECONDS/60))min - Cleaning Up (~1min)"
     find ${OUTPUTFOLDER} -type f -name "*filled*" -delete
     find ${OUTPUTFOLDER} -type f -name "*surface0_iso*" -delete
     rm ${OUTPUTFOLDER}/${VOL_FILE}
-    find ${OUTPUTFOLDER} -type f -name "*.stl" -delete
     find ${OUTPUTFOLDER} -type f -name "*.brh" -delete
     find ${OUTPUTFOLDER} -type f -name "*localRadius.csv" -delete
-    #  cp -r ${DESTLUNG}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
-    #  cp -r ${DESTAIR}/* ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/
-    #  cp ${NIFTIIMG}/*.nii.gz ${OUTPUTFOLDER}/${VOL_NO_EXTENSION}_initial/${VOL_NO_EXTENSION}.nii.gz
-    #  rm -r "${OUTBASENAME}"_initial/
     cd "${OUTPUTFOLDER}" || exit
-    tar czf intermediate-files-bronchi.tar.gz *.gts *.csv *.nii.gz *.log *.pickle
-    tar czf 3d-models-airway.tar.gz *.obj
-    tar czf airway_results.tar.gz airway_tree.pickle airway_tree.csv *_surface0.nii.gz *_surface1.nii.gz lung_metrics.csv lung_seg_lobes.nii.gz
-    find ${OUTPUTFOLDER} -type f -name "*.obj" -delete
-    find ${OUTPUTFOLDER} -type f -name "*.gts" -delete
-    find ${OUTPUTFOLDER} -type f -name "*.txt" -delete
-    #  find ${OUTPUTFOLDER} -type f -name "*.log" -delete
-    find ${OUTPUTFOLDER} -type f -name "*inner*" -delete
-    find ${OUTPUTFOLDER} -type f -name "*outer*" -delete
-    find ${OUTPUTFOLDER} -type f -name "*nii.gz" -delete
-    find ${OUTPUTFOLDER} -type f -name "*centrelines.csv" -delete
-    find ${OUTPUTFOLDER} -type f -name "*centrelines.nii.gz" -delete
+    echo '---- Packing results into tar ----'
+    rm -rf *initial
+    find . -type f -name "*.gts" -delete
+    eval "tar -czf ${VOL_NO_EXTENSION}_bronchial_results.tar.gz --exclude='*.dcm' ./*"
+    find . -type f -name "*.csv" -delete
+    find . -type f -name "*.nii.gz" -delete
+    find . -type f -name "*.obj" -delete
+    find . -type f -name "*.jpeg" -delete
+    find . -type f -name "*.jpg" -delete
+    find . -type f -name "*.pickle" -delete
+    find . -type f -name "*.txt" -delete
 
     echo '-------------------------'
     echo 'CLEANING UP..............'

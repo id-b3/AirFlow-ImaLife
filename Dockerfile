@@ -141,12 +141,6 @@ COPY ["./scripts/", "./scripts/"]
 RUN rm -rf /var/lib/apt/lists/*
 COPY ["./AirMorph", "./AirMorph"]
 
-# CUDA cache settings
-# ENV CUDA_CACHE_MAXSIZE=2147483647
-ENV CUDA_CACHE_MAXSIZE=3758096384
-ENV CUDA_CACHE_DISABLE=0
-ENV CUDA_CACHE_PATH="/airflow/nvidia/ComputeCache"
-
 # Run Launch script when container starts.
 ENTRYPOINT ["/airflow/scripts/run_machine.sh"]
 # Arguments to pass to launch script.
