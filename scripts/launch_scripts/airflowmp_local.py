@@ -20,9 +20,14 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
         print("Skipping failed_scans folder...")
         return
 
-    docker_name = "airflow:ima_1.9"
-    nvidia_cache_dir = "/home/ivan/.nv/ComputeCache"
-    input_dir = next(scan_folder.glob(r"**/*Qr59/"))
+    docker_name = "airflow:imalife_base_local"
+    nvidia_cache_dir = "/home/dudzie/.nv/ComputeCache"
+    try:
+        input_dir = next(scan_folder.glob(r"**/*INSP*/"))
+    except:
+        input_dir = next(scan_folder.glob(r"**/*QR59/"))
+        print("Not paired exp")
+        return
 
     command_array = [
         "docker",
@@ -46,16 +51,16 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
     start_time = time.time()
     run = subprocess.run(command_array)
 
-    if run.returncode == 0:
-        final_path = completedir / scan_folder.stem
-        final_path.mkdir(parents=True, exist_ok=True)
-        scan_folder.rename(final_path)
-        print(f"Moved Folder from {scan_folder} to {final_path}")
-    else:
-        final_path = faileddir / scan_folder.stem
-        final_path.mkdir(parents=True, exist_ok=True)
-        scan_folder.rename(final_path)
-        print(f"Moved Folder from {scan_folder} to {final_path}")
+    #    if run.returncode == 0:
+    #        final_path = completedir / scan_folder.stem
+    #        final_path.mkdir(parents=True, exist_ok=True)
+    #        scan_folder.rename(final_path)
+    #        print(f"Moved Folder from {scan_folder} to {final_path}")
+    #    else:
+    #        final_path = faileddir / scan_folder.stem
+    #        final_path.mkdir(parents=True, exist_ok=True)
+    #        scan_folder.rename(final_path)
+    #        print(f"Moved Folder from {scan_folder} to {final_path}")
     
     execution_time = (time.time() - start_time) / 60
     logging.info(
@@ -64,10 +69,13 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
 
 
 def main(dirs):
+    with open("./list_redo_expiratory.txt") as file:
+        redo_list = [line.rstrip() for line in file]
+
     main_path = Path(dirs.main_dir).resolve()
     completed_path = main_path / "completed_scans"
     failed_path = main_path / "failed_scans"
-    main_dirs = [d for d in main_path.iterdir() if d.is_dir()]
+    main_dirs = [d for d in main_path.iterdir() if (d.is_dir() and str(d.stem) in redo_list)]
     out_path = Path(dirs.out_dir).resolve()
     main_dirs.sort()
     p = mp.Pool(dirs.number)
