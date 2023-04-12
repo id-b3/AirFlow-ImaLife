@@ -69,12 +69,13 @@ def process_scan(scan_folder, outdir, completedir, faileddir):
 
 
 def main(dirs):
-    with open("./list_redo_expiratory.txt") as file:
+    with open("./scans_to_process.txt") as file:
         redo_list = [line.rstrip() for line in file]
 
     main_path = Path(dirs.main_dir).resolve()
     completed_path = main_path / "completed_scans"
     failed_path = main_path / "failed_scans"
+    # Select scan subdirectories scans that are in the scans_to_process file
     main_dirs = [d for d in main_path.iterdir() if (d.is_dir() and str(d.stem) in redo_list)]
     out_path = Path(dirs.out_dir).resolve()
     main_dirs.sort()

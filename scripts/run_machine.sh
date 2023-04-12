@@ -76,7 +76,7 @@ else
     INPUTFILE="${DESTIMG}/${VOL_FILE}"
     #    python /airflow/scripts/processing_scripts/get_date.py "${INPUTFILE}" "${OUTBASENAME}"_date.txt
     vol_size=$(wc -c <"$INPUTFILE")
-    if [ $vol_size -ge 100000000 ]; then
+    if [ $vol_size -ge 100000 ]; then
         echo "SUCCESS CREATING DICOM VOLUME"
     else
         echo "CREATED VOLUME TOO SMALL $vol_size"
@@ -109,7 +109,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Coarse Lung and Airway Segmentation (~
         echo "**************************************************"
         if [ "$LUNG_VOL" -gt 4500000 ]
         then
-            if [ "$AIR_VOL" -gt 30000 ]
+            if [ "$AIR_VOL" -gt 10000 ]
             then
                 # shellcheck disable=SC2086
                 echo $LUNG_VOL > "$OUTPUTFOLDER"/lung_volume.txt
@@ -122,7 +122,7 @@ echo " Elapsed Time: $((SECONDS/60))min - Coarse Lung and Airway Segmentation (~
                 return 1
             fi
         else
-            if [ "$AIR_VOL" -gt 21000 ]
+            if [ "$AIR_VOL" -gt 10000 ]
             then
                 echo "$LUNG_VOL" > "$OUTPUTFOLDER"/lung_volume.txt
                 echo "$AIR_VOL" > "$OUTPUTFOLDER"/air_volume.txt
@@ -189,18 +189,6 @@ echo " Elapsed Time: $((SECONDS/60))min - Pruning Coarse Airway Segmentation (~2
     mv $DESTLUNG/*.bmp "${OUTPUTFOLDER}"/"${VOL_NO_EXTENSION}"_initial/
     mv $DESTLUNG/*-airways.dcm $DESTAIR/
 
-    echo 'PRE-PROCESS COARSE AIRWAYS (PRUNING)'
-    echo '-----------------------------------'
-    /airflow/scripts/processing_scripts/prepare_coarse_airway.sh $DESTAIR
-    if [ $? -eq 1 ]
-    then
-        execution_status 3
-        echo "${VOL_NO_EXTENSION},${DURATION},FAILED_AIRWAYPRUNING" >> ${GENOUTPUTDIR}/PROCESSED_SCANS_LIST.csv
-        exit 1
-    fi
-    python /airflow/scripts/processing_scripts/air_seg_thumbnail.py $DESTAIR/*nii.gz "$OUTPUTFOLDER"/"$VOL_NO_EXTENSION"_pruned_airways.jpeg
-    echo 'DONE PRUNING COARSE AIRWAYS'
-    echo '---------------------------'
 } &>> "$LOGFILE"
 
 echo -n "Progress: ${VOL_NO_EXTENSION} [######--------------]"
