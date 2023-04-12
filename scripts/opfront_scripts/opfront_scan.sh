@@ -24,7 +24,6 @@ BINARY_DIR="/usr/local/bin"
 FILE=$(basename "${VOL}")
 FILE_NO_EXTENSION="${FILE%%.*}"
 ROOT="${FOLDEROUT}/${FILE_NO_EXTENSION}"
-LOGFILE="${ROOT}_opfront.log" # Process Log File
 
 # Location of python scripts
 PYTHON_SCR="/airflow/scripts/processing_scripts"
@@ -58,25 +57,22 @@ BRANCHES_PANDAS="${ROOT}_airways_centrelines.csv"
 
 mkdir -p "$FOLDEROUT"
 
-{
-  echo -e "\n *** ${FILE_NO_EXTENSION} ***\n"
-  echo -e "Volume: $VOL"
-  echo -e "Segmentation: $SEG"
-  echo -e "Opfront parameters: $OPFRONT_PARAMETERS"
-  echo -e "Results folder: $FOLDEROUT\n"
-  echo -e "File without extension: $FILE_NO_EXTENSION\n"
-} | tee "$LOGFILE"
+echo -e "\n *** ${FILE_NO_EXTENSION} ***\n"
+echo -e "Volume: $VOL"
+echo -e "Segmentation: $SEG"
+echo -e "Opfront parameters: $OPFRONT_PARAMETERS"
+echo -e "Results folder: $FOLDEROUT\n"
+echo -e "File without extension: $FILE_NO_EXTENSION\n"
 # ------------------------------------------------ EXECUTION STEPS ---------------------------------------
 
-{
 echo -e "\nFilling Holes in segmentation:"
 CALL="${BINARY_DIR}/holefiller -i $SEG -o $SEG_FILL"
 echo -e "\n$CALL"
 
 if ! $CALL
 then
-  echo "Failed to fill holes. Aborting"
-  exit $?
+    echo "Failed to fill holes. Aborting"
+    exit $?
 fi
 
 echo -e "\n6-connecting initial surface:"
@@ -102,7 +98,7 @@ echo -e "\nConverting outer surface to binary with the original spacing (with su
 CALL2="${BINARY_DIR}/gts2img -g $OUTER_SURFACE -s $OUTER_VOL -v $VOL -u 3"
 echo -e "\n$CALL2"
 eval "$CALL1" &&
-eval "$CALL2"
+    eval "$CALL2"
 
 echo -e "\nScaling Inner surface to isometric voxels of 0.5 0.5 0.5"
 CALL="python ${PYTHON_SCR}/rescale_low_mem.py -i $INNER_VOL -o $INNER_VOL_ISO"
@@ -128,7 +124,7 @@ echo -e "\nMeasure outer surface:"
 CALL2="${BINARY_DIR}/gts_ray_measure -g $OUTER_SURFACE -v $VOL -b $BRANCHES -o $OUTER_RESULTS -l $OUTER_RESULTS_LOCAL -p $OUTER_RESULTS_LOCAL_PANDAS"
 echo -e "\n$CALL2"
 eval "$CALL1" &&
-eval "$CALL2"
+    eval "$CALL2"
 
 echo -e "\nConvert branches to volume:"
 CALL="${BINARY_DIR}/brh2vol $BRANCHES -volume $VOL -o $BRANCHES_VOL"
@@ -141,4 +137,3 @@ echo -e "\n$CALL"
 echo -e "DONE\n"
 eval "$CALL"
 
-} | tee "$LOGFILE"

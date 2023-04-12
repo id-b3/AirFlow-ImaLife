@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-import re
 from itertools import repeat
 import subprocess
 import argparse
@@ -14,11 +13,7 @@ from tqdm import tqdm
 
 def process_scan(scan_folder, outdir):
 
-    docker_name = "colossali/airflow:ima_1.0"
-    input_dir = next(scan_folder.glob(r"**/*Qr59/"))
-    vol_name = re.findall(r'\d\d\d\d\d\d', str(scan_folder))[0]
-    outdir = outdir / vol_name
-    outdir.mkdir(parents=True, exist_ok=True)
+    docker_name = "airflow:ima_1.6"
 
     command_array = [
         "docker",
@@ -28,14 +23,12 @@ def process_scan(scan_folder, outdir):
         "--rm",
         "-t",
         "-v",
-        f"{input_dir}:/input",
+        f"{scan_folder}:/input",
         "-v",
         f"{outdir}:/output",
         docker_name,
         "/input",
-        vol_name,
         "/output",
-        f"/output/{vol_name}.log",
     ]
 
     logging.debug(command_array)
@@ -43,7 +36,7 @@ def process_scan(scan_folder, outdir):
     run = subprocess.run(command_array)
     execution_time = (time.time() - start_time) / 60
     logging.info(
-        f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{vol_name},{execution_time:.2f}"
+        f",{date.today().strftime('%d-%m-%y')},{time.strftime('%H:%M')},{scan_folder},{execution_time:.2f},{run.returncode}"
     )
 
 
@@ -52,7 +45,7 @@ def main(dirs):
     main_dirs = [d for d in main_path.iterdir() if d.is_dir()]
     out_path = Path(dirs.out_dir).resolve()
     main_dirs.sort()
-    p = mp.Pool(8)
+    p = mp.Pool(dirs.number)
     list(
         tqdm(p.starmap(process_scan, zip(main_dirs, repeat(out_path))),
              total=len(main_dirs)))
@@ -67,6 +60,7 @@ if __name__ == "__main__":
         type=str,
         help="Main folder containing repeat scans in subfolders.")
     parser.add_argument("out_dir", type=str, help="Output folder.")
+    parser.add_argument("-n", "--number", type=int, default=8, help="Number of simultaneous Scans")
     args = parser.parse_args()
     log_name = datetime.now().strftime("airflow_log_%d_%m_%Y_%H_%M.log")
     logging.basicConfig(filename=log_name, filemode="a", level=logging.INFO)

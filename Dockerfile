@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y cmake wget build-essential uuid-dev lib
 RUN apt-get install -y --no-install-recommends libgts-dev libsdl2-dev libsdl2-2.0 libcgal-dev libgsl0-dev
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# PLAYGROUND Tools
+# Legacy Tools
 WORKDIR /lungseg
 
 # COPY SOURCECODE
@@ -23,7 +23,7 @@ RUN mkdir -p playground/thirdparty/itkbin && \
 
 RUN make -C /lungseg/playground/thirdparty/kdtree install
 
-# Compile the playground
+# Compile the necessary tools
 RUN make -C /lungseg/playground/src/libac && \
     make -C /lungseg/playground/src/libmy_functions && \
     make -C /lungseg/playground/src/lung_segmentation && \
@@ -76,13 +76,11 @@ RUN wget -nv https://github.com/dtschump/CImg/archive/refs/tags/v.179.zip && \
 
 # ----------------------------------------
 # Copy source and compile
-
 COPY ./opfront/src /opfront/src
 COPY ./opfront/thirdparty /opfront/thirdparty
 WORKDIR /opfront/bin
 RUN cmake /opfront/src
 RUN make -j install
-
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # PART 3: Move compiled bins to cuda image. Port libraries.
@@ -113,6 +111,7 @@ WORKDIR /airflow
 COPY ["./bronchinet/requirements_torch.txt", "./requirements.txt", "./"]
 
 #Update the python install based on requirement. No cache to lower image size..
+RUN pip3 install --upgrade pip
 RUN pip3 install --no-cache-dir -r requirements_torch.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
@@ -140,9 +139,9 @@ COPY ["./scripts/", "./scripts/"]
 # Clean up apt-get cache to lower image size
 RUN rm -rf /var/lib/apt/lists/*
 COPY ["./AirMorph", "./AirMorph"]
+
 # Run Launch script when container starts.
 ENTRYPOINT ["/airflow/scripts/run_machine.sh"]
 # Arguments to pass to launch script.
 
-
-CMD ["/input", "imalife_vol", "/output"]
+CMD ["/input", "/output"]
