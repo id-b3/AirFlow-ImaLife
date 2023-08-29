@@ -144,4 +144,4 @@ COPY ["./AirMorph", "./AirMorph"]
 ENTRYPOINT ["/airflow/scripts/run_machine.sh"]
 # Arguments to pass to launch script.
 
-CMD ["/input", "/output"]
+CMD ["/eureka/input/series-in", "/eureka/output"]

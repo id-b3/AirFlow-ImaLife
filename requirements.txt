@@ -1,4 +1,4 @@
 tensorflow-gpu==2.4.1
-antspyx==0.3.5
+antspyx==0.3.7
 protobuf==3.20.1
 bronchipy==0.0.9

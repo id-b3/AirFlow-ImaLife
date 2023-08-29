@@ -39,6 +39,7 @@ def main(file_list) -> int:
                               f"{file_list.output}/airway_tree.csv")
         brio.save_pickle_tree(airway_tree.tree,
                               f"{file_list.output}/airway_tree.pickle")
+        airway_tree.tree.to_json(f"{file_list.output}/airway_tree.json")
 
         # Calculate summary bronchial parameters
         pi10_tree = airway_tree.tree[(airway_tree.tree.generation <= 5)]
@@ -109,6 +110,7 @@ def main(file_list) -> int:
             "bp_seg_error": [air_seg_error],
         }
         pd.DataFrame(bp_summary).to_csv(f"{file_list.output}/bp_summary_redcap.csv", index=False)
+        pd.DataFrame(bp_summary).to_json(f"{file_list.output}/bp_summary_redcap.json")
 
         return sys.exit()
     except (OSError, TypeError) as e:
